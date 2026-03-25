@@ -8,8 +8,6 @@ import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState
 
-# Lazy-init so the container binds to the port before heavy initialisation
-# (or missing env-var errors) can crash it at startup.
 _orchestrator = None
 
 
@@ -22,6 +20,10 @@ def _get_orchestrator():
     return _orchestrator
 
 
+def _msg(role: str, content: str) -> dict:
+    return {"role": role, "content": content}
+
+
 def _state_badge(state: ConversationState) -> str:
     labels = {
         ConversationState.DISCLAIMER_PENDING: "⚠️ Disclaimer pending",
@@ -31,28 +33,38 @@ def _state_badge(state: ConversationState) -> str:
     return labels.get(state, state.value)
 
 
-def chat(user_message: str, history: list, session_id: str) -> tuple[list, str, str]:
-    orch = _get_orchestrator()
-    if not session_id:
-        session = orch.create_session()
-        session_id = session.session_id
-        response = orch.turn(session_id, "")
-        history = history + [("", response)]
-
-    response = orch.turn(session_id, user_message)
-    history = history + [(user_message, response)]
-
-    session = orch.get_session(session_id)
-    state_label = _state_badge(session.state) if session else ""
-    return history, session_id, state_label
-
-
-def new_session() -> tuple[list, str, str]:
+def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     session_id = session.session_id
     response = orch.turn(session_id, "")
-    return [("", response)], session_id, _state_badge(session.state)
+    return [_msg("assistant", response)], session_id, _state_badge(session.state)
+
+
+def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str]:
+    if not user_message.strip():
+        return history, session_id, ""
+
+    orch = _get_orchestrator()
+
+    # Ensure we have a valid session
+    if not session_id:
+        session = orch.create_session()
+        session_id = session.session_id
+        disclaimer = orch.turn(session_id, "")
+        history = [_msg("assistant", disclaimer)]
+
+    response = orch.turn(session_id, user_message)
+
+    # Always build a fresh clean list to avoid any format contamination
+    new_history = list(history) + [
+        _msg("user", user_message),
+        _msg("assistant", response),
+    ]
+
+    session = orch.get_session(session_id)
+    state_label = _state_badge(session.state) if session else ""
+    return new_history, session_id, state_label
 
 
 with gr.Blocks(title="IVF Treatment Advisor") as demo:
@@ -61,7 +73,12 @@ with gr.Blocks(title="IVF Treatment Advisor") as demo:
     state_display = gr.Textbox(
         label="Session status", interactive=False, value="⚠️ Disclaimer pending"
     )
-    chatbot = gr.Chatbot(label="Conversation", height=500)
+    chatbot = gr.Chatbot(
+        label="Conversation",
+        height=500,
+        type="messages",
+        value=[],
+    )
     session_id_state = gr.State("")
 
     with gr.Row():
