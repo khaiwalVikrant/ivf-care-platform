@@ -158,11 +158,15 @@ class ConversationOrchestrator:
         session.turn_count += 1
 
         # Ensure an ADK session exists for this conversation
-        adk_session = self._adk_sessions.get_session(
-            app_name="ivf_advisor",
-            user_id=session.session_id,
-            session_id=session.session_id,
-        )
+        try:
+            adk_session = self._adk_sessions.get_session(
+                app_name="ivf_advisor",
+                user_id=session.session_id,
+                session_id=session.session_id,
+            )
+        except Exception:
+            adk_session = None
+
         if adk_session is None:
             self._adk_sessions.create_session(
                 app_name="ivf_advisor",

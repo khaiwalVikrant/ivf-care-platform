@@ -47,16 +47,26 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
 
     orch = _get_orchestrator()
 
-    # Ensure we have a valid session
-    if not session_id:
+    # Create a new session if missing or expired
+    if not session_id or orch.get_session(session_id) is None:
         session = orch.create_session()
         session_id = session.session_id
         disclaimer = orch.turn(session_id, "")
         history = [_msg("assistant", disclaimer)]
 
-    response = orch.turn(session_id, user_message)
+    try:
+        response = orch.turn(session_id, user_message)
+    except (KeyError, Exception) as e:
+        # Session expired (e.g. instance restarted) — start fresh
+        session = orch.create_session()
+        session_id = session.session_id
+        disclaimer = orch.turn(session_id, "")
+        history = [
+            _msg("assistant", "Your session expired. Starting a new session."),
+            _msg("assistant", disclaimer),
+        ]
+        return history, session_id, _state_badge(orch.get_session(session_id).state)
 
-    # Always build a fresh clean list to avoid any format contamination
     new_history = list(history) + [
         _msg("user", user_message),
         _msg("assistant", response),
