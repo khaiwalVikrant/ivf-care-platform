@@ -4,6 +4,325 @@ from __future__ import annotations
 
 from ivf_advisor.models import CostBreakdownOutput, CostComponent, CostVariability
 
+_INDIAN_CITIES = {
+    "mumbai", "delhi", "bangalore", "bengaluru", "chennai", "hyderabad",
+    "pune", "kolkata", "ahmedabad", "jaipur", "lucknow", "india", "indian",
+    "chandigarh", "noida", "gurgaon", "gurugram", "surat", "kochi", "nagpur",
+}
+
+# ---------------------------------------------------------------------------
+# India-specific cost components (INR)
+# ---------------------------------------------------------------------------
+
+_INDIA_CORE_COMPONENTS: list[CostComponent] = [
+    CostComponent(
+        name="Initial Consultation",
+        description="First appointment with a fertility specialist including medical history review, baseline blood tests (AMH, FSH, LH), and ultrasound.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=500.0,
+        typical_range_high=2000.0,
+        notes="Costs vary between government hospitals (subsidised) and private fertility clinics. Many top private clinics in metro cities charge ₹1,000–₹2,000.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Monitoring Scans",
+        description="Serial ultrasound scans during ovarian stimulation to track follicle growth, typically 3–6 visits.",
+        variability=CostVariability.PATIENT_VARIABLE,
+        typical_range_low=3000.0,
+        typical_range_high=10000.0,
+        notes="Per scan costs range from ₹500–₹2,000. Some clinics bundle monitoring into the package price — always confirm.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Medications",
+        description="Fertility injections (FSH/LH gonadotrophins), GnRH antagonist, trigger injection, and progesterone support.",
+        variability=CostVariability.PATIENT_VARIABLE,
+        typical_range_low=30000.0,
+        typical_range_high=80000.0,
+        notes="Medication is the most variable cost. Indian-manufactured generics (e.g. Recagon, Folisurge) are significantly cheaper than imported brands. Ask your clinic for a medication budget based on your AMH.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Laboratory Fees",
+        description="Embryology lab charges covering egg/sperm preparation, fertilisation, embryo culture to blastocyst, and grading.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=20000.0,
+        typical_range_high=50000.0,
+        notes="Usually included in the clinic's IVF package. ICSI is often charged separately. Confirm what is included.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Egg Retrieval Procedure",
+        description="Surgical egg collection under sedation, approximately 36 hours after trigger injection.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=15000.0,
+        typical_range_high=40000.0,
+        notes="Usually included in all-inclusive packages. Anaesthesia fees may be charged separately at some clinics.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Embryo Transfer",
+        description="Procedure to place embryo(s) into the uterus under ultrasound guidance.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=5000.0,
+        typical_range_high=15000.0,
+        notes="Usually included in the base package. Frozen embryo transfer (FET) in a subsequent cycle is charged separately.",
+        is_addon=False,
+    ),
+]
+
+_INDIA_ADDON_COMPONENTS: list[CostComponent] = [
+    CostComponent(
+        name="ICSI (Intracytoplasmic Sperm Injection)",
+        description="Single sperm injected directly into each egg. Recommended for male factor infertility or previous fertilisation failure.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=20000.0,
+        typical_range_high=50000.0,
+        notes="Very commonly recommended in India. Often charged on top of the base IVF package.",
+        is_addon=True,
+    ),
+    CostComponent(
+        name="Preimplantation Genetic Testing (PGT-A)",
+        description="Genetic screening of embryos before transfer to identify chromosomally normal embryos.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=50000.0,
+        typical_range_high=150000.0,
+        notes="Available at larger fertility centres in metro cities. Adds significant cost — discuss clinical indication with your doctor.",
+        is_addon=True,
+    ),
+    CostComponent(
+        name="Embryo Freezing and Storage",
+        description="Vitrification of surplus embryos plus annual storage fees.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=10000.0,
+        typical_range_high=25000.0,
+        notes="Annual storage fees typically ₹5,000–₹10,000/year. Confirm the clinic's storage policy.",
+        is_addon=True,
+    ),
+]
+
+_INDIA_CITY_RANGES = {
+    "mumbai":    {"low": 120000, "high": 350000},
+    "delhi":     {"low": 100000, "high": 300000},
+    "bangalore": {"low": 100000, "high": 280000},
+    "bengaluru": {"low": 100000, "high": 280000},
+    "chennai":   {"low": 90000,  "high": 250000},
+    "hyderabad": {"low": 90000,  "high": 250000},
+    "pune":      {"low": 90000,  "high": 250000},
+    "kolkata":   {"low": 80000,  "high": 220000},
+    "default":   {"low": 80000,  "high": 300000},
+}
+
+_INDIA_MULTI_CYCLE_NOTE = (
+    "IVF costs in India are significantly lower than in Western countries, making India "
+    "a destination for medical tourism. However, costs are cumulative — most patients "
+    "require 2–3 cycles. Budget for multiple cycles rather than assuming one will suffice. "
+    "Government hospitals (e.g. AIIMS, NIMHANS) offer subsidised IVF for eligible patients. "
+    "Some states have government schemes — check with your state health department."
+)
+
+_INDIA_CLINIC_QUESTIONS: list[str] = [
+    "What is included in your IVF package price — does it cover medications?",
+    "Are monitoring scans and blood tests included or billed separately?",
+    "Is ICSI included in the base price or charged additionally?",
+    "Do you use Indian-manufactured or imported medications — what is the cost difference?",
+    "Do you offer EMI or payment plan options?",
+    "Are there any government scheme benefits I may be eligible for?",
+    "What are the costs for a frozen embryo transfer (FET) if needed?",
+    "What are your annual embryo storage fees?",
+    "What is your cancellation/refund policy if the cycle is cancelled?",
+]
+
+# ---------------------------------------------------------------------------
+# Core cost components (default — UK/international)
+# ---------------------------------------------------------------------------
+
+_CORE_COMPONENTS: list[CostComponent] = [
+    CostComponent(
+        name="Initial Consultation",
+        description=(
+            "Your first appointment with a fertility specialist, including a review of "
+            "medical history, baseline blood tests (AMH, FSH, LH, oestradiol), and an "
+            "antral follicle count (AFC) ultrasound. A personalised treatment plan is "
+            "discussed and consent forms are signed."
+        ),
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=200.0,
+        typical_range_high=500.0,
+        notes=(
+            "Fees vary significantly between private clinics. Some clinics offer a free "
+            "or reduced-cost initial consultation. NHS-funded patients may not incur this "
+            "cost if referred via their GP."
+        ),
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Monitoring Scans",
+        description=(
+            "Serial transvaginal ultrasound scans performed every 1–3 days during the "
+            "ovarian stimulation phase to track follicle growth and number."
+        ),
+        variability=CostVariability.PATIENT_VARIABLE,
+        typical_range_low=150.0,
+        typical_range_high=600.0,
+        notes="Multiple scans required per cycle — typically 3–6 visits.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Medications",
+        description=(
+            "Prescription fertility medications including gonadotrophins, GnRH antagonist, "
+            "trigger injection, and progesterone supplementation."
+        ),
+        variability=CostVariability.PATIENT_VARIABLE,
+        typical_range_low=800.0,
+        typical_range_high=3000.0,
+        notes="Highly variable — depends on individual response and brand.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Laboratory Fees",
+        description="Embryology lab charges covering fertilisation, embryo culture, and grading.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=1000.0,
+        typical_range_high=2500.0,
+        notes="Usually included in the clinic package. ICSI often charged separately.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Egg Retrieval Procedure",
+        description="Surgical egg collection under sedation.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=1500.0,
+        typical_range_high=3500.0,
+        notes="Usually included in all-inclusive packages.",
+        is_addon=False,
+    ),
+    CostComponent(
+        name="Embryo Transfer",
+        description="Procedure to place embryo(s) into the uterus under ultrasound guidance.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=500.0,
+        typical_range_high=1500.0,
+        notes="Usually included in the base package.",
+        is_addon=False,
+    ),
+]
+
+_ADDON_COMPONENTS: list[CostComponent] = [
+    CostComponent(
+        name="ICSI (Intracytoplasmic Sperm Injection)",
+        description="Single sperm injected directly into each egg.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=800.0,
+        typical_range_high=1500.0,
+        notes="Often charged on top of the base IVF package.",
+        is_addon=True,
+    ),
+    CostComponent(
+        name="Preimplantation Genetic Testing (PGT-A)",
+        description="Genetic screening of embryos before transfer.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=2000.0,
+        typical_range_high=5000.0,
+        notes="Discuss clinical indication with your doctor before proceeding.",
+        is_addon=True,
+    ),
+    CostComponent(
+        name="Embryo Freezing and Storage",
+        description="Vitrification of surplus embryos plus annual storage fees.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=300.0,
+        typical_range_high=800.0,
+        notes="Annual storage fees commonly £200–£400/year in the UK.",
+        is_addon=True,
+    ),
+    CostComponent(
+        name="Endometrial Receptivity Testing (ERA)",
+        description="Biopsy-based test to identify optimal embryo transfer timing.",
+        variability=CostVariability.CLINIC_VARIABLE,
+        typical_range_low=600.0,
+        typical_range_high=1200.0,
+        notes="Limited evidence for routine use — discuss with your clinic.",
+        is_addon=True,
+    ),
+]
+
+_MULTI_CYCLE_NOTE = (
+    "IVF costs are cumulative. Many patients require more than one cycle to achieve a "
+    "successful pregnancy — national data suggests that, on average, patients undergo "
+    "2–3 cycles. When budgeting, plan for the possibility of multiple cycles. "
+    "Some clinics offer multi-cycle packages or refund programmes."
+)
+
+_CLINIC_QUESTIONS: list[str] = [
+    "What is included in your quoted IVF package price, and what is charged separately?",
+    "Are monitoring scans and blood tests included in the package, or billed per visit?",
+    "Is ICSI included in the base price, or is it an additional charge?",
+    "What is your cancellation policy if the cycle is abandoned before egg retrieval?",
+    "Do you offer multi-cycle packages or refund programmes?",
+    "What financing or payment plan options do you offer?",
+    "What are the costs for a frozen embryo transfer (FET) cycle?",
+    "What are your annual embryo storage fees?",
+    "Are there any additional costs I should anticipate?",
+]
+
+
+def _is_india_region(region: str | None) -> bool:
+    if not region:
+        return False
+    return region.lower().strip() in _INDIAN_CITIES
+
+
+def cost_breakdown_tool(
+    region: str | None = None,
+    include_addons: bool = False,
+    profile_context: str | None = None,
+) -> CostBreakdownOutput:
+    """Returns a structured IVF cost breakdown covering all cost components.
+
+    Args:
+        region: Optional country/region/city. Pass 'india' or an Indian city name
+                (e.g. 'Mumbai', 'Delhi') to get INR cost ranges.
+        include_addons: Whether to include optional add-on treatment costs.
+        profile_context: Optional JSON string of patient profile (reserved for future use).
+
+    Returns:
+        CostBreakdownOutput with per-component cost ranges in the appropriate currency.
+    """
+    if _is_india_region(region):
+        components: list[CostComponent] = list(_INDIA_CORE_COMPONENTS)
+        if include_addons:
+            components += list(_INDIA_ADDON_COMPONENTS)
+
+        city_key = region.lower().strip() if region else "default"
+        city_range = _INDIA_CITY_RANGES.get(city_key, _INDIA_CITY_RANGES["default"])
+        city_note = (
+            f"In {region.title()}, a complete IVF cycle (excluding medications) typically "
+            f"costs between ₹{city_range['low']:,} and ₹{city_range['high']:,}. "
+            f"Medications add approximately ₹30,000–₹80,000 on top."
+        )
+
+        return CostBreakdownOutput(
+            components=components,
+            multi_cycle_note=_INDIA_MULTI_CYCLE_NOTE + "\n\n" + city_note,
+            clinic_questions=list(_INDIA_CLINIC_QUESTIONS),
+            region=region,
+        )
+
+    # Default: international/UK ranges
+    components = list(_CORE_COMPONENTS)
+    if include_addons:
+        components += list(_ADDON_COMPONENTS)
+
+    return CostBreakdownOutput(
+        components=components,
+        multi_cycle_note=_MULTI_CYCLE_NOTE,
+        clinic_questions=list(_CLINIC_QUESTIONS),
+        region=region,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Core cost components (Phase 1 — region-agnostic)
 # ---------------------------------------------------------------------------

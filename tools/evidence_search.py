@@ -59,7 +59,7 @@ def _search(query: str, guideline_bodies: list[str]) -> EvidenceSearchOutput:
     serving_config = (
         f"projects/{GOOGLE_CLOUD_PROJECT}/locations/global"
         f"/collections/default_collection"
-        f"/dataStores/{VERTEX_SEARCH_DATASTORE_ID}"
+        f"/engines/{VERTEX_SEARCH_DATASTORE_ID}"
         f"/servingConfigs/default_config"
     )
 
@@ -77,9 +77,6 @@ def _search(query: str, guideline_bodies: list[str]) -> EvidenceSearchOutput:
             summary_spec=discoveryengine.SearchRequest.ContentSearchSpec.SummarySpec(
                 summary_result_count=5,
                 include_citations=True,
-            ),
-            extractive_content_spec=discoveryengine.SearchRequest.ContentSearchSpec.ExtractiveContentSpec(
-                max_extractive_answer_count=3,
             ),
         ),
     )

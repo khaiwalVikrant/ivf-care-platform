@@ -5,6 +5,7 @@ from __future__ import annotations
 from google.adk.agents import Agent  # type: ignore
 
 from ivf_advisor.config import AGENT_MODEL, AGENT_NAME
+from ivf_advisor.tools.clinic_cost import clinic_cost_tool
 from ivf_advisor.tools.cost_breakdown import cost_breakdown_tool
 from ivf_advisor.tools.evidence_search import evidence_search_tool
 from ivf_advisor.tools.journey_guide import journey_guide_tool
@@ -46,6 +47,9 @@ TOOL USAGE:
 - Use scope_guard_tool to check ambiguous queries before responding.
 - Use journey_guide_tool when patients ask about IVF stages, what to expect, or timelines.
 - Use cost_breakdown_tool when patients ask about costs, fees, or financial planning.
+  Pass region='india' or the specific Indian city (e.g. 'mumbai', 'delhi', 'mumbai') when
+  the patient mentions India or an Indian city — this returns INR cost ranges.
+- Use clinic_cost_tool when patients mention a specific clinic name or location.
 - Use evidence_search_tool when patients ask clinical questions requiring grounded evidence.
 - If scope_guard_tool returns is_emergency=True, instruct the patient to seek immediate
   medical attention and do not attempt to advise on the emergency.
@@ -69,6 +73,7 @@ def create_agent() -> Agent:
         tools=[
             journey_guide_tool,
             cost_breakdown_tool,
+            clinic_cost_tool,
             evidence_search_tool,
             scope_guard_tool,
         ],

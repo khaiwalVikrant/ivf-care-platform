@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
 import uuid
 from typing import Optional
 
@@ -157,6 +159,7 @@ class ConversationOrchestrator:
         """Pass the turn to the ADK agent and update session metadata."""
         session.turn_count += 1
 
+<<<<<<< HEAD:orchestrator.py
         # Ensure an ADK session exists for this conversation
         try:
             adk_session = self._adk_sessions.get_session(
@@ -173,6 +176,23 @@ class ConversationOrchestrator:
                 user_id=session.session_id,
                 session_id=session.session_id,
             )
+=======
+        # Use a fixed ADK session ID per conversation session.
+        # create_session is async — run it synchronously via asyncio.run()
+        adk_session_id = session.session_id
+
+        async def _ensure_adk_session():
+            try:
+                await self._adk_sessions.create_session(
+                    app_name="ivf_advisor",
+                    user_id=adk_session_id,
+                    session_id=adk_session_id,
+                )
+            except Exception:
+                pass  # Already exists
+
+        asyncio.run(_ensure_adk_session())
+>>>>>>> 5931a6e (more refactoring about app build failure and did some customization related to India):ivf_advisor/orchestrator.py
 
         content = types.Content(
             role="user",
@@ -180,14 +200,18 @@ class ConversationOrchestrator:
         )
 
         response_text = ""
-        for event in self._runner.run(
-            user_id=session.session_id,
-            session_id=session.session_id,
-            new_message=content,
-        ):
-            if event.is_final_response() and event.content and event.content.parts:
-                response_text = event.content.parts[0].text or ""
-                break
+        try:
+            for event in self._runner.run(
+                user_id=adk_session_id,
+                session_id=adk_session_id,
+                new_message=content,
+            ):
+                if event.is_final_response() and event.content and event.content.parts:
+                    response_text = event.content.parts[0].text or ""
+                    break
+        except Exception as e:
+            logger.exception("ADK runner error: %s", e)
+            return f"Error communicating with the AI model: {e}", session
 
         # Track topics discussed (simple keyword extraction)
         _update_topics(session, user_message)
@@ -256,6 +280,8 @@ def _build_profile_confirmation(profile: PatientProfile) -> str:
     )
     return "\n".join(lines)
 
+
+logger = logging.getLogger(__name__)
 
 _TOPIC_KEYWORDS: dict[str, list[str]] = {
     "costs": ["cost", "price", "fee", "expensive", "afford", "budget", "pay", "fund"],

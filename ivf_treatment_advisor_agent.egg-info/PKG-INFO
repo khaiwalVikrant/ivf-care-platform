@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: ivf-treatment-advisor-agent
+Version: 0.1.0
+Summary: An AI-powered IVF treatment advisor agent built on Google ADK and Gemini
+Requires-Python: >=3.11
+Requires-Dist: google-adk
+Requires-Dist: google-cloud-discoveryengine
+Requires-Dist: pydantic>=2
+Requires-Dist: python-dotenv
+Requires-Dist: gradio>=4.0.0
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: hypothesis; extra == "dev"
+Requires-Dist: httpx; extra == "dev"

@@ -1,0 +1,11 @@
+google-adk
+google-cloud-discoveryengine
+pydantic>=2
+python-dotenv
+gradio>=4.0.0
+
+[dev]
+pytest
+pytest-asyncio
+hypothesis
+httpx

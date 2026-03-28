@@ -48,7 +48,7 @@ REDIS_URL: str = _optional("REDIS_URL", "redis://localhost:6379/0")
 # ---------------------------------------------------------------------------
 
 AGENT_NAME: str = "ivf_treatment_advisor"
-AGENT_MODEL: str = "gemini-1.5-pro"
+AGENT_MODEL: str = _optional("AGENT_MODEL", "gemini-2.0-flash")
 
 # Latency SLA thresholds (seconds) — Requirement 13
 LATENCY_SLA_NO_TOOL: int = 10
