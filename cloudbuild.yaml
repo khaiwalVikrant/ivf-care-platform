@@ -1,14 +1,71 @@
 steps:
+  # -----------------------------------------------------------------------
+  # Step 1: Build the IVF Advisor UI image
+  # -----------------------------------------------------------------------
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-ivf-advisor'
     args:
       - 'build'
+      - '-f'
+      - 'ivf_advisor/Dockerfile'
       - '-t'
       - 'us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/app:latest'
       - '.'
     timeout: '1200s'
 
+  # -----------------------------------------------------------------------
+  # Step 2: Build the Task Manager API image
+  # -----------------------------------------------------------------------
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-task-manager'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile.task_manager'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/task-manager:latest'
+      - '.'
+    timeout: '1200s'
+
+  # -----------------------------------------------------------------------
+  # Step 3: Deploy IVF Advisor UI to Cloud Run
+  # -----------------------------------------------------------------------
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-ivf-advisor'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'ivf-advisor'
+      - '--image=us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/app:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--project=ivf-agent'
+    waitFor: ['build-ivf-advisor']
+
+  # -----------------------------------------------------------------------
+  # Step 4: Deploy Task Manager API to Cloud Run
+  # -----------------------------------------------------------------------
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-task-manager'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'task-manager-api'
+      - '--image=us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/task-manager:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--project=ivf-agent'
+      - '--update-secrets=SECRET_KEY=task-manager-secret-key:latest,ALLOYDB_PASSWORD=task-manager-db-password:latest'
+      - '--set-env-vars=ALLOYDB_INSTANCE_URI=projects/ivf-agent/locations/us-central1/clusters/ivf-care-cluster/instances/ivf-care-cluster-primary,ALLOYDB_DB=task_manager,ALLOYDB_USER=postgres,GOOGLE_CLOUD_PROJECT=ivf-agent'
+    waitFor: ['build-task-manager']
+
 images:
   - 'us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/app:latest'
+  - 'us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/task-manager:latest'
 
 timeout: '1200s'
 
