@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir \
     "asyncpg" \
     "python-jose[cryptography]" \
     "python-multipart" \
-    "cloud-sql-python-connector[asyncpg]>=1.9.0"
+    "cloud-sql-python-connector[asyncpg]>=1.9.0" \
+    "google-cloud-alloydb-connector[asyncpg]>=1.0.0"
 
 ENV PORT=8080
 EXPOSE 8080
