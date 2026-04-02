@@ -83,19 +83,26 @@ def _search(query: str, guideline_bodies: list[str]) -> EvidenceSearchOutput:
 
     response = client.search(request)
 
-    # Extract summary answer
+    # Extract summary answer (may be empty on standard edition)
     summary_text: str = ""
     if hasattr(response, "summary") and response.summary:
         summary_text = response.summary.summary_text or ""
 
-    # Extract citations from results
+    # Extract content snippets and citations from results
     citations: list[str] = []
+    snippets: list[str] = []
     for result in response.results:
         doc = result.document
         if doc and doc.derived_struct_data:
             data = dict(doc.derived_struct_data)
             title = data.get("title", "")
             source = data.get("source", data.get("link", ""))
+            # Extract text snippets if available
+            for snippet_data in data.get("snippets", []):
+                if isinstance(snippet_data, dict):
+                    snippet = snippet_data.get("snippet", "")
+                    if snippet:
+                        snippets.append(snippet)
             if title:
                 citations.append(f"{title} — {source}" if source else title)
             elif source:
@@ -121,6 +128,10 @@ def _search(query: str, guideline_bodies: list[str]) -> EvidenceSearchOutput:
             disclaimer=_DISCLAIMER,
         )
 
+    # Use snippets as answer if no summary available
+    if not summary_text and snippets:
+        summary_text = " ".join(snippets[:3])
+
     # Determine confidence based on citation count and summary presence
     if summary_text and len(unique_citations) >= 3:
         confidence = "high"
@@ -130,8 +141,8 @@ def _search(query: str, guideline_bodies: list[str]) -> EvidenceSearchOutput:
         confidence = "low"
 
     answer = summary_text or (
-        "Evidence was found but a summary could not be generated. "
-        "Please review the cited sources directly."
+        "The document was found in the knowledge base. "
+        "Please review the cited sources directly for detailed information."
     )
 
     return EvidenceSearchOutput(

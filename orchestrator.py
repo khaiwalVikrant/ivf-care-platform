@@ -89,12 +89,8 @@ class ConversationOrchestrator:
         if session is None:
             raise KeyError(f"Session '{session_id}' not found.")
 
-        if session.state == ConversationState.DISCLAIMER_PENDING:
-            response, session = self._handle_disclaimer(session, user_message)
-
-        elif session.state == ConversationState.PROFILE_COLLECTION:
+        if session.state == ConversationState.PROFILE_COLLECTION:
             response, session = self._handle_profile_collection(session, user_message)
-
         else:  # MAIN_LOOP
             response, session = self._handle_main_loop(session, user_message)
 
@@ -159,24 +155,6 @@ class ConversationOrchestrator:
         """Pass the turn to the ADK agent and update session metadata."""
         session.turn_count += 1
 
-<<<<<<< HEAD:orchestrator.py
-        # Ensure an ADK session exists for this conversation
-        try:
-            adk_session = self._adk_sessions.get_session(
-                app_name="ivf_advisor",
-                user_id=session.session_id,
-                session_id=session.session_id,
-            )
-        except Exception:
-            adk_session = None
-
-        if adk_session is None:
-            self._adk_sessions.create_session(
-                app_name="ivf_advisor",
-                user_id=session.session_id,
-                session_id=session.session_id,
-            )
-=======
         # Use a fixed ADK session ID per conversation session.
         # create_session is async — run it synchronously via asyncio.run()
         adk_session_id = session.session_id
@@ -192,7 +170,6 @@ class ConversationOrchestrator:
                 pass  # Already exists
 
         asyncio.run(_ensure_adk_session())
->>>>>>> 5931a6e (more refactoring about app build failure and did some customization related to India):ivf_advisor/orchestrator.py
 
         content = types.Content(
             role="user",

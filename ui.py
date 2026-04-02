@@ -7,16 +7,14 @@ import os
 import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState
+from ivf_advisor.agent import create_agent
+from ivf_advisor.orchestrator import ConversationOrchestrator
 
-_orchestrator = None
+# Eager initialisation at import time so the first request is not delayed.
+_orchestrator = ConversationOrchestrator(agent=create_agent())
 
 
 def _get_orchestrator():
-    global _orchestrator
-    if _orchestrator is None:
-        from ivf_advisor.agent import create_agent
-        from ivf_advisor.orchestrator import ConversationOrchestrator
-        _orchestrator = ConversationOrchestrator(agent=create_agent())
     return _orchestrator
 
 
@@ -26,7 +24,6 @@ def _msg(role: str, content: str) -> dict:
 
 def _state_badge(state: ConversationState) -> str:
     labels = {
-        ConversationState.DISCLAIMER_PENDING: "⚠️ Disclaimer pending",
         ConversationState.PROFILE_COLLECTION: "📋 Profile collection",
         ConversationState.MAIN_LOOP: "✅ Active session",
     }
@@ -37,8 +34,14 @@ def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     session_id = session.session_id
-    response = orch.turn(session_id, "")
-    return [_msg("assistant", response)], session_id, _state_badge(session.state)
+    welcome = (
+        "Welcome. I'm the IVF Treatment Advisor — an informational companion to help you "
+        "understand the IVF journey, costs, and treatment options.\n\n"
+        "Please note: I provide educational information only and nothing I say constitutes "
+        "medical advice. Always consult your fertility specialist.\n\n"
+        "How can I help you today?"
+    )
+    return [_msg("assistant", welcome)], session_id, _state_badge(session.state)
 
 
 def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str]:
@@ -51,8 +54,7 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
     if not session_id or orch.get_session(session_id) is None:
         session = orch.create_session()
         session_id = session.session_id
-        disclaimer = orch.turn(session_id, "")
-        history = [_msg("assistant", disclaimer)]
+        history = [_msg("assistant", "Welcome back. How can I help you today?")]
 
     try:
         response = orch.turn(session_id, user_message)
@@ -62,8 +64,7 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
         session_id = session.session_id
         disclaimer = orch.turn(session_id, "")
         history = [
-            _msg("assistant", "Your session expired. Starting a new session."),
-            _msg("assistant", disclaimer),
+            _msg("assistant", "Your session expired. Starting a new session. How can I help you?"),
         ]
         return history, session_id, _state_badge(orch.get_session(session_id).state)
 
@@ -81,7 +82,7 @@ with gr.Blocks(title="IVF Treatment Advisor") as demo:
     gr.Markdown("# IVF Treatment Advisor\nAn informational companion for your IVF journey.")
 
     state_display = gr.Textbox(
-        label="Session status", interactive=False, value="⚠️ Disclaimer pending"
+        label="Session status", interactive=False, value="✅ Active session"
     )
     chatbot = gr.Chatbot(
         label="Conversation",
