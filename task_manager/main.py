@@ -66,8 +66,14 @@ def get_orchestrator() -> TaskOrchestrator:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = get_db()
-    await db.init_db()
-    await seed_price_benchmarks(db)
+    try:
+        await db.init_db()
+        await seed_price_benchmarks(db)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(
+            "DB init failed at startup (will retry on first request): %s", e
+        )
     yield
 
 
