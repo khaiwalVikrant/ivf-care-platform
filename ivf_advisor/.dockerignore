@@ -1,0 +1,8 @@
+gclo    tests/
+src/
+.env
+__pycache__
+*.pyc
+.kiro/
+.vscode/
+*.egg-info/
