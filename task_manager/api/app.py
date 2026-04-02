@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -79,13 +79,13 @@ class CreateNoteRequest(BaseModel):
 class BookAppointmentRequest(BaseModel):
     patient_id: str
     type: AppointmentType
-    datetime: datetime
+    scheduled_at: datetime
     location: str
 
 
 class RescheduleAppointmentRequest(BaseModel):
-    datetime: datetime | None = None
-    status: str | None = None
+    datetime: Optional[datetime] = None
+    status: Optional[str] = None
 
 
 class OrderPathologyRequest(BaseModel):
@@ -285,7 +285,7 @@ def create_app(
         appt = await db.create_appointment(
             patient_id=body.patient_id,
             type=body.type,
-            datetime_=body.datetime,
+            datetime_=body.scheduled_at,
             location=body.location,
         )
         return appt.model_dump(mode="json")
