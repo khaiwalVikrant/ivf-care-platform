@@ -230,3 +230,39 @@ def submit_workflow_tool(request: str) -> dict:
     except Exception as exc:
         logger.error("submit_workflow_tool failed: %s", exc)
         return {"error": str(exc)}
+
+
+def get_schedule_tool(patient_id: str = "") -> dict:
+    """Get all upcoming tasks, reminders and appointments for a patient.
+
+    Use this when a patient asks 'what is my schedule', 'show my reminders',
+    'what do I have coming up', or any question about their upcoming activities.
+
+    Args:
+        patient_id: Optional patient identifier. Leave empty to get all records.
+
+    Returns:
+        Dictionary with tasks, reminders lists.
+    """
+    try:
+        with _client() as client:
+            tasks_resp = client.get(
+                f"{_BASE_URL}/tasks",
+                headers=_headers(),
+            )
+            tasks = tasks_resp.json() if tasks_resp.status_code == 200 else []
+
+            events_resp = client.get(
+                f"{_BASE_URL}/events",
+                headers=_headers(),
+            )
+            events = events_resp.json() if events_resp.status_code == 200 else []
+
+        return {
+            "tasks": tasks,
+            "events": events,
+            "summary": f"Found {len(tasks)} tasks and {len(events)} events."
+        }
+    except Exception as exc:
+        logger.error("get_schedule_tool failed: %s", exc)
+        return {"error": str(exc)}

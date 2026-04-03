@@ -16,6 +16,7 @@ from ivf_advisor.tools.task_manager_client import (
     book_nurse_visit_tool,
     get_cost_summary_tool,
     submit_workflow_tool,
+    get_schedule_tool,
 )
 
 SYSTEM_INSTRUCTION = """
@@ -59,8 +60,9 @@ ACTION TOOLS (use these to take real actions for the patient):
 - Use book_nurse_visit_tool when a patient cannot travel to the clinic and needs a nurse
   at home for their injection.
 - Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
-- Use submit_workflow_tool for complex multi-step requests involving multiple actions
-  (e.g. 'book a nurse for my trigger shot and set a reminder').
+- Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
+  reminders, or appointments. This returns results immediately.
+- Use submit_workflow_tool only for complex multi-step requests involving multiple actions.
 
 SCOPE GUARD RULES:
 - If a question is outside IVF/fertility: decline and refer to the appropriate professional.
@@ -88,5 +90,6 @@ def create_agent() -> Agent:
             book_nurse_visit_tool,
             get_cost_summary_tool,
             submit_workflow_tool,
+            get_schedule_tool,
         ],
     )
