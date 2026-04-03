@@ -74,6 +74,7 @@ steps:
       - '--network=default'
       - '--subnet=default'
       - '--vpc-egress=private-ranges-only'
+      - '--traffic=LATEST=100'
     waitFor: ['push-task-manager']
 
 images:
