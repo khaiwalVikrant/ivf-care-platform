@@ -8,15 +8,13 @@ import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState
 
-_orchestrator = None
+from ivf_advisor.agent import create_agent
+from ivf_advisor.orchestrator import ConversationOrchestrator
+
+_orchestrator = ConversationOrchestrator(agent=create_agent())
 
 
 def _get_orchestrator():
-    global _orchestrator
-    if _orchestrator is None:
-        from ivf_advisor.agent import create_agent
-        from ivf_advisor.orchestrator import ConversationOrchestrator
-        _orchestrator = ConversationOrchestrator(agent=create_agent())
     return _orchestrator
 
 
@@ -26,7 +24,6 @@ def _msg(role: str, content: str) -> dict:
 
 def _state_badge(state: ConversationState) -> str:
     labels = {
-        ConversationState.DISCLAIMER_PENDING: "⚠️ Disclaimer pending",
         ConversationState.PROFILE_COLLECTION: "📋 Profile collection",
         ConversationState.MAIN_LOOP: "✅ Active session",
     }
@@ -81,7 +78,7 @@ with gr.Blocks(title="IVF Treatment Advisor") as demo:
     gr.Markdown("# IVF Treatment Advisor\nAn informational companion for your IVF journey.")
 
     state_display = gr.Textbox(
-        label="Session status", interactive=False, value="⚠️ Disclaimer pending"
+        label="Session status", interactive=False, value="✅ Active session"
     )
     chatbot = gr.Chatbot(
         label="Conversation",
