@@ -9,6 +9,14 @@ from ivf_advisor.tools.cost_breakdown import cost_breakdown_tool
 from ivf_advisor.tools.evidence_search import evidence_search_tool
 from ivf_advisor.tools.journey_guide import journey_guide_tool
 from ivf_advisor.tools.scope_guard import scope_guard_tool
+from ivf_advisor.tools.task_manager_client import (
+    create_task_tool,
+    schedule_reminder_tool,
+    book_appointment_tool,
+    book_nurse_visit_tool,
+    get_cost_summary_tool,
+    submit_workflow_tool,
+)
 
 SYSTEM_INSTRUCTION = """
 You are the IVF Treatment Advisor — a knowledgeable, compassionate, and evidence-based
@@ -42,6 +50,18 @@ TOOL USAGE:
   medical attention and do not attempt to advise on the emergency.
 - If scope_guard_tool returns in_scope=False, decline politely and provide the referral_suggestion.
 
+ACTION TOOLS (use these to take real actions for the patient):
+- Use create_task_tool when a patient wants to track a to-do item or follow-up action.
+- Use schedule_reminder_tool when a patient asks to be reminded about a medication,
+  injection, or appointment. Use criticality='critical' for trigger shots.
+- Use book_appointment_tool when a patient wants to schedule a consultation, ultrasound,
+  egg retrieval, or embryo transfer.
+- Use book_nurse_visit_tool when a patient cannot travel to the clinic and needs a nurse
+  at home for their injection.
+- Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
+- Use submit_workflow_tool for complex multi-step requests involving multiple actions
+  (e.g. 'book a nurse for my trigger shot and set a reminder').
+
 SCOPE GUARD RULES:
 - If a question is outside IVF/fertility: decline and refer to the appropriate professional.
 - If symptoms suggest a medical emergency: instruct immediate medical attention.
@@ -62,5 +82,11 @@ def create_agent() -> Agent:
             cost_breakdown_tool,
             evidence_search_tool,
             scope_guard_tool,
+            create_task_tool,
+            schedule_reminder_tool,
+            book_appointment_tool,
+            book_nurse_visit_tool,
+            get_cost_summary_tool,
+            submit_workflow_tool,
         ],
     )
