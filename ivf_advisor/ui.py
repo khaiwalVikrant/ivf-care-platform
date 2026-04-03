@@ -7,7 +7,6 @@ import os
 import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState
-
 from ivf_advisor.agent import create_agent
 from ivf_advisor.orchestrator import ConversationOrchestrator
 
@@ -44,7 +43,6 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
 
     orch = _get_orchestrator()
 
-    # Create a new session if missing or expired
     if not session_id or orch.get_session(session_id) is None:
         session = orch.create_session()
         session_id = session.session_id
@@ -53,51 +51,158 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
 
     try:
         response = orch.turn(session_id, user_message)
-    except (KeyError, Exception) as e:
-        # Session expired (e.g. instance restarted) — start fresh
+    except Exception:
         session = orch.create_session()
         session_id = session.session_id
-        disclaimer = orch.turn(session_id, "")
-        history = [
-            _msg("assistant", "Your session expired. Starting a new session."),
-            _msg("assistant", disclaimer),
-        ]
+        orch.turn(session_id, "")
+        history = [_msg("assistant", "Your session expired. Starting a new session.")]
         return history, session_id, _state_badge(orch.get_session(session_id).state)
 
     new_history = list(history) + [
         _msg("user", user_message),
         _msg("assistant", response),
     ]
-
     session = orch.get_session(session_id)
-    state_label = _state_badge(session.state) if session else ""
-    return new_history, session_id, state_label
+    return new_history, session_id, _state_badge(session.state) if session else ""
 
 
-with gr.Blocks(title="IVF Treatment Advisor") as demo:
-    gr.Markdown("# IVF Treatment Advisor\nAn informational companion for your IVF journey.")
+def quick_action(prompt: str, history: list[dict], session_id: str):
+    return chat(prompt, history, session_id)
 
-    state_display = gr.Textbox(
-        label="Session status", interactive=False, value="✅ Active session"
-    )
-    chatbot = gr.Chatbot(
-        label="Conversation",
-        height=500,
-        type="messages",
-        value=[],
-    )
-    session_id_state = gr.State("")
 
-    with gr.Row():
-        msg_input = gr.Textbox(
-            placeholder="Type your message here…",
-            label="Your message",
-            scale=8,
-        )
-        send_btn = gr.Button("Send", scale=1, variant="primary")
+CSS = """
+/* ── Global ── */
+body, .gradio-container {
+    font-family: 'Inter', sans-serif !important;
+    background: #fdf6ff !important;
+}
+footer { display: none !important; }
 
-    new_btn = gr.Button("New session", variant="secondary")
+/* ── Header ── */
+.header-box {
+    background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+    border-radius: 16px;
+    padding: 24px 32px;
+    margin-bottom: 8px;
+    color: white;
+}
+.header-box h1 { color: white !important; margin: 0 0 4px 0; font-size: 1.8rem; }
+.header-box p  { color: rgba(255,255,255,0.85) !important; margin: 0; font-size: 0.95rem; }
 
+/* ── Chatbot ── */
+.chatbot-wrap .wrap { border-radius: 16px !important; border: 1px solid #e9d5ff !important; }
+.chatbot-wrap { background: white; border-radius: 16px; }
+
+/* ── Quick action buttons ── */
+.quick-btn { border-radius: 20px !important; font-size: 0.82rem !important; }
+
+/* ── Input row ── */
+.input-row textarea {
+    border-radius: 24px !important;
+    border: 2px solid #e9d5ff !important;
+    padding: 12px 20px !important;
+    font-size: 0.95rem !important;
+}
+.input-row textarea:focus { border-color: #7c3aed !important; }
+.send-btn { border-radius: 24px !important; }
+
+/* ── Status badge ── */
+.status-box textarea {
+    border-radius: 8px !important;
+    background: #f5f3ff !important;
+    border: 1px solid #ddd6fe !important;
+    color: #5b21b6 !important;
+    font-size: 0.82rem !important;
+}
+
+/* ── Sidebar ── */
+.sidebar-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9d5ff;
+    padding: 16px;
+}
+"""
+
+QUICK_PROMPTS = [
+    ("💉 Book nurse visit", "I need a nurse to come home for my injection tomorrow at 9am"),
+    ("📅 My schedule", "Tell me all my upcoming schedule and reminders"),
+    ("💊 Set medication reminder", "Set a daily reminder for my Gonal-F injection at 9pm"),
+    ("🏥 Book appointment", "Book a consultation appointment for next week"),
+    ("💰 Cost summary", "Show me my IVF cycle cost summary"),
+    ("🔬 Research evidence", "Give me research references about IVF success rates"),
+]
+
+with gr.Blocks(
+    title="IVF Care Platform",
+    theme=gr.themes.Soft(
+        primary_hue=gr.themes.colors.purple,
+        secondary_hue=gr.themes.colors.pink,
+        neutral_hue=gr.themes.colors.slate,
+    ),
+    css=CSS,
+) as demo:
+
+    # ── Header ──
+    gr.HTML("""
+    <div class="header-box">
+        <h1>🌸 IVF Care Platform</h1>
+        <p>Your compassionate AI companion for the IVF journey — ask questions, book appointments, set reminders, and more.</p>
+    </div>
+    """)
+
+    with gr.Row(equal_height=True):
+        # ── Left sidebar ──
+        with gr.Column(scale=1, min_width=220):
+            gr.HTML('<div class="sidebar-card">')
+            gr.Markdown("### ⚡ Quick Actions")
+            quick_btns = []
+            for label, _ in QUICK_PROMPTS:
+                btn = gr.Button(label, variant="secondary", elem_classes=["quick-btn"])
+                quick_btns.append(btn)
+            gr.HTML('</div>')
+
+            gr.HTML('<div class="sidebar-card" style="margin-top:12px">')
+            gr.Markdown("### ℹ️ About")
+            gr.Markdown(
+                "This assistant provides **educational information only** and does not "
+                "constitute medical advice. Always consult your fertility specialist.",
+                elem_classes=["small-text"],
+            )
+            gr.HTML('</div>')
+
+        # ── Main chat area ──
+        with gr.Column(scale=3):
+            state_display = gr.Textbox(
+                label="Session status",
+                interactive=False,
+                value="✅ Active session",
+                elem_classes=["status-box"],
+            )
+            chatbot = gr.Chatbot(
+                label="",
+                height=480,
+                type="messages",
+                value=[],
+                avatar_images=(None, "https://em-content.zobj.net/source/google/387/seedling_1f331.png"),
+                elem_classes=["chatbot-wrap"],
+                show_label=False,
+            )
+            session_id_state = gr.State("")
+
+            with gr.Row(elem_classes=["input-row"]):
+                msg_input = gr.Textbox(
+                    placeholder="Ask me anything about IVF, or request an action…",
+                    label="",
+                    scale=8,
+                    show_label=False,
+                    lines=1,
+                )
+                send_btn = gr.Button("Send ➤", scale=1, variant="primary", elem_classes=["send-btn"])
+
+            new_btn = gr.Button("🔄 New conversation", variant="secondary", size="sm")
+
+    # ── Event wiring ──
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state],
@@ -114,6 +219,14 @@ with gr.Blocks(title="IVF Treatment Advisor") as demo:
         fn=new_session,
         outputs=[chatbot, session_id_state, state_display],
     )
+
+    # Wire quick action buttons
+    for btn, (_, prompt) in zip(quick_btns, QUICK_PROMPTS):
+        btn.click(
+            fn=quick_action,
+            inputs=[gr.State(prompt), chatbot, session_id_state],
+            outputs=[chatbot, session_id_state, state_display],
+        )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
