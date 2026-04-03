@@ -17,6 +17,7 @@ from ivf_advisor.tools.task_manager_client import (
     get_cost_summary_tool,
     submit_workflow_tool,
     get_schedule_tool,
+    get_workflow_status_tool,
 )
 
 SYSTEM_INSTRUCTION = """
@@ -60,6 +61,8 @@ ACTION TOOLS (use these to take real actions for the patient):
 - Use book_nurse_visit_tool when a patient cannot travel to the clinic and needs a nurse
   at home for their injection.
 - Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
+- Use get_workflow_status_tool when a patient asks about the status of a workflow
+  or provides a workflow_id to check results.
 - Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
   reminders, or appointments. This returns results immediately.
 - Use submit_workflow_tool only for complex multi-step requests involving multiple actions.
@@ -91,5 +94,6 @@ def create_agent() -> Agent:
             get_cost_summary_tool,
             submit_workflow_tool,
             get_schedule_tool,
+            get_workflow_status_tool,
         ],
     )

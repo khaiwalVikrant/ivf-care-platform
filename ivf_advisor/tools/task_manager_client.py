@@ -266,3 +266,29 @@ def get_schedule_tool(patient_id: str = "") -> dict:
     except Exception as exc:
         logger.error("get_schedule_tool failed: %s", exc)
         return {"error": str(exc)}
+
+
+def get_workflow_status_tool(workflow_id: str) -> dict:
+    """Get the status and results of a submitted workflow.
+
+    Use this when a patient asks about the status of a previously submitted
+    request, or when you need to check if a workflow completed successfully
+    and retrieve its results.
+
+    Args:
+        workflow_id: The workflow identifier returned by submit_workflow_tool.
+
+    Returns:
+        Workflow status (pending/running/completed/failed) and step results.
+    """
+    try:
+        with _client() as client:
+            resp = client.get(
+                f"{_BASE_URL}/workflows/{workflow_id}",
+                headers=_headers(),
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as exc:
+        logger.error("get_workflow_status_tool failed: %s", exc)
+        return {"error": str(exc)}
