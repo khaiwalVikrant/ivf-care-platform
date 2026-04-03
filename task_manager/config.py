@@ -40,4 +40,4 @@ GOOGLE_CLOUD_PROJECT: str = _optional("GOOGLE_CLOUD_PROJECT", "ivf-agent")
 GOOGLE_CLOUD_REGION: str = _optional("GOOGLE_CLOUD_REGION", "us-central1")
 
 # Agent model
-AGENT_MODEL: str = _optional("AGENT_MODEL", "gemini-2.0-flash")
+AGENT_MODEL: str = _optional("AGENT_MODEL", "gemini-2.5-flash")
