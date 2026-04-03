@@ -53,7 +53,7 @@ steps:
       - '--allow-unauthenticated'
       - '--project=ivf-agent'
       - '--update-secrets=TASK_MANAGER_SECRET_KEY=task-manager-secret-key:latest'
-      - '--set-env-vars=TASK_MANAGER_URL=https://task-manager-api-100876575377.us-central1.run.app,GOOGLE_CLOUD_PROJECT=ivf-agent,GOOGLE_GENAI_USE_VERTEXAI=true'
+      - '--set-env-vars=TASK_MANAGER_URL=https://task-manager-api-100876575377.us-central1.run.app,GOOGLE_CLOUD_PROJECT=ivf-agent,GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_REGION=us-central1'
     waitFor: ['build-ivf-advisor']
 
   # -----------------------------------------------------------------------
