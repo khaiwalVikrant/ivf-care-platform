@@ -71,7 +71,8 @@ steps:
       - '--project=ivf-agent'
       - '--update-secrets=SECRET_KEY=task-manager-secret-key:latest,ALLOYDB_PASSWORD=task-manager-db-password:latest'
       - '--set-env-vars=ALLOYDB_INSTANCE_URI=projects/ivf-agent/locations/us-central1/clusters/ivf-care-cluster/instances/ivf-care-cluster-primary,ALLOYDB_DB=task_manager,ALLOYDB_USER=postgres,GOOGLE_CLOUD_PROJECT=ivf-agent'
-      - '--vpc-connector=ivf-care-connector'
+      - '--network=default'
+      - '--subnet=default'
       - '--vpc-egress=private-ranges-only'
     waitFor: ['push-task-manager']
 
