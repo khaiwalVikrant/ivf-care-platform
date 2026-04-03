@@ -52,7 +52,7 @@ steps:
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--project=ivf-agent'
-      - '--update-secrets=TASK_MANAGER_SECRET_KEY=task-manager-secret-key:latest,GOOGLE_API_KEY=google-api-key:latest'
+      - '--update-secrets=TASK_MANAGER_SECRET_KEY=task-manager-secret-key:latest,GOOGLE_API_KEY=ivf-agent-api-key:latest'
       - '--set-env-vars=TASK_MANAGER_URL=https://task-manager-api-100876575377.us-central1.run.app'
     waitFor: ['build-ivf-advisor']
 
