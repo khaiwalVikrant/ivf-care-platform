@@ -67,7 +67,7 @@ steps:
       - '--image=us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/task-manager:latest'
       - '--region=us-central1'
       - '--platform=managed'
-      - '--no-allow-unauthenticated'
+      - '--allow-unauthenticated'
       - '--project=ivf-agent'
       - '--update-secrets=SECRET_KEY=task-manager-secret-key:latest,ALLOYDB_PASSWORD=task-manager-db-password:latest'
       - '--set-env-vars=ALLOYDB_INSTANCE_URI=projects/ivf-agent/locations/us-central1/clusters/ivf-care-cluster/instances/ivf-care-cluster-primary,ALLOYDB_DB=task_manager,ALLOYDB_USER=postgres,GOOGLE_CLOUD_PROJECT=ivf-agent'
