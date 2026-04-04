@@ -25,6 +25,10 @@ from ivf_advisor.tools.google_calendar import (
     book_nurse_visit_with_calendar_tool,
     book_appointment_with_calendar_tool,
 )
+from ivf_advisor.tools.email_notifications import (
+    send_appointment_confirmation_tool,
+    send_nurse_visit_notification_tool,
+)
 
 SYSTEM_INSTRUCTION = f"""
 You are the IVF Treatment Advisor — a knowledgeable, compassionate, and evidence-based
@@ -69,8 +73,10 @@ ACTION TOOLS (use these to take real actions for the patient):
   Call this DIRECTLY — do NOT use submit_workflow_tool for reminders.
 - Use book_appointment_tool when a patient wants to schedule a consultation, ultrasound,
   egg retrieval, or embryo transfer. Call this DIRECTLY.
-- Use book_appointment_with_calendar_tool when booking AND adding to Google Calendar.
-  Call this DIRECTLY — do NOT use submit_workflow_tool for calendar actions.
+- Use send_appointment_confirmation_tool after booking an appointment to send
+  confirmation emails to the patient and doctor.
+- Use send_nurse_visit_notification_tool after booking a nurse visit to send
+  notification emails to both patient and nurse.
 - Use book_nurse_visit_with_calendar_tool when booking a nurse home visit AND
   adding it to both patient and nurse Google Calendars. Call this DIRECTLY.
 - Use add_to_calendar_tool for any other calendar event creation. Call DIRECTLY.
@@ -129,5 +135,7 @@ def create_agent() -> Agent:
             add_to_calendar_tool,
             book_nurse_visit_with_calendar_tool,
             book_appointment_with_calendar_tool,
+            send_appointment_confirmation_tool,
+            send_nurse_visit_notification_tool,
         ],
     )
