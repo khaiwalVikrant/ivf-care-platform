@@ -242,7 +242,7 @@ def get_schedule_tool(patient_id: str = "") -> dict:
         patient_id: Optional patient identifier. Leave empty to get all records.
 
     Returns:
-        Dictionary with tasks, reminders lists.
+        Dictionary with tasks, events, and reminders lists.
     """
     try:
         with _client() as client:
@@ -258,10 +258,35 @@ def get_schedule_tool(patient_id: str = "") -> dict:
             )
             events = events_resp.json() if events_resp.status_code == 200 else []
 
+            # Fetch reminders — query all reminders (no patient filter on GET /reminders yet)
+            reminders_resp = client.get(
+                f"{_BASE_URL}/reminders",
+                headers=_headers(),
+                params={"patient_id": patient_id} if patient_id else {},
+            )
+            reminders = reminders_resp.json() if reminders_resp.status_code == 200 else []
+
+            # Fetch appointments
+            appointments_resp = client.get(
+                f"{_BASE_URL}/appointments",
+                headers=_headers(),
+                params={"patient_id": patient_id} if patient_id else {},
+            )
+            appointments = appointments_resp.json() if appointments_resp.status_code == 200 else []
+            # Filter to only future appointments
+            from datetime import datetime as dt
+            now = dt.utcnow().isoformat()
+            appointments = [a for a in appointments if isinstance(a, dict) and a.get("datetime", "") >= now]
+
         return {
             "tasks": tasks,
             "events": events,
-            "summary": f"Found {len(tasks)} tasks and {len(events)} events."
+            "reminders": reminders,
+            "appointments": appointments,
+            "summary": (
+                f"Found {len(tasks)} tasks, {len(events)} events, "
+                f"{len(reminders)} reminders, and {len(appointments)} appointments."
+            )
         }
     except Exception as exc:
         logger.error("get_schedule_tool failed: %s", exc)

@@ -317,6 +317,15 @@ def create_app(
         )
         return appt.model_dump(mode="json")
 
+    @app.get("/appointments")
+    async def list_appointments(
+        patient_id: str | None = None,
+        _token: str = Depends(_require_token),
+    ) -> list[dict[str, Any]]:
+        db = get_db()
+        appointments = await db.query_appointments(patient_id=patient_id)
+        return [a.model_dump(mode="json") for a in appointments]
+
     @app.get("/appointments/{appointment_id}")
     async def get_appointment(
         appointment_id: str,
@@ -460,6 +469,15 @@ def create_app(
             criticality=body.criticality,
         )
         return reminder.model_dump(mode="json")
+
+    @app.get("/reminders")
+    async def list_reminders(
+        patient_id: str | None = None,
+        _token: str = Depends(_require_token),
+    ) -> list[dict[str, Any]]:
+        db = get_db()
+        reminders = await db.query_reminders(patient_id=patient_id)
+        return [r.model_dump(mode="json") for r in reminders]
 
     @app.patch("/reminders/{reminder_id}/acknowledge")
     async def acknowledge_reminder(
