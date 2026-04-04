@@ -29,12 +29,23 @@ def _state_badge(state: ConversationState) -> str:
     return labels.get(state, state.value)
 
 
+WELCOME_MESSAGE = (
+    "🌸 Welcome to IVF Care Platform!\n\n"
+    "I'm your AI companion for the IVF journey. I can help you:\n"
+    "- 📅 Book appointments and nurse home visits\n"
+    "- ⏰ Set medication and injection reminders\n"
+    "- 💰 Track your cycle costs\n"
+    "- 🔬 Answer clinical questions with evidence\n\n"
+    "Use the quick action buttons on the left, or just tell me what you need.\n\n"
+    "_(Note: I provide educational information only — always consult your fertility specialist.)_"
+)
+
+
 def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     session_id = session.session_id
-    response = orch.turn(session_id, "")
-    return [_msg("assistant", response)], session_id, _state_badge(session.state)
+    return [_msg("assistant", WELCOME_MESSAGE)], session_id, _state_badge(session.state)
 
 
 def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str]:
@@ -46,8 +57,7 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
     if not session_id or orch.get_session(session_id) is None:
         session = orch.create_session()
         session_id = session.session_id
-        disclaimer = orch.turn(session_id, "")
-        history = [_msg("assistant", disclaimer)]
+        history = [_msg("assistant", WELCOME_MESSAGE)]
 
     try:
         response = orch.turn(session_id, user_message)

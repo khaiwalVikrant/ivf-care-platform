@@ -78,13 +78,18 @@ def add_to_calendar_tool(
             },
         }
 
+        # Note: attendee_emails stored in description since service account
+        # cannot invite attendees without Domain-Wide Delegation
         if attendee_emails:
-            event["attendees"] = [{"email": email} for email in attendee_emails]
+            event["description"] = (
+                event.get("description", "") +
+                f"\n\nParticipants: {', '.join(attendee_emails)}"
+            )
 
         created = service.events().insert(
             calendarId=calendar_id,
             body=event,
-            sendUpdates="all" if attendee_emails else "none",
+            sendUpdates="none",  # Service accounts can't send invites without DWD
         ).execute()
 
         return {
