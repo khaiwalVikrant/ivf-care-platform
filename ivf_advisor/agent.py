@@ -18,6 +18,7 @@ from ivf_advisor.tools.task_manager_client import (
     submit_workflow_tool,
     get_schedule_tool,
     get_workflow_status_tool,
+    semantic_search_tool,
 )
 from ivf_advisor.tools.google_calendar import (
     add_to_calendar_tool,
@@ -70,8 +71,9 @@ ACTION TOOLS (use these to take real actions for the patient):
   adding it to patient and doctor Google Calendars.
 - Use add_to_calendar_tool for any other calendar event creation.
 - Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
-- Use get_workflow_status_tool when a patient asks about the status of a workflow
-  or provides a workflow_id to check results.
+- Use semantic_search_tool when a patient asks to find notes or test results
+  using natural language (e.g. 'find my notes about side effects', 'show abnormal
+  hormone results'). This uses AI-powered vector search for better accuracy.
 - Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
   reminders, or appointments. This returns results immediately.
 - Use submit_workflow_tool only for complex multi-step requests involving multiple actions.
@@ -104,6 +106,7 @@ def create_agent() -> Agent:
             submit_workflow_tool,
             get_schedule_tool,
             get_workflow_status_tool,
+            semantic_search_tool,
             add_to_calendar_tool,
             book_nurse_visit_with_calendar_tool,
             book_appointment_with_calendar_tool,

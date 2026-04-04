@@ -271,6 +271,25 @@ def create_app(
         notes = await db.search_notes(keyword=keyword, tag=tag)
         return [n.model_dump(mode="json") for n in notes]
 
+    @app.get("/notes/semantic-search")
+    async def semantic_search_notes(
+        query: str,
+        limit: int = 5,
+        _token: str = Depends(_require_token),
+    ) -> list[dict[str, Any]]:
+        db = get_db()
+        return await db.semantic_search_notes(query=query, limit=limit)
+
+    @app.get("/pathology/semantic-search")
+    async def semantic_search_pathology(
+        query: str,
+        patient_id: str | None = None,
+        limit: int = 5,
+        _token: str = Depends(_require_token),
+    ) -> list[dict[str, Any]]:
+        db = get_db()
+        return await db.semantic_search_pathology(query=query, patient_id=patient_id, limit=limit)
+
     @app.post("/notes", status_code=status.HTTP_201_CREATED)
     async def create_note(
         body: CreateNoteRequest,

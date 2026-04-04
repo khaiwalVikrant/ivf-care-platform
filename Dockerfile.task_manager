@@ -18,7 +18,9 @@ RUN pip install --no-cache-dir \
     "python-jose[cryptography]" \
     "python-multipart" \
     "cloud-sql-python-connector[asyncpg]>=1.9.0" \
-    "google-cloud-alloydb-connector[asyncpg]>=1.0.0"
+    "google-cloud-alloydb-connector[asyncpg]>=1.0.0" \
+    "google-cloud-aiplatform>=1.38.0" \
+    "vertexai"
 
 ENV PORT=8080
 EXPOSE 8080

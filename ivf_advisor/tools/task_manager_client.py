@@ -292,3 +292,59 @@ def get_workflow_status_tool(workflow_id: str) -> dict:
     except Exception as exc:
         logger.error("get_workflow_status_tool failed: %s", exc)
         return {"error": str(exc)}
+
+
+def semantic_search_tool(
+    query: str,
+    search_type: str = "notes",
+    patient_id: str = "",
+    limit: int = 5,
+) -> dict:
+    """Search patient records using semantic similarity (AlloyDB vector search).
+
+    Use this when a patient asks questions like:
+    - 'Find my notes about side effects'
+    - 'Show me abnormal test results'
+    - 'What did my doctor say about my AMH levels?'
+    - 'Find anything related to my stimulation phase'
+
+    This uses AI embeddings to find semantically similar records, not just
+    exact keyword matches.
+
+    Args:
+        query: Natural language search query.
+        search_type: 'notes' to search notes, 'pathology' to search test results.
+        patient_id: Optional patient ID to filter results.
+        limit: Maximum number of results (default 5).
+
+    Returns:
+        List of matching records ordered by semantic similarity.
+    """
+    try:
+        with _client() as client:
+            if search_type == "pathology":
+                params = {"query": query, "limit": limit}
+                if patient_id:
+                    params["patient_id"] = patient_id
+                resp = client.get(
+                    f"{_BASE_URL}/pathology/semantic-search",
+                    headers=_headers(),
+                    params=params,
+                )
+            else:
+                resp = client.get(
+                    f"{_BASE_URL}/notes/semantic-search",
+                    headers=_headers(),
+                    params={"query": query, "limit": limit},
+                )
+            resp.raise_for_status()
+            results = resp.json()
+            return {
+                "results": results,
+                "count": len(results),
+                "search_type": search_type,
+                "query": query,
+            }
+    except Exception as exc:
+        logger.error("semantic_search_tool failed: %s", exc)
+        return {"error": str(exc)}

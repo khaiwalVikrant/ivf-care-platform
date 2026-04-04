@@ -520,9 +520,12 @@ class Database:
         )
 
     async def init_db(self) -> None:
-        """Create all tables (idempotent)."""
+        """Create all tables and initialize vector extensions (idempotent)."""
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        # Initialize pgvector extension and embedding columns on AlloyDB
+        from task_manager.db.vector_search import init_vector_extensions
+        await init_vector_extensions(self._engine)
 
     # ------------------------------------------------------------------
     # Tasks
@@ -697,6 +700,28 @@ class Database:
         if tag:
             notes = [n for n in notes if tag in n.tags]
         return notes
+
+    async def semantic_search_notes(
+        self,
+        query: str,
+        limit: int = 5,
+    ) -> list[dict]:
+        """Search notes using AlloyDB vector similarity search.
+
+        Falls back to keyword search if embeddings are unavailable.
+        """
+        from task_manager.db.vector_search import semantic_search_notes
+        return await semantic_search_notes(self._session_factory, query, limit)
+
+    async def semantic_search_pathology(
+        self,
+        query: str,
+        patient_id: str | None = None,
+        limit: int = 5,
+    ) -> list[dict]:
+        """Search pathology results using AlloyDB vector similarity search."""
+        from task_manager.db.vector_search import semantic_search_pathology
+        return await semantic_search_pathology(self._session_factory, query, patient_id, limit)
 
     # ------------------------------------------------------------------
     # Workflows
