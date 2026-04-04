@@ -176,18 +176,30 @@ class ConversationOrchestrator:
         )
 
         response_text = ""
-        try:
-            for event in self._runner.run(
-                user_id=adk_session_id,
-                session_id=adk_session_id,
-                new_message=content,
-            ):
-                if event.is_final_response() and event.content and event.content.parts:
-                    response_text = event.content.parts[0].text or ""
-                    break
-        except Exception as e:
-            logger.exception("ADK runner error: %s", e)
-            return f"Error communicating with the AI model: {e}", session
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                for event in self._runner.run(
+                    user_id=adk_session_id,
+                    session_id=adk_session_id,
+                    new_message=content,
+                ):
+                    if event.is_final_response() and event.content and event.content.parts:
+                        response_text = event.content.parts[0].text or ""
+                        break
+                break  # success
+            except Exception as e:
+                error_str = str(e)
+                if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                    if attempt < max_retries - 1:
+                        import time
+                        wait = 10 * (attempt + 1)
+                        logger.warning("Rate limited, retrying in %ds", wait)
+                        time.sleep(wait)
+                        continue
+                    return "I'm sorry, I wasn't able to generate a response. Please try again.", session
+                logger.exception("ADK runner error: %s", e)
+                return "I'm sorry, I wasn't able to generate a response. Please try again.", session
 
         # Track topics discussed (simple keyword extraction)
         _update_topics(session, user_message)
