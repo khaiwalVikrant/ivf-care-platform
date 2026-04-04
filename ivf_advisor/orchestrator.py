@@ -17,13 +17,12 @@ from ivf_advisor.models import ConversationState, PatientProfile, Session
 from ivf_advisor.session import InMemorySessionStore, SessionStore
 
 _DISCLAIMER_TEXT = (
-    "Welcome. I'm the IVF Treatment Advisor — an informational companion to help you "
-    "understand the IVF journey, costs, and treatment options.\n\n"
-    "Important: I provide educational information only. I am not a medical professional "
-    "and nothing I say constitutes medical advice or replaces guidance from your "
-    "fertility specialist.\n\n"
-    "Please type 'I understand' or 'I acknowledge' to confirm you have read this "
-    "before we continue."
+    "🌸 Welcome to IVF Care Platform!\n\n"
+    "I'm your AI companion for the IVF journey. I can help you book appointments, "
+    "set medication reminders, arrange nurse home visits, track costs, and answer "
+    "clinical questions.\n\n"
+    "Use the quick action buttons on the left to get started, or just tell me what you need.\n\n"
+    "_(Note: I provide educational information only — always consult your fertility specialist.)_"
 )
 
 _PROFILE_PROMPT = (
