@@ -457,3 +457,82 @@ def send_nurse_visit_notification_tool(
         "scheduled_at": scheduled_at,
         "medication": f"{medication_name} {dose}",
     }
+
+
+def send_reminder_notification_tool(
+    patient_email: str,
+    patient_name: str,
+    reminder_title: str,
+    scheduled_at: str,
+    scheduled_at_iso: Optional[str] = None,
+    criticality: str = "normal",
+) -> dict:
+    """Send a reminder notification email with .ics calendar attachment.
+
+    Use this after schedule_reminder_tool to notify the patient via email
+    with a calendar invite they can add to Google Calendar.
+
+    Args:
+        patient_email: Patient's email address.
+        patient_name: Patient's name.
+        reminder_title: What the reminder is for e.g. 'Progesterone 50mg injection'.
+        scheduled_at: Human-readable datetime e.g. 'Today at 9:00 PM'.
+        scheduled_at_iso: ISO 8601 datetime for .ics e.g. '2026-04-05T21:00:00'.
+        criticality: 'normal' or 'critical'.
+
+    Returns:
+        Dict with sent status.
+    """
+    icon = "🚨" if criticality == "critical" else "⏰"
+
+    ics_bytes = None
+    if scheduled_at_iso:
+        try:
+            start_dt = datetime.fromisoformat(scheduled_at_iso)
+            end_dt = start_dt + timedelta(minutes=15)
+            ics_bytes = _make_ics(
+                title=f"{icon} Reminder: {reminder_title}",
+                start_dt=start_dt,
+                end_dt=end_dt,
+                location="",
+                description=f"IVF Care Platform reminder: {reminder_title}",
+                organizer_email=_SENDER_EMAIL or "noreply@ivfcare.app",
+            )
+        except Exception as exc:
+            logger.warning("Could not generate .ics for reminder: %s", exc)
+
+    html = f"""
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:auto">
+        <div style="background:linear-gradient(135deg,#7c3aed,#db2777);padding:24px;border-radius:12px 12px 0 0">
+            <h1 style="color:white;margin:0;font-size:1.4rem">🌸 IVF Care Platform</h1>
+            <p style="color:rgba(255,255,255,0.85);margin:4px 0 0 0">Reminder Set</p>
+        </div>
+        <div style="background:white;padding:24px;border:1px solid #e9d5ff;border-radius:0 0 12px 12px">
+            <p style="color:#374151">Dear <strong>{patient_name}</strong>,</p>
+            <p style="color:#374151">Your reminder has been set:</p>
+            <div style="background:#f5f3ff;border-radius:8px;padding:16px;margin:16px 0">
+                <p style="margin:0;font-size:1.1rem;color:#4c1d95">{icon} <strong>{reminder_title}</strong></p>
+                <p style="margin:8px 0 0 0;color:#6b7280">{scheduled_at}</p>
+                {"<p style='margin:4px 0 0 0;color:#dc2626;font-size:0.85rem'>⚠️ Critical reminder — please do not miss this</p>" if criticality == "critical" else ""}
+            </div>
+            {"<p style='color:#7c3aed'>📅 <strong>Open the attached .ics file to add this reminder to your Google Calendar.</strong></p>" if ics_bytes else ""}
+            <p style="color:#6b7280;font-size:0.85rem;margin-top:24px;border-top:1px solid #e9d5ff;padding-top:16px">
+                IVF Care Platform — always consult your fertility specialist.
+            </p>
+        </div>
+    </div>"""
+
+    sent = _send_email(
+        patient_email,
+        f"{icon} Reminder: {reminder_title} — {scheduled_at}",
+        html,
+        ics_bytes=ics_bytes,
+        ics_filename="reminder.ics",
+    )
+
+    return {
+        "email_sent": sent,
+        "ics_attached": ics_bytes is not None,
+        "reminder_title": reminder_title,
+        "scheduled_at": scheduled_at,
+    }

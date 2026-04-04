@@ -28,6 +28,7 @@ from ivf_advisor.tools.google_calendar import (
 from ivf_advisor.tools.email_notifications import (
     send_appointment_confirmation_tool,
     send_nurse_visit_notification_tool,
+    send_reminder_notification_tool,
 )
 
 SYSTEM_INSTRUCTION = f"""
@@ -70,7 +71,9 @@ ACTION TOOLS (use these to take real actions for the patient):
 - Use create_task_tool when a patient wants to track a to-do item or follow-up action.
 - Use schedule_reminder_tool when a patient asks to be reminded about a medication,
   injection, or appointment. Use criticality='critical' for trigger shots.
-  Call this DIRECTLY — do NOT use submit_workflow_tool for reminders.
+  ALWAYS follow up with send_reminder_notification_tool to send the patient an
+  email with .ics so they can add it to their Google Calendar.
+  Call both tools DIRECTLY — do NOT use submit_workflow_tool for reminders.
 - Use book_appointment_tool when a patient wants to schedule a consultation, ultrasound,
   egg retrieval, or embryo transfer. Call this DIRECTLY.
 - Use send_appointment_confirmation_tool after booking an appointment to send
@@ -82,7 +85,9 @@ ACTION TOOLS (use these to take real actions for the patient):
 - Use add_to_calendar_tool for any other calendar event creation. Call DIRECTLY.
   IMPORTANT: Only tell the patient an event was added to Google Calendar AFTER
   the tool returns successfully. Never claim calendar events were added without
-  calling the tool first.
+  calling the tool first. If you set a reminder using schedule_reminder_tool,
+  tell the patient "I've set a reminder in the system" — NOT "added to Google Calendar"
+  unless add_to_calendar_tool was explicitly called and succeeded.
 - Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
 - Use semantic_search_tool when a patient asks to find notes or test results
   using natural language.
@@ -94,13 +99,16 @@ ACTION TOOLS (use these to take real actions for the patient):
   booking, reminder, or calendar actions — always call those tools directly.
 
 CONTEXTUAL HINTS — After completing any action, always suggest the natural next step:
-- After booking an appointment → "Would you like me to set a reminder for this appointment?"
-- After setting a reminder → "Want me to add this to your Google Calendar as well?"
+- After booking an appointment → "Would you like me to set a reminder and send a confirmation email?"
+- After setting a reminder → "Reminder saved. Would you like me to also add this to your Google Calendar?"
+  Use send_reminder_notification_tool to send an email with .ics so patient can add to their calendar.
 - After booking a nurse visit → "Shall I set a critical reminder 15 minutes before the visit?"
 - After creating a task → "Would you like to set a reminder for this task?"
 - After showing schedule → "Would you like to book an appointment or set a new reminder?"
 - After showing costs → "Would you like an insurance claim summary for these costs?"
 Keep hints brief — one short sentence at the end of your response.
+NOTE: schedule_reminder_tool saves reminders in the system database only.
+To add to Google Calendar, you must separately call add_to_calendar_tool.
 
 SCOPE GUARD RULES:
 - If a question is outside IVF/fertility: decline and refer to the appropriate professional.
@@ -140,5 +148,6 @@ def create_agent() -> Agent:
             book_appointment_with_calendar_tool,
             send_appointment_confirmation_tool,
             send_nurse_visit_notification_tool,
+            send_reminder_notification_tool,
         ],
     )
