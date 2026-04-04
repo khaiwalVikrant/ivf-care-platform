@@ -96,7 +96,7 @@ def _send_email(
             ics_part.add_header("Content-Disposition", "attachment", filename=ics_filename)
             msg.attach(ics_part)
 
-        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT) as server:
+        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(_SENDER_EMAIL, _SENDER_PASSWORD)
             server.sendmail(_SENDER_EMAIL, to_email, msg.as_string())

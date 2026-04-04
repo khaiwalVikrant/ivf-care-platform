@@ -189,8 +189,8 @@ with gr.Blocks(
             gr.HTML('<div class="sidebar-card" style="margin-top:12px">')
             gr.HTML('<p style="color:#4c1d95;font-weight:700;font-size:0.95rem;margin:0 0 8px 0">ℹ️ About</p>')
             gr.HTML(
-                '<p style="color:#4b5563;font-size:0.82rem;line-height:1.5;margin:0">'
-                'This assistant provides <strong>educational information only</strong> '
+                '<p style="color:#1f2937;font-size:0.82rem;line-height:1.5;margin:0">'
+                'This assistant provides <strong style="color:#4c1d95">educational information only</strong> '
                 'and does not constitute medical advice. Always consult your fertility specialist.'
                 '</p>'
             )
