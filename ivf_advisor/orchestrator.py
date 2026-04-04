@@ -185,8 +185,15 @@ class ConversationOrchestrator:
                     new_message=content,
                 ):
                     if event.is_final_response() and event.content and event.content.parts:
-                        response_text = event.content.parts[0].text or ""
-                        break
+                        # Collect all text parts — skip function_call parts
+                        text_parts = [
+                            p.text for p in event.content.parts
+                            if hasattr(p, "text") and p.text
+                        ]
+                        if text_parts:
+                            response_text = " ".join(text_parts)
+                            break
+                        # If only function_call parts, keep waiting for next event
                 break  # success
             except Exception as e:
                 error_str = str(e)
