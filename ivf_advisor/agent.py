@@ -19,6 +19,11 @@ from ivf_advisor.tools.task_manager_client import (
     get_schedule_tool,
     get_workflow_status_tool,
 )
+from ivf_advisor.tools.google_calendar import (
+    add_to_calendar_tool,
+    book_nurse_visit_with_calendar_tool,
+    book_appointment_with_calendar_tool,
+)
 
 SYSTEM_INSTRUCTION = """
 You are the IVF Treatment Advisor — a knowledgeable, compassionate, and evidence-based
@@ -58,8 +63,12 @@ ACTION TOOLS (use these to take real actions for the patient):
   injection, or appointment. Use criticality='critical' for trigger shots.
 - Use book_appointment_tool when a patient wants to schedule a consultation, ultrasound,
   egg retrieval, or embryo transfer.
-- Use book_nurse_visit_tool when a patient cannot travel to the clinic and needs a nurse
-  at home for their injection.
+- Use book_nurse_visit_with_calendar_tool when booking a nurse home visit AND
+  adding it to both patient and nurse Google Calendars. Use this instead of
+  book_nurse_visit_tool when patient email and nurse email are available.
+- Use book_appointment_with_calendar_tool when booking a clinical appointment AND
+  adding it to patient and doctor Google Calendars.
+- Use add_to_calendar_tool for any other calendar event creation.
 - Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
 - Use get_workflow_status_tool when a patient asks about the status of a workflow
   or provides a workflow_id to check results.
@@ -95,5 +104,8 @@ def create_agent() -> Agent:
             submit_workflow_tool,
             get_schedule_tool,
             get_workflow_status_tool,
+            add_to_calendar_tool,
+            book_nurse_visit_with_calendar_tool,
+            book_appointment_with_calendar_tool,
         ],
     )
