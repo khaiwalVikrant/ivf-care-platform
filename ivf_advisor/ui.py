@@ -122,6 +122,20 @@ footer { display: none !important; }
     border: 1px solid #e9d5ff;
     padding: 16px;
 }
+.sidebar-heading h3 {
+    color: #4c1d95 !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+}
+.sidebar-card p, .sidebar-card span, .sidebar-card label {
+    color: #374151 !important;
+    font-size: 0.85rem !important;
+}
+.small-text p {
+    color: #4b5563 !important;
+    font-size: 0.82rem !important;
+    line-height: 1.5 !important;
+}
 """
 
 QUICK_PROMPTS = [
@@ -155,7 +169,7 @@ with gr.Blocks(
         # ── Left sidebar ──
         with gr.Column(scale=1, min_width=220):
             gr.HTML('<div class="sidebar-card">')
-            gr.Markdown("### ⚡ Quick Actions")
+            gr.HTML('<p style="color:#4c1d95;font-weight:700;font-size:0.95rem;margin:0 0 10px 0">⚡ Quick Actions</p>')
             quick_btns = []
             for label, _ in QUICK_PROMPTS:
                 btn = gr.Button(label, variant="secondary", elem_classes=["quick-btn"])
@@ -163,11 +177,12 @@ with gr.Blocks(
             gr.HTML('</div>')
 
             gr.HTML('<div class="sidebar-card" style="margin-top:12px">')
-            gr.Markdown("### ℹ️ About")
-            gr.Markdown(
-                "This assistant provides **educational information only** and does not "
-                "constitute medical advice. Always consult your fertility specialist.",
-                elem_classes=["small-text"],
+            gr.HTML('<p style="color:#4c1d95;font-weight:700;font-size:0.95rem;margin:0 0 8px 0">ℹ️ About</p>')
+            gr.HTML(
+                '<p style="color:#4b5563;font-size:0.82rem;line-height:1.5;margin:0">'
+                'This assistant provides <strong>educational information only</strong> '
+                'and does not constitute medical advice. Always consult your fertility specialist.'
+                '</p>'
             )
             gr.HTML('</div>')
 
