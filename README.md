@@ -22,84 +22,77 @@ IVF patients face:
 
 ## 🏗️ System Architecture
 
-%%{init: {
-    'theme': 'base',
-    'themeVariables': {
-        'primaryColor': '#ffffff',
-        'primaryTextColor': '#2c3e50',
-        'primaryBorderColor': '#1a73e8',
-        'lineColor': '#5f6368',
-        'secondaryColor': '#f8f9fa',
-        'tertiaryColor': '#e8f0fe',
-        'fontSize': '14px',
-        'fontFamily': 'inter, roboto, sans-serif'
-    }
-}}%%
-
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0d47a1', 'edgeLabelBackground':'#ffffff', 'tertiaryColor': '#f3e5f5'}}}%%
 flowchart TD
-    %% Node Definitions with Icons %%
-    Start(["📱 <b>Patient Opens Platform</b>"]):::entry
-    Chat(["💬 <b>AI Advisor Chat</b>"]):::process
+    %% Node Definitions %%
+    Start([<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Patient opens IVF Care Platform&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/><br/>]):::process
+    Chat[Chat with AI Advisor]:::process
     
-    Q1{"❓ <b>What does<br/>patient need?</b>"}:::decision
+    Q1{"What does patient need?"}:::decision
     
-    %% Functional Agents (Sub-Agents) %%
-    subgraph Agents [Service Intelligence Layer]
-        Evidence["🔍 <b>Evidence Search</b><br/><small>Vertex AI Search</small>"]:::agent
-        Appt["📅 <b>AppointmentSubAgent</b><br/><small>Book + Checklist</small>"]:::agent
-        Nurse["👩‍⚕️ <b>NurseSubAgent</b><br/><small>Assign + Notify</small>"]:::agent
-        Remind["⏰ <b>ReminderSubAgent</b><br/><small>Medication + Sync</small>"]:::agent
-        Cost["💰 <b>CostGuardSubAgent</b><br/><small>Benchmark + Breakdown</small>"]:::agent
-        Schedule["📑 <b>Query AlloyDB</b><br/><small>Tasks + Events</small>"]:::query
-    end
+    %% Functional Agents %%
+    Evidence["Evidence Search<br/>Vertex AI Search"]:::agent
+    Appt["AppointmentSubAgent<br/>Book + Checklist + Email .ics"]:::agent
+    Nurse["NurseSubAgent<br/>Assign Nurse + Notify + Calendar"]:::agent
+    Remind["ReminderSubAgent<br/>Save to AlloyDB + Email .ics"]:::agent
+    Cost["CostGuardSubAgent<br/>Benchmark + Breakdown"]:::agent
+    Schedule["Query AlloyDB<br/>Tasks + Events + Reminders"]:::query
 
-    %% Storage & Logic %%
-    AlloyDB[(<b>AlloyDB</b><br/><i>Secure Health Data</i>)]:::database
+    %% Database & Notification %%
+    AlloyDB[(AlloyDB)]:::database
+    EmailAppt["📧 Confirmation email<br/>with .ics attachment"]:::notification
+    EmailNurse["📧 Notify patient + nurse<br/>with .ics"]:::notification
+    EmailRemind["📧 Reminder email<br/>with .ics"]:::notification
+    Calendar["📅 Patient adds to<br/>Google Calendar"]:::external
     
-    %% Communication Outlets %%
-    subgraph Notifications [Outbound Communications]
-        EmailAppt["📧 <b>Appt. Email</b><br/><small>with .ics</small>"]:::notification
-        EmailNurse["📧 <b>Nurse Visit</b><br/><small>with .ics</small>"]:::notification
-        EmailRemind["📧 <b>Med Reminder</b><br/><small>with .ics</small>"]:::notification
-    end
-
-    Calendar["🗓️ <b>Google Calendar</b>"]:::external
-    Response["✨ <b>Grounded Response</b>"]:::output
+    %% Final Response %%
+    Response[Agent responds with<br/>grounded answer]:::process
 
     %% Connections %%
     Start --> Chat
     Chat --> Q1
 
     %% Branching Logic %%
-    Q1 -->|Clinical| Evidence
-    Q1 -->|Booking| Appt
-    Q1 -->|Home Visit| Nurse
-    Q1 -->|Medication| Remind
-    Q1 -->|Pricing| Cost
-    Q1 -->|Schedule| Schedule
+    Q1 -->|Clinical question| Evidence
+    Q1 -->|Book appointment| Appt
+    Q1 -->|Nurse home visit| Nurse
+    Q1 -->|Set medication reminder| Remind
+    Q1 -->|Cost question| Cost
+    Q1 -->|View schedule| Schedule
 
-    %% Data Flow to AlloyDB %%
-    Appt & Nurse & Remind & Cost & Schedule <--> AlloyDB
+    %% Sub-processes %%
+    Evidence --> Response
     
-    %% Notification Triggering %%
+    %% Agent interactions to AlloyDB %%
+    Appt --> AlloyDB
+    Nurse --> AlloyDB
+    Remind --> AlloyDB
+    Cost --> AlloyDB
+    Schedule --> AlloyDB
+    
+    %% Agent interactions to Email %%
     Appt --> EmailAppt
     Nurse --> EmailNurse
     Remind --> EmailRemind
     
-    %% Final Actions %%
-    EmailAppt & EmailNurse & EmailRemind --> Calendar
-    Evidence & AlloyDB --> Response
+    %% Email to Calendar %%
+    EmailAppt --> Calendar
+    EmailNurse --> Calendar
+    EmailRemind --> Calendar
 
-    %% --- STYLING --- %%
-    classDef entry fill:#1a73e8,stroke:#1557b0,color:#fff,stroke-width:2px;
-    classDef process fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px;
-    classDef decision fill:#fffceb,stroke:#fbc02d,stroke-width:2px;
-    classDef agent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,rx:10,ry:10;
-    classDef query fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
-    classDef database fill:#e1f5fe,stroke:#01579b,stroke-width:3px;
-    classDef notification fill:#f1f8e9,stroke:#33691e,stroke-dasharray: 5 5;
-    classDef external fill:#fbe9e7,stroke:#bf360c,stroke-width:2px;
-    classDef output fill:#34a853,stroke:#1b5e20,color:#fff,stroke-width:2px;
+    %% AlloyDB back to final response %%
+    AlloyDB --> Response
+
+    %% Styling %%
+    classDef process fill:#e3f2fd,stroke:#1565c0,stroke-width:1.5px,rx:8,ry:8,color:black;
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:1.5px,rx:5,ry:5,color:black;
+    classDef agent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,rx:10,ry:10,color:black,font-weight:bold;
+    classDef query fill:#e0f2f1,stroke:#00695c,stroke-width:1.5px,color:black;
+    classDef database fill:#e0f7fa,stroke:#00838f,stroke-width:2px,rx:5,ry:5,color:black;
+    classDef notification fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,stroke-dasharray: 5 5,color:black;
+    classDef external fill:#fbe9e7,stroke:#bf360c,stroke-width:1.5px,color:black;
+    ```
 
 ---
 
