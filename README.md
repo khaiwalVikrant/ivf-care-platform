@@ -67,39 +67,70 @@ flowchart TD
 ## 🏥 IVF Cycle Stage Tracking
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#e1f5fe',
+    'primaryTextColor': '#01579b',
+    'primaryBorderColor': '#0288d1',
+    'lineColor': '#546e7a',
+    'secondaryColor': '#fff9c4',
+    'tertiaryColor': '#eceff1',
+    'mainBkg': '#ffffff',
+    'nodeBorder': '#0288d1'
+  }
+} }%%
+
 stateDiagram-v2
-    [*] --> Baseline: Cycle starts
+    direction TB
 
-    Baseline --> Stimulation: Day 1 injections begin
+    state "Phase 1: Baseline" as Baseline
+    state "Phase 2: Stimulation" as Stimulation
+    state "Phase 3: Trigger Shot" as Trigger
+    state "Phase 4: Egg Retrieval" as Retrieval
+    state "Phase 5: Fertilisation" as Fertilisation
+    state "Phase 6: Embryo Transfer" as Transfer
+    state "Phase 7: Luteal Support" as LutealSupport
+    state "Phase 8: Result" as PregnancyTest
+
+    [*] --> Baseline: Cycle Start
+    
+    Baseline --> Stimulation: Day 1 Injections
     note right of Stimulation
-        Daily nurse visits
-        Medication reminders
-        Monitoring scans
+        <b>Daily Support</b>
+        • Nurse visits
+        • Medication reminders
+        • Monitoring scans
     end note
 
-    Stimulation --> Trigger: Follicles ready
+    Stimulation --> Trigger: Follicles Ready
     note right of Trigger
-        ⚠️ CRITICAL reminder
-        Exact time injection
-        Nurse visit booked
+        <b>⚠️ CRITICAL STEP</b>
+        • Precise timing required
+        • Final nurse check
     end note
 
-    Trigger --> Retrieval: 36 hours later
+    Trigger --> Retrieval: ~36 Hours Later
     note right of Retrieval
-        Hospital appointment
-        Post-retrieval pathology
+        <b>Procedure Day</b>
+        • Hospital appointment
+        • Pathology follow-up
     end note
 
-    Retrieval --> Fertilisation: Lab updates Day 1,3,5
-    Fertilisation --> Transfer: Embryo transfer
+    Retrieval --> Fertilisation: Lab Updates (Day 1-5)
+    
+    Fertilisation --> Transfer: Embryo Selection
     note right of Transfer
-        Hospital appointment
-        Full bladder required
+        <b>The Transfer</b>
+        • Hospital appointment
+        • 💧 Full bladder required
     end note
 
-    Transfer --> LutealSupport: Progesterone support
-    LutealSupport --> PregnancyTest: 14 days later
-    PregnancyTest --> [*]: Beta HCG result
+    Transfer --> LutealSupport: Hormonal Support
+    
+    LutealSupport --> PregnancyTest: 14 Days Post-Transfer
+    
+    PregnancyTest --> [*]: Beta HCG Result
 ```
 
 ---
