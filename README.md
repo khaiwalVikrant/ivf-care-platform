@@ -22,100 +22,43 @@ IVF patients face:
 
 ## 🏗️ System Architecture
 
-```mermaid
 flowchart TD
-    %% Nodes
-    Start([Start])
-    Chat[[Chat with AI Advisor]]
-    Q1{What does<br/>patient need?}
+    %% 1. Nodes & Decision
+    Start([Start]) --> Chat[[Chat with AI Advisor]]
+    Chat --> Q1{What does<br/>patient need?}
 
-    %% Agents
-    Evidence[Evidence Search]
-    Appt[Appointment Agent]
-    Nurse[Nurse Agent]
-    Remind[Reminder Agent]
-    Cost[Cost Agent]
-    Schedule[View Schedule]
+    %% 2. The Agent Layer
+    Q1 -->|Clinical| Evidence[Evidence Search]
+    Q1 -->|Booking| Appt[Appointment Agent]
+    Q1 -->|Nursing| Nurse[Nurse Agent]
+    Q1 -->|Medicine| Remind[Reminder Agent]
+    Q1 -->|Costs| Cost[Cost Agent]
+    Q1 -->|Schedule| Schedule[View Schedule]
 
-    AlloyDB[(AlloyDB)]
+    %% 3. Data & Storage
+    Evidence & Appt & Nurse & Remind & Cost & Schedule --> AlloyDB[(AlloyDB)]
+    AlloyDB --> Response[/Grounded Response/]
 
-    %% Notifications
-    Email1[Appt Email]
-    Email2[Nurse Email]
-    Email3[Remind Email]
-    
-    Calendar[Google Calendar]
-    Response[/Grounded Response/]
+    %% 4. Communications
+    Appt --> Email1[Appt Email]
+    Nurse --> Email2[Nurse Email]
+    Remind --> Email3[Remind Email]
+    Email1 & Email2 & Email3 --> Calendar[Google Calendar]
 
-    %% Connections
-    Start --> Chat
-    Chat --> Q1
+    %% 5. GitHub-Optimized Classes
+    classDef blue fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef yellow fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef purple fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef teal fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+    classDef green fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px;
+    classDef db fill:#01579b,stroke:#01579b,color:#fff;
 
-    Q1 -->|Clinical| Evidence
-    Q1 -->|Booking| Appt
-    Q1 -->|Nursing| Nurse
-    Q1 -->|Medicine| Remind
-    Q1 -->|Costs| Cost
-    Q1 -->|Schedule| Schedule
-
-    %% Database Logic
-    Evidence & Appt & Nurse & Remind & Cost & Schedule --> AlloyDB
-    AlloyDB --> Response
-
-    %% Comms Logic
-    Appt --> Email1
-    Nurse --> Email2
-    Remind --> Email3
-    Email1 & Email2 & Email3 --> Calendar
-
-    %% Styling (The "Attractive" Part)
-    style Start fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style Chat fill:#e1f5fe,stroke:#01579b
-    style Q1 fill:#fff9c4,stroke:#fbc02d
-    style Evidence fill:#f3e5f5,stroke:#7b1fa2
-    style Appt fill:#f3e5f5,stroke:#7b1fa2
-    style Nurse fill:#f3e5f5,stroke:#7b1fa2
-    style Remind fill:#f3e5f5,stroke:#7b1fa2
-    style Cost fill:#f3e5f5,stroke:#7b1fa2
-    style Schedule fill:#e0f2f1,stroke:#00695c
-    style AlloyDB fill:#01579b,stroke:#01579b,color:#fff
-    style Response fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    ```
-
----
-
-## 🔄 Patient Journey Flow
-
-```mermaid
-flowchart TD
-    Start([Patient opens IVF Care Platform]) --> Chat[Chat with AI Advisor]
-
-    Chat --> Q1{What does patient need?}
-
-    Q1 -->|Clinical question| Evidence[Evidence Search\nVertex AI Search]
-    Q1 -->|Book appointment| Appt[AppointmentSubAgent\nBook + Checklist + Email .ics]
-    Q1 -->|Nurse home visit| Nurse[NurseSubAgent\nAssign Nurse + Notify + Calendar]
-    Q1 -->|Set medication reminder| Remind[ReminderSubAgent\nSave to AlloyDB + Email .ics]
-    Q1 -->|Cost question| Cost[CostGuardSubAgent\nBenchmark + Breakdown]
-    Q1 -->|View schedule| Schedule[Query AlloyDB\nTasks + Events + Reminders]
-
-    Evidence --> Response[Agent responds with\ngrounded answer]
-    Appt --> AlloyDB1[(AlloyDB)]
-    Appt --> EmailAppt[📧 Confirmation email\nwith .ics attachment]
-    Nurse --> AlloyDB2[(AlloyDB)]
-    Nurse --> EmailNurse[📧 Notify patient + nurse\nwith .ics]
-    Remind --> AlloyDB3[(AlloyDB)]
-    Remind --> EmailRemind[📧 Reminder email\nwith .ics]
-    Cost --> AlloyDB4[(AlloyDB)]
-    Schedule --> AlloyDB5[(AlloyDB)]
-
-    EmailAppt --> Calendar[📅 Patient adds to\nGoogle Calendar]
-    EmailNurse --> Calendar
-    EmailRemind --> Calendar
-
-    AlloyDB1 & AlloyDB2 & AlloyDB3 & AlloyDB4 & AlloyDB5 --> Response
-```
-
+    class Chat blue;
+    class Q1 yellow;
+    class Evidence,Appt,Nurse,Remind,Cost purple;
+    class Schedule teal;
+    class Response green;
+    class AlloyDB db;
 ---
 
 ## 🏥 IVF Cycle Stage Tracking
