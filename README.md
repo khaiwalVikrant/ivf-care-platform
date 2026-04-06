@@ -211,7 +211,31 @@ graph LR
 > **Patient says:** *"Book a nurse for my trigger shot tonight at 11:30pm"*
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#f8fafc',
+    'tertiaryColor': '#f1f5f9',
+    'actorBkg': '#eff6ff',
+    'actorBorder': '#3b82f6',
+    'actorTextColor': '#1e40af',
+    'signalColor': '#64748b',
+    'signalTextColor': 'var(--color-fg-default)',
+    'labelBoxBkgColor': '#f1f5f9',
+    'labelBoxBorderColor': '#3b82f6',
+    'labelTextColor': '#1e40af',
+    'loopTextColor': '#1e40af',
+    'activationBkgColor': 'rgba(59, 130, 246, 0.1)'
+  }
+} }%%
+
 sequenceDiagram
+    autonumber
+    
     participant P as 👤 Patient
     participant A as 🤖 IVF Advisor
     participant O as ⚙️ Orchestrator
@@ -223,30 +247,44 @@ sequenceDiagram
     participant DB as 🗄️ AlloyDB
     participant E as 📧 Email
 
+    Note over P, A: Intent: Book Trigger Shot Visit
+    
     P->>A: "Book nurse for trigger shot at 11:30pm"
+    activate A
     A->>O: submit_workflow("book nurse trigger shot 11:30pm")
-    O->>N: book_nurse_visit(patient_id, 23:30)
-    N->>DB: Create NurseVisit record
-    N->>E: Notify nurse (visit details + dose)
-    N-->>O: nurse_visit_id
+    activate O
+    
+    rect rgb(240, 249, 255)
+        Note right of O: Execution Loop
+        O->>N: book_nurse_visit(patient_id, 23:30)
+        activate N
+        N->>DB: Create NurseVisit record
+        N->>E: Notify nurse (visit details + dose)
+        N-->>O: nurse_visit_id
+        deactivate N
 
-    O->>C: create_event("Trigger Shot — Nurse Visit", 23:30)
-    C->>DB: Create Event record
-    C-->>O: event_id
+        O->>C: create_event("Trigger Shot Visit", 23:30)
+        activate C
+        C->>DB: Create Event record
+        C-->>O: event_id
+        deactivate C
 
-    O->>R: schedule_reminder(criticality=CRITICAL, time=23:15)
-    R->>DB: Create Reminder record
-    R->>E: Send .ics email to patient + nurse
-    R-->>O: reminder_id
+        O->>R: schedule_reminder(CRITICAL, 23:15)
+        activate R
+        R->>DB: Create Reminder record
+        R->>E: Send .ics email (Patient + Nurse)
+        R-->>O: reminder_id
+        deactivate R
 
-    O->>M: record_administration(nurse_visit_id)
-    M->>DB: Create MedicationAdministration record
-
-    O->>CG: track_cost(category=nurse_visit)
-    CG->>DB: Create CostRecord
+        O->>M: record_administration(nurse_visit_id)
+        O->>CG: track_cost(category=nurse_visit)
+        CG->>DB: Create CostRecord
+    end
 
     O-->>A: Workflow completed
-    A-->>P: "✅ Nurse booked for 11:30pm. Critical reminder set for 11:15pm. Calendar invite sent."
+    deactivate O
+    A-->>P: "✅ Nurse booked. Reminder set. Calendar invite sent."
+    deactivate A
 ```
 
 ---
