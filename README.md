@@ -22,53 +22,84 @@ IVF patients face:
 
 ## 🏗️ System Architecture
 
-```mermaid
-graph TB
-    subgraph Patient["👤 Patient Interface"]
-        UI[Gradio Chat UI]
+%%{init: {
+    'theme': 'base',
+    'themeVariables': {
+        'primaryColor': '#ffffff',
+        'primaryTextColor': '#2c3e50',
+        'primaryBorderColor': '#1a73e8',
+        'lineColor': '#5f6368',
+        'secondaryColor': '#f8f9fa',
+        'tertiaryColor': '#e8f0fe',
+        'fontSize': '14px',
+        'fontFamily': 'inter, roboto, sans-serif'
+    }
+}}%%
+
+flowchart TD
+    %% Node Definitions with Icons %%
+    Start(["📱 <b>Patient Opens Platform</b>"]):::entry
+    Chat(["💬 <b>AI Advisor Chat</b>"]):::process
+    
+    Q1{"❓ <b>What does<br/>patient need?</b>"}:::decision
+    
+    %% Functional Agents (Sub-Agents) %%
+    subgraph Agents [Service Intelligence Layer]
+        Evidence["🔍 <b>Evidence Search</b><br/><small>Vertex AI Search</small>"]:::agent
+        Appt["📅 <b>AppointmentSubAgent</b><br/><small>Book + Checklist</small>"]:::agent
+        Nurse["👩‍⚕️ <b>NurseSubAgent</b><br/><small>Assign + Notify</small>"]:::agent
+        Remind["⏰ <b>ReminderSubAgent</b><br/><small>Medication + Sync</small>"]:::agent
+        Cost["💰 <b>CostGuardSubAgent</b><br/><small>Benchmark + Breakdown</small>"]:::agent
+        Schedule["📑 <b>Query AlloyDB</b><br/><small>Tasks + Events</small>"]:::query
     end
 
-    subgraph Advisor["🤖 IVF Advisor Agent (Google ADK)"]
-        Agent[Gemini 2.5 Flash Lite]
-        Tools["Tools: Evidence Search\nCost Breakdown\nJourney Guide\nScope Guard"]
+    %% Storage & Logic %%
+    AlloyDB[(<b>AlloyDB</b><br/><i>Secure Health Data</i>)]:::database
+    
+    %% Communication Outlets %%
+    subgraph Notifications [Outbound Communications]
+        EmailAppt["📧 <b>Appt. Email</b><br/><small>with .ics</small>"]:::notification
+        EmailNurse["📧 <b>Nurse Visit</b><br/><small>with .ics</small>"]:::notification
+        EmailRemind["📧 <b>Med Reminder</b><br/><small>with .ics</small>"]:::notification
     end
 
-    subgraph Platform["⚙️ Task Manager Platform (FastAPI)"]
-        Orch[Orchestrator]
-        subgraph Agents["9 Specialized Sub-Agents"]
-            A1[Task Manager]
-            A2[Calendar]
-            A3[Appointment]
-            A4[Nurse Coordinator]
-            A5[Medication]
-            A6[Pathology]
-            A7[Reminder]
-            A8[Cost Guard]
-            A9[Notes]
-        end
-    end
+    Calendar["🗓️ <b>Google Calendar</b>"]:::external
+    Response["✨ <b>Grounded Response</b>"]:::output
 
-    subgraph Data["🗄️ Data Layer"]
-        DB[(AlloyDB PostgreSQL)]
-        VS[pgvector\nSemantic Search]
-        VAI[Vertex AI Search\nResearch Papers]
-    end
+    %% Connections %%
+    Start --> Chat
+    Chat --> Q1
 
-    subgraph Notify["📬 Notifications"]
-        Email[Gmail SMTP\n+ .ics Calendar]
-        GCal[Google Calendar]
-    end
+    %% Branching Logic %%
+    Q1 -->|Clinical| Evidence
+    Q1 -->|Booking| Appt
+    Q1 -->|Home Visit| Nurse
+    Q1 -->|Medication| Remind
+    Q1 -->|Pricing| Cost
+    Q1 -->|Schedule| Schedule
 
-    UI --> Agent
-    Agent --> Tools
-    Agent --> Orch
-    Orch --> Agents
-    Agents --> DB
-    DB --> VS
-    Tools --> VAI
-    Agents --> Email
-    Agents --> GCal
-```
+    %% Data Flow to AlloyDB %%
+    Appt & Nurse & Remind & Cost & Schedule <--> AlloyDB
+    
+    %% Notification Triggering %%
+    Appt --> EmailAppt
+    Nurse --> EmailNurse
+    Remind --> EmailRemind
+    
+    %% Final Actions %%
+    EmailAppt & EmailNurse & EmailRemind --> Calendar
+    Evidence & AlloyDB --> Response
+
+    %% --- STYLING --- %%
+    classDef entry fill:#1a73e8,stroke:#1557b0,color:#fff,stroke-width:2px;
+    classDef process fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px;
+    classDef decision fill:#fffceb,stroke:#fbc02d,stroke-width:2px;
+    classDef agent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,rx:10,ry:10;
+    classDef query fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
+    classDef database fill:#e1f5fe,stroke:#01579b,stroke-width:3px;
+    classDef notification fill:#f1f8e9,stroke:#33691e,stroke-dasharray: 5 5;
+    classDef external fill:#fbe9e7,stroke:#bf360c,stroke-width:2px;
+    classDef output fill:#34a853,stroke:#1b5e20,color:#fff,stroke-width:2px;
 
 ---
 
