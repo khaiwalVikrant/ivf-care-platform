@@ -292,18 +292,53 @@ sequenceDiagram
 ## 💰 Cost Protection Flow
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#fef2f2',
+    'tertiaryColor': '#f0fdf4',
+    'mainBkg': '#ffffff',
+    'nodeBorder': '#3b82f6',
+    'clusterBkg': 'rgba(255, 255, 255, 0.05)',
+    'fontSize': '14px'
+  }
+} }%%
+
 flowchart LR
-    Quote[Clinic quotes\nGonal-F: ₹8,500] --> Benchmark{Compare vs\nmarket benchmark\n₹6,200}
+    %% Node Definitions
+    Quote["📄 <b>Clinic Quote</b><br/>Gonal-F: ₹8,500"]
+    Benchmark{"⚖️ <b>Benchmark</b><br/>Market: ₹6,200"}
+    
+    Alert[["🚨 <b>Price Alert</b><br/>Overcharged by 37%<br/>Suggested: ₹6,200"]]
+    OK(["✅ <b>Fair Price</b><br/>Within Range"])
+    
+    Patient["👤 <b>Patient Informed</b><br/>Prior to Payment"]
+    Record[("🗄️ <b>AlloyDB</b><br/>Cost Logged")]
+    
+    Summary["📊 <b>Monthly Summary</b><br/>Cost by Category"]
+    Insurance["📝 <b>Insurance Claim</b><br/>Summary Generated"]
 
-    Benchmark -->|>15% over| Alert[🚨 Price Alert\nOvercharged by 37%\nSuggested: ₹6,200]
-    Benchmark -->|Within 15%| OK[✅ Fair price]
+    %% Flow Connections
+    Quote --> Benchmark
 
-    Alert --> Patient[Patient informed\nbefore paying]
-    OK --> Record[Cost recorded\nin AlloyDB]
+    Benchmark -- ">15% Over" --> Alert
+    Benchmark -- "Within 15%" --> OK
+
+    Alert --> Patient
     Patient --> Record
+    OK --> Record
 
-    Record --> Summary[Monthly cost\nsummary by category]
-    Summary --> Insurance[Insurance claim\nsummary generated]
+    Record --> Summary
+    Summary --> Insurance
+
+    %% Specific Styling for Logic Paths
+    style Alert fill:#fff1f2,stroke:#e11d48,color:#9f1239
+    style OK fill:#f0fdf4,stroke:#16a34a,color:#166534
+    style Record fill:#f8fafc,stroke:#64748b
 ```
 
 ---
