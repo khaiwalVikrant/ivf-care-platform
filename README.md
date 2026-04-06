@@ -70,66 +70,65 @@ flowchart TD
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#f8f9fa',
-    'edgeLabelBackground':'#ffffff',
-    'tertiaryColor': '#fdfdfe'
+    'lineColor': '#888888',
+    'primaryBorderColor': '#71b2ff',
+    'nodeBorder': '#71b2ff',
+    'tertiaryColor': 'rgba(120, 120, 120, 0.1)',
+    'noteBkgColor': 'rgba(255, 243, 205, 0.15)',
+    'noteTextColor': 'default',
+    'stateBkg': 'rgba(113, 178, 255, 0.1)',
+    'stateLabelColor': 'default'
   }
 } }%%
 
 stateDiagram-v2
     direction TB
 
-    %% Global Styling
-    classDef critical fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100,font-weight:bold
-    classDef medical fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef lab fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-
+    %% Definitions with Universal Classes
     state "🩸 Baseline" as Baseline
     state "💉 Stimulation" as Stimulation
-    state "⏰ Trigger Shot" as Trigger :::critical
-    state "🏥 Retrieval" as Retrieval :::medical
-    state "🧪 Fertilisation" as Fertilisation :::lab
-    state "🧬 Transfer" as Transfer :::medical
+    state "⏰ Trigger Shot" as Trigger
+    state "🏥 Retrieval" as Retrieval
+    state "🧪 Fertilisation" as Fertilisation
+    state "🧬 Transfer" as Transfer
     state "💊 Luteal Support" as LutealSupport
     state "✨ Final Result" as PregnancyTest
 
-    [*] --> Baseline: Cycle Initiation
+    [*] --> Baseline
     
-    Baseline --> Stimulation: Injections Begin
+    Baseline --> Stimulation: Day 1 Injections
     note right of Stimulation
-        <b>Active Monitoring</b>
+        <b>Daily Support</b>
         • Nurse visits
-        • Medication reminders
-        • Scan tracking
+        • Med reminders
     end note
 
-    Stimulation --> Trigger: Follicle Maturation
+    Stimulation --> Trigger: Follicles Ready
     note right of Trigger
-        <b>⚠️ CRITICAL WINDOW</b>
-        Exact timing is mandatory 
-        for successful retrieval.
+        <b>⚠️ CRITICAL</b>
+        Exact timing is
+        mandatory.
     end note
 
-    Trigger --> Retrieval: 36h Window
+    Trigger --> Retrieval: 36h later
     
     Retrieval --> Fertilisation: Lab Phase
     note right of Fertilisation
-        <b>Embryology Updates</b>
-        Status reports on 
+        Status reports on
         Days 1, 3, and 5.
     end note
 
-    Fertilisation --> Transfer: Embryo Ready
+    Fertilisation --> Transfer: Embryo Selection
     note right of Transfer
-        <b>Procedure Prep</b>
-        • Hospital check-in
-        • 💧 Full bladder required
+        <b>Prep</b>
+        • Hospital appt
+        • 💧 Full bladder
     end note
 
     Transfer --> LutealSupport: Progesterone
-    LutealSupport --> PregnancyTest: The 2-Week Wait
+    LutealSupport --> PregnancyTest: 14 Day Wait
     
-    PregnancyTest --> [*]: Beta HCG
+    PregnancyTest --> [*]
 ```
 
 ---
