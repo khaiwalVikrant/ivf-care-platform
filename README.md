@@ -70,67 +70,66 @@ flowchart TD
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#e1f5fe',
-    'primaryTextColor': '#01579b',
-    'primaryBorderColor': '#0288d1',
-    'lineColor': '#546e7a',
-    'secondaryColor': '#fff9c4',
-    'tertiaryColor': '#eceff1',
-    'mainBkg': '#ffffff',
-    'nodeBorder': '#0288d1'
+    'primaryColor': '#f8f9fa',
+    'edgeLabelBackground':'#ffffff',
+    'tertiaryColor': '#fdfdfe'
   }
 } }%%
 
 stateDiagram-v2
     direction TB
 
-    state "Phase 1: Baseline" as Baseline
-    state "Phase 2: Stimulation" as Stimulation
-    state "Phase 3: Trigger Shot" as Trigger
-    state "Phase 4: Egg Retrieval" as Retrieval
-    state "Phase 5: Fertilisation" as Fertilisation
-    state "Phase 6: Embryo Transfer" as Transfer
-    state "Phase 7: Luteal Support" as LutealSupport
-    state "Phase 8: Result" as PregnancyTest
+    %% Global Styling
+    classDef critical fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100,font-weight:bold
+    classDef medical fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef lab fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
-    [*] --> Baseline: Cycle Start
+    state "🩸 Baseline" as Baseline
+    state "💉 Stimulation" as Stimulation
+    state "⏰ Trigger Shot" as Trigger :::critical
+    state "🏥 Retrieval" as Retrieval :::medical
+    state "🧪 Fertilisation" as Fertilisation :::lab
+    state "🧬 Transfer" as Transfer :::medical
+    state "💊 Luteal Support" as LutealSupport
+    state "✨ Final Result" as PregnancyTest
+
+    [*] --> Baseline: Cycle Initiation
     
-    Baseline --> Stimulation: Day 1 Injections
+    Baseline --> Stimulation: Injections Begin
     note right of Stimulation
-        <b>Daily Support</b>
+        <b>Active Monitoring</b>
         • Nurse visits
         • Medication reminders
-        • Monitoring scans
+        • Scan tracking
     end note
 
-    Stimulation --> Trigger: Follicles Ready
+    Stimulation --> Trigger: Follicle Maturation
     note right of Trigger
-        <b>⚠️ CRITICAL STEP</b>
-        • Precise timing required
-        • Final nurse check
+        <b>⚠️ CRITICAL WINDOW</b>
+        Exact timing is mandatory 
+        for successful retrieval.
     end note
 
-    Trigger --> Retrieval: ~36 Hours Later
-    note right of Retrieval
-        <b>Procedure Day</b>
-        • Hospital appointment
-        • Pathology follow-up
-    end note
-
-    Retrieval --> Fertilisation: Lab Updates (Day 1-5)
+    Trigger --> Retrieval: 36h Window
     
-    Fertilisation --> Transfer: Embryo Selection
+    Retrieval --> Fertilisation: Lab Phase
+    note right of Fertilisation
+        <b>Embryology Updates</b>
+        Status reports on 
+        Days 1, 3, and 5.
+    end note
+
+    Fertilisation --> Transfer: Embryo Ready
     note right of Transfer
-        <b>The Transfer</b>
-        • Hospital appointment
+        <b>Procedure Prep</b>
+        • Hospital check-in
         • 💧 Full bladder required
     end note
 
-    Transfer --> LutealSupport: Hormonal Support
+    Transfer --> LutealSupport: Progesterone
+    LutealSupport --> PregnancyTest: The 2-Week Wait
     
-    LutealSupport --> PregnancyTest: 14 Days Post-Transfer
-    
-    PregnancyTest --> [*]: Beta HCG Result
+    PregnancyTest --> [*]: Beta HCG
 ```
 
 ---
