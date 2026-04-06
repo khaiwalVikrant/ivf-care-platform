@@ -137,14 +137,32 @@ stateDiagram-v2
 ## 👥 Use Case Diagram
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#f8fafc',
+    'tertiaryColor': '#f1f5f9',
+    'clusterBkg': 'rgba(200, 200, 200, 0.05)',
+    'clusterBorder': '#94a3b8',
+    'fontSize': '14px',
+    'fontFamily': 'arial'
+  }
+} }%%
+
 graph LR
-    subgraph Actors
-        P[👤 Patient]
-        N[👩‍⚕️ Nurse]
-        D[👨‍⚕️ Doctor]
+    subgraph Actors [ ]
+        direction TB
+        P["👤 <b>Patient</b>"]
+        N["👩‍⚕️ <b>Nurse</b>"]
+        D["👨‍⚕️ <b>Doctor</b>"]
     end
 
-    subgraph UseCases["IVF Care Platform — Use Cases"]
+    subgraph UseCases ["<b>IVF Care Platform — Use Cases</b>"]
+        direction TB
         UC1[Ask IVF questions]
         UC2[Book appointment]
         UC3[Book nurse home visit]
@@ -159,24 +177,31 @@ graph LR
         UC12[Order pathology tests]
     end
 
-    P --> UC1
-    P --> UC2
-    P --> UC3
-    P --> UC4
-    P --> UC5
-    P --> UC6
-    P --> UC7
-    P --> UC8
-    P --> UC9
+    %% Patient Connections
+    P --- UC1
+    P --- UC2
+    P --- UC3
+    P --- UC4
+    P --- UC5
+    P --- UC6
+    P --- UC7
+    P --- UC8
+    P --- UC9
 
-    N --> UC10
-    N --> UC9
-    N --> UC3
+    %% Nurse Connections
+    N --- UC10
+    N --- UC9
+    N --- UC3
 
-    D --> UC11
-    D --> UC12
-    D --> UC2
-    D --> UC9
+    %% Doctor Connections
+    D --- UC11
+    D --- UC12
+    D --- UC2
+    D --- UC9
+
+    %% Styling for better contrast
+    style Actors fill:none,stroke-dasharray: 5 5
+    style UseCases fill:none,stroke-width:2px
 ```
 
 ---
