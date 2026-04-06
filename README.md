@@ -23,75 +23,63 @@ IVF patients face:
 ## 🏗️ System Architecture
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0d47a1', 'edgeLabelBackground':'#ffffff', 'tertiaryColor': '#f3e5f5'}}}%%
 flowchart TD
-    %% Node Definitions %%
-    Start([<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Patient opens IVF Care Platform&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/><br/>]):::process
-    Chat[Chat with AI Advisor]:::process
-    
-    Q1{"What does patient need?"}:::decision
-    
-    %% Functional Agents %%
-    Evidence["Evidence Search<br/>Vertex AI Search"]:::agent
-    Appt["AppointmentSubAgent<br/>Book + Checklist + Email .ics"]:::agent
-    Nurse["NurseSubAgent<br/>Assign Nurse + Notify + Calendar"]:::agent
-    Remind["ReminderSubAgent<br/>Save to AlloyDB + Email .ics"]:::agent
-    Cost["CostGuardSubAgent<br/>Benchmark + Breakdown"]:::agent
-    Schedule["Query AlloyDB<br/>Tasks + Events + Reminders"]:::query
+    %% Nodes
+    Start([Start])
+    Chat[[Chat with AI Advisor]]
+    Q1{What does<br/>patient need?}
 
-    %% Database & Notification %%
-    AlloyDB[(AlloyDB)]:::database
-    EmailAppt["📧 Confirmation email<br/>with .ics attachment"]:::notification
-    EmailNurse["📧 Notify patient + nurse<br/>with .ics"]:::notification
-    EmailRemind["📧 Reminder email<br/>with .ics"]:::notification
-    Calendar["📅 Patient adds to<br/>Google Calendar"]:::external
-    
-    %% Final Response %%
-    Response[Agent responds with<br/>grounded answer]:::process
+    %% Agents
+    Evidence[Evidence Search]
+    Appt[Appointment Agent]
+    Nurse[Nurse Agent]
+    Remind[Reminder Agent]
+    Cost[Cost Agent]
+    Schedule[View Schedule]
 
-    %% Connections %%
+    AlloyDB[(AlloyDB)]
+
+    %% Notifications
+    Email1[Appt Email]
+    Email2[Nurse Email]
+    Email3[Remind Email]
+    
+    Calendar[Google Calendar]
+    Response[/Grounded Response/]
+
+    %% Connections
     Start --> Chat
     Chat --> Q1
 
-    %% Branching Logic %%
-    Q1 -->|Clinical question| Evidence
-    Q1 -->|Book appointment| Appt
-    Q1 -->|Nurse home visit| Nurse
-    Q1 -->|Set medication reminder| Remind
-    Q1 -->|Cost question| Cost
-    Q1 -->|View schedule| Schedule
+    Q1 -->|Clinical| Evidence
+    Q1 -->|Booking| Appt
+    Q1 -->|Nursing| Nurse
+    Q1 -->|Medicine| Remind
+    Q1 -->|Costs| Cost
+    Q1 -->|Schedule| Schedule
 
-    %% Sub-processes %%
-    Evidence --> Response
-    
-    %% Agent interactions to AlloyDB %%
-    Appt --> AlloyDB
-    Nurse --> AlloyDB
-    Remind --> AlloyDB
-    Cost --> AlloyDB
-    Schedule --> AlloyDB
-    
-    %% Agent interactions to Email %%
-    Appt --> EmailAppt
-    Nurse --> EmailNurse
-    Remind --> EmailRemind
-    
-    %% Email to Calendar %%
-    EmailAppt --> Calendar
-    EmailNurse --> Calendar
-    EmailRemind --> Calendar
-
-    %% AlloyDB back to final response %%
+    %% Database Logic
+    Evidence & Appt & Nurse & Remind & Cost & Schedule --> AlloyDB
     AlloyDB --> Response
 
-    %% Styling %%
-    classDef process fill:#e3f2fd,stroke:#1565c0,stroke-width:1.5px,rx:8,ry:8,color:black;
-    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:1.5px,rx:5,ry:5,color:black;
-    classDef agent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,rx:10,ry:10,color:black,font-weight:bold;
-    classDef query fill:#e0f2f1,stroke:#00695c,stroke-width:1.5px,color:black;
-    classDef database fill:#e0f7fa,stroke:#00838f,stroke-width:2px,rx:5,ry:5,color:black;
-    classDef notification fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,stroke-dasharray: 5 5,color:black;
-    classDef external fill:#fbe9e7,stroke:#bf360c,stroke-width:1.5px,color:black;
+    %% Comms Logic
+    Appt --> Email1
+    Nurse --> Email2
+    Remind --> Email3
+    Email1 & Email2 & Email3 --> Calendar
+
+    %% Styling (The "Attractive" Part)
+    style Start fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Chat fill:#e1f5fe,stroke:#01579b
+    style Q1 fill:#fff9c4,stroke:#fbc02d
+    style Evidence fill:#f3e5f5,stroke:#7b1fa2
+    style Appt fill:#f3e5f5,stroke:#7b1fa2
+    style Nurse fill:#f3e5f5,stroke:#7b1fa2
+    style Remind fill:#f3e5f5,stroke:#7b1fa2
+    style Cost fill:#f3e5f5,stroke:#7b1fa2
+    style Schedule fill:#e0f2f1,stroke:#00695c
+    style AlloyDB fill:#01579b,stroke:#01579b,color:#fff
+    style Response fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
     ```
 
 ---
