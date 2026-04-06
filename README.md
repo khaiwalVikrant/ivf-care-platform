@@ -46,13 +46,14 @@ flowchart TD
     Remind --> Email3[Remind Email]
     Email1 & Email2 & Email3 --> Calendar[Google Calendar]
 
-    %% 5. GitHub-Optimized Classes
-    classDef blue fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef yellow fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef purple fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    classDef teal fill:#e0f2f1,stroke:#00695c,stroke-width:2px;
-    classDef green fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px;
-    classDef db fill:#01579b,stroke:#01579b,color:#fff;
+    %% 5. Universal Theme Classes (No RGBA)
+    %% We use bright hex codes with 'fill:none' so they work on any background
+    classDef blue stroke:#0091ea,stroke-width:3px,fill:none;
+    classDef yellow stroke:#ffd600,stroke-width:3px,fill:none;
+    classDef purple stroke:#aa00ff,stroke-width:3px,fill:none;
+    classDef teal stroke:#00bfa5,stroke-width:3px,fill:none;
+    classDef green stroke:#00c853,stroke-width:3px,fill:none;
+    classDef db stroke:#0288d1,stroke-width:4px,fill:none;
 
     class Chat blue;
     class Q1 yellow;
