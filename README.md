@@ -70,19 +70,16 @@ flowchart TD
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': 'transparent',
-    'primaryBorderColor': '#58a6ff',
-    'primaryTextColor': 'var(--color-fg-default)',
-    'lineColor': '#8b949e',
-    'nodeBorder': '#58a6ff',
-    'tertiaryColor': 'var(--color-canvas-subtle)',
-    'mainBkg': 'var(--color-canvas-default)',
-    'nodeBkg': 'var(--color-canvas-subtle)',
-    'noteBkgColor': 'var(--color-neutral-subtle)',
-    'noteTextColor': 'var(--color-fg-default)',
-    'titleColor': 'var(--color-fg-default)',
-    'stateBkg': 'var(--color-canvas-subtle)',
-    'stateLabelColor': 'var(--color-fg-default)'
+    'theme': 'neutral',
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#fff7ed',
+    'tertiaryColor': '#f8fafc',
+    'noteBkgColor': '#fef9c3',
+    'noteTextColor': '#854d0e',
+    'fontSize': '14px'
   }
 } }%%
 
