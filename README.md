@@ -70,21 +70,25 @@ flowchart TD
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'lineColor': '#888888',
-    'primaryBorderColor': '#71b2ff',
-    'nodeBorder': '#71b2ff',
-    'tertiaryColor': 'rgba(120, 120, 120, 0.1)',
-    'noteBkgColor': 'rgba(255, 243, 205, 0.15)',
-    'noteTextColor': 'default',
-    'stateBkg': 'rgba(113, 178, 255, 0.1)',
-    'stateLabelColor': 'default'
+    'primaryColor': 'transparent',
+    'primaryBorderColor': '#58a6ff',
+    'primaryTextColor': 'var(--color-fg-default)',
+    'lineColor': '#8b949e',
+    'nodeBorder': '#58a6ff',
+    'tertiaryColor': 'var(--color-canvas-subtle)',
+    'mainBkg': 'var(--color-canvas-default)',
+    'nodeBkg': 'var(--color-canvas-subtle)',
+    'noteBkgColor': 'var(--color-neutral-subtle)',
+    'noteTextColor': 'var(--color-fg-default)',
+    'titleColor': 'var(--color-fg-default)',
+    'stateBkg': 'var(--color-canvas-subtle)',
+    'stateLabelColor': 'var(--color-fg-default)'
   }
 } }%%
 
 stateDiagram-v2
     direction TB
 
-    %% Definitions with Universal Classes
     state "🩸 Baseline" as Baseline
     state "💉 Stimulation" as Stimulation
     state "⏰ Trigger Shot" as Trigger
