@@ -22,6 +22,7 @@ IVF patients face:
 
 ## 🏗️ System Architecture
 
+```mermaid
 flowchart TD
     %% 1. Nodes & Decision
     Start([Start]) --> Chat[[Chat with AI Advisor]]
@@ -59,6 +60,7 @@ flowchart TD
     class Schedule teal;
     class Response green;
     class AlloyDB db;
+```
 ---
 
 ## 🏥 IVF Cycle Stage Tracking
