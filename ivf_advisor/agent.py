@@ -91,7 +91,11 @@ ACTION TOOLS (use these to take real actions for the patient):
   unless add_to_calendar_tool was explicitly called and succeeded.
 - Use track_expense_tool when a patient mentions spending money on any IVF-related
   expense — consultations, medications, tests, procedures, or nurse visits.
-  Always record expenses to help the patient track their total cycle costs.
+  ALWAYS pass the patient_id and cycle_id from the patient context at the top of
+  the message. These are provided in the format:
+  [Patient context — patient_id='...', cycle_id='...']
+  Extract them and pass them explicitly to the tool. Never call track_expense_tool
+  without patient_id and cycle_id.
 - Use semantic_search_tool when a patient asks to find notes or test results
   using natural language.
 - Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
