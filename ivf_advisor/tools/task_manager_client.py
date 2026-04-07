@@ -376,11 +376,11 @@ def semantic_search_tool(
 
 
 def track_expense_tool(
-    patient_id: str,
-    cycle_id: str,
     category: str,
     amount: float,
     description: str,
+    patient_id: str = "",
+    cycle_id: str = "",
     currency: str = "INR",
 ) -> dict:
     """Record an expense for a patient's IVF cycle.
@@ -390,16 +390,24 @@ def track_expense_tool(
     nurse visits, or any other expense.
 
     Args:
-        patient_id: The patient's identifier.
-        cycle_id: The IVF cycle identifier.
         category: One of 'consultation', 'medication', 'test', 'procedure', 'nurse_visit'.
         amount: Amount spent in the specified currency.
         description: Brief description e.g. 'Initial consultation at CK Birla'.
+        patient_id: The patient's identifier (auto-injected from session context).
+        cycle_id: The IVF cycle identifier (auto-injected from session context).
         currency: Currency code, default 'INR'.
 
     Returns:
         The created cost record.
     """
+    if not patient_id or not cycle_id:
+        return {
+            "status": "noted",
+            "message": f"Expense noted: {description} — {currency} {amount} ({category}). "
+                       "Complete your profile setup to save expenses to your account.",
+            "amount": amount,
+            "category": category,
+        }
     try:
         with _client() as client:
             resp = client.post(

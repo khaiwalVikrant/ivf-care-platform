@@ -191,8 +191,8 @@ def create_app(
 
     @app.get("/patients")
     async def get_patient(
-        mobile: str | None = None,
-        patient_id: str | None = None,
+        mobile: Optional[str] = None,
+        patient_id: Optional[str] = None,
         _token: str = Depends(_require_token),
     ) -> dict[str, Any]:
         db = get_db()
@@ -231,8 +231,8 @@ def create_app(
 
     @app.get("/tasks")
     async def list_tasks(
-        status: TaskStatus | None = None,
-        priority: Priority | None = None,
+        status: Optional[TaskStatus] = None,
+        priority: Optional[Priority] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -273,8 +273,8 @@ def create_app(
 
     @app.get("/events")
     async def list_events(
-        start_from: datetime | None = None,
-        start_to: datetime | None = None,
+        start_from: Optional[datetime] = None,
+        start_to: Optional[datetime] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -303,8 +303,8 @@ def create_app(
 
     @app.get("/notes")
     async def search_notes(
-        keyword: str | None = None,
-        tag: str | None = None,
+        keyword: Optional[str] = None,
+        tag: Optional[str] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -323,7 +323,7 @@ def create_app(
     @app.get("/pathology/semantic-search")
     async def semantic_search_pathology(
         query: str,
-        patient_id: str | None = None,
+        patient_id: Optional[str] = None,
         limit: int = 5,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
@@ -359,7 +359,7 @@ def create_app(
 
     @app.get("/appointments")
     async def list_appointments(
-        patient_id: str | None = None,
+        patient_id: Optional[str] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -410,9 +410,9 @@ def create_app(
 
     @app.get("/pathology/results")
     async def get_pathology_results(
-        order_id: str | None = None,
-        patient_id: str | None = None,
-        cycle_id: str | None = None,
+        order_id: Optional[str] = None,
+        patient_id: Optional[str] = None,
+        cycle_id: Optional[str] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -512,7 +512,7 @@ def create_app(
 
     @app.get("/reminders")
     async def list_reminders(
-        patient_id: str | None = None,
+        patient_id: Optional[str] = None,
         _token: str = Depends(_require_token),
     ) -> list[dict[str, Any]]:
         db = get_db()
@@ -583,6 +583,8 @@ def create_app(
 
     @app.get("/costs/summary")
     async def cost_summary(
+        patient_id: str,
+        cycle_id: str,
         _token: str = Depends(_require_token),
     ) -> dict[str, Any]:
         db = get_db()

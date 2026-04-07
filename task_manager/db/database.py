@@ -712,8 +712,8 @@ class Database:
 
     async def search_notes(
         self,
-        keyword: str | None = None,
-        tag: str | None = None,
+        keyword: Optional[str] = None,
+        tag: Optional[str] = None
     ) -> list[Note]:
         async with self._session_factory() as session:
             result = await session.execute(select(NoteRow))
