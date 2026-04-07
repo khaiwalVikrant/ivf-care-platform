@@ -37,6 +37,7 @@ from task_manager.models import (
     NurseVisit,
     PathologyOrder,
     PathologyResult,
+    PatientRecord,
     PriceBenchmark,
     Priority,
     Reminder,
@@ -260,6 +261,18 @@ class PriceBenchmarkRow(Base):
     updated_at = Column(DateTime, nullable=False)
 
 
+class PatientRow(Base):
+    __tablename__ = "patients"
+
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    mobile_number = Column(String, nullable=False, unique=True, index=True)
+    email = Column(String, nullable=True)
+    patient_id = Column(String, nullable=False, unique=True, index=True)
+    active_cycle_id = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -456,6 +469,18 @@ def _row_to_price_benchmark(row: PriceBenchmarkRow) -> PriceBenchmark:
         benchmark_price=row.benchmark_price,
         currency=row.currency,
         updated_at=row.updated_at,
+    )
+
+
+def _row_to_patient(row: PatientRow) -> PatientRecord:
+    return PatientRecord(
+        id=row.id,
+        name=row.name,
+        mobile_number=row.mobile_number,
+        email=row.email,
+        patient_id=row.patient_id,
+        active_cycle_id=row.active_cycle_id,
+        created_at=row.created_at,
     )
 
 
@@ -722,6 +747,64 @@ class Database:
         """Search pathology results using AlloyDB vector similarity search."""
         from task_manager.db.vector_search import semantic_search_pathology
         return await semantic_search_pathology(self._session_factory, query, patient_id, limit)
+
+    # ------------------------------------------------------------------
+    # Patients
+    # ------------------------------------------------------------------
+
+    async def get_patient_by_mobile(self, mobile_number: str) -> PatientRecord | None:
+        async with self._session_factory() as session:
+            result = await session.execute(
+                select(PatientRow).where(PatientRow.mobile_number == mobile_number)
+            )
+            row = result.scalar_one_or_none()
+            return _row_to_patient(row) if row else None
+
+    async def get_patient_by_id(self, patient_id: str) -> PatientRecord | None:
+        async with self._session_factory() as session:
+            result = await session.execute(
+                select(PatientRow).where(PatientRow.patient_id == patient_id)
+            )
+            row = result.scalar_one_or_none()
+            return _row_to_patient(row) if row else None
+
+    async def create_patient(
+        self,
+        name: str,
+        mobile_number: str,
+        email: str | None = None,
+        active_cycle_id: str | None = None,
+    ) -> PatientRecord:
+        patient_id = f"P-{_new_id()[:8].upper()}"
+        now = _now()
+        row = PatientRow(
+            id=_new_id(),
+            name=name,
+            mobile_number=mobile_number,
+            email=email,
+            patient_id=patient_id,
+            active_cycle_id=active_cycle_id,
+            created_at=now,
+        )
+        async with self._session_factory() as session:
+            async with session.begin():
+                session.add(row)
+        return _row_to_patient(row)
+
+    async def update_patient(self, patient_id: str, **fields: Any) -> PatientRecord | None:
+        async with self._session_factory() as session:
+            async with session.begin():
+                result = await session.execute(
+                    select(PatientRow).where(PatientRow.patient_id == patient_id)
+                )
+                row = result.scalar_one_or_none()
+                if row is None:
+                    return None
+                for key, value in fields.items():
+                    if hasattr(row, key) and value is not None:
+                        setattr(row, key, value)
+                session.add(row)
+        return _row_to_patient(row)
 
     # ------------------------------------------------------------------
     # Workflows

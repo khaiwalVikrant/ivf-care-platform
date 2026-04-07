@@ -186,6 +186,46 @@ def create_app(
         return {"status": "ok", "service": "ivf-care-platform task-manager-api"}
 
     # ------------------------------------------------------------------
+    # Patients
+    # ------------------------------------------------------------------
+
+    @app.get("/patients")
+    async def get_patient(
+        mobile: str | None = None,
+        patient_id: str | None = None,
+        _token: str = Depends(_require_token),
+    ) -> dict[str, Any]:
+        db = get_db()
+        if mobile:
+            patient = await db.get_patient_by_mobile(mobile)
+        elif patient_id:
+            patient = await db.get_patient_by_id(patient_id)
+        else:
+            raise HTTPException(status_code=400, detail="Provide mobile or patient_id")
+        if patient is None:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        return patient.model_dump(mode="json")
+
+    @app.post("/patients", status_code=status.HTTP_201_CREATED)
+    async def create_patient(
+        body: dict[str, Any],
+        _token: str = Depends(_require_token),
+    ) -> dict[str, Any]:
+        db = get_db()
+        patient = await db.create_patient(
+            name=body.get("name", ""),
+            mobile_number=body.get("mobile_number", ""),
+            email=body.get("email"),
+        )
+        # Auto-create first IVF cycle
+        cycle = await db.create_ivf_cycle(
+            patient_id=patient.patient_id,
+        )
+        await db.update_patient(patient.patient_id, active_cycle_id=cycle.id)
+        patient = await db.get_patient_by_id(patient.patient_id)
+        return patient.model_dump(mode="json")
+
+    # ------------------------------------------------------------------
     # Tasks
     # ------------------------------------------------------------------
 

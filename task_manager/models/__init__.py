@@ -254,6 +254,16 @@ class CostRecord(BaseModel):
     created_at: datetime
 
 
+class PatientRecord(BaseModel):
+    id: str
+    name: str
+    mobile_number: str
+    email: str | None = None
+    patient_id: str
+    active_cycle_id: str | None = None
+    created_at: datetime
+
+
 class PriceBenchmark(BaseModel):
     id: str
     item_name: str
@@ -261,9 +271,6 @@ class PriceBenchmark(BaseModel):
     benchmark_price: float
     currency: str = "INR"
     updated_at: datetime
-
-
-__all__ = [
     # Enums
     "TaskStatus",
     "Priority",

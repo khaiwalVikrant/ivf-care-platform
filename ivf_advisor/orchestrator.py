@@ -17,22 +17,27 @@ from ivf_advisor.models import ConversationState, PatientProfile, Session
 from ivf_advisor.session import InMemorySessionStore, SessionStore
 
 _ONBOARDING_STEP_0 = (
-    "👋 Welcome! Before we get started, I need a few quick details so I can personalise your care.\n\n"
-    "**What is your full name?**"
+    "👋 Welcome to IVF Care Platform!\n\n"
+    "To get started, please enter your **mobile number** so I can look up your profile.\n\n"
+    "_(New patient? I'll set up your profile automatically.)_"
 )
 
-_ONBOARDING_STEP_1 = "Thanks {name}! **What is your Patient ID?** (If you don't have one yet, type 'new' and I'll create one for you.)"
+_ONBOARDING_NEW_NAME = "I couldn't find an existing profile for that number. **What is your full name?**"
+_ONBOARDING_NEW_EMAIL = "Thanks {name}! **What is your email address?** (Used for appointment confirmations — type 'skip' to skip)"
 
-_ONBOARDING_STEP_2 = "**What is your email address?** (Used for appointment confirmations and reminders)"
-
-_ONBOARDING_STEP_3 = "**What is your IVF Cycle ID?** (If this is your first cycle, type 'new' and I'll create one for you.)"
+_ONBOARDING_RETURNING = (
+    "✅ Welcome back, **{name}**!\n\n"
+    "- Patient ID: `{patient_id}`\n"
+    "- Active Cycle ID: `{cycle_id}`\n\n"
+    "Your profile is loaded. How can I help you today?"
+)
 
 _ONBOARDING_COMPLETE = (
-    "✅ All set, {name}! Your profile is ready.\n\n"
+    "✅ Profile created! Welcome, **{name}**.\n\n"
     "- Patient ID: `{patient_id}`\n"
     "- Cycle ID: `{cycle_id}`\n\n"
     "I'll use these automatically for all your appointments, reminders, and cost tracking. "
-    "Use the quick action buttons on the left to get started, or just tell me what you need."
+    "Use the quick action buttons on the left to get started!"
 )
 
 _PROFILE_PROMPT = (
@@ -121,39 +126,62 @@ class ConversationOrchestrator:
     def _handle_onboarding(
         self, session: Session, user_message: str
     ) -> tuple[str, Session]:
-        """Collect patient_id, name, email, cycle_id during onboarding."""
+        """Mobile-first onboarding — lookup by mobile, register if new."""
         import re
         msg = user_message.strip()
 
         if session.onboarding_step == 0:
-            # Collect name
-            session.patient_name = msg
-            session.onboarding_step = 1
-            return _ONBOARDING_STEP_1.format(name=msg), session
+            # Step 0: received mobile number — look up patient
+            mobile = re.sub(r'\D', '', msg)  # strip non-digits
+            if len(mobile) < 10:
+                return "Please enter a valid mobile number (10 digits).", session
+
+            # Look up patient via task manager API
+            patient = _lookup_patient_by_mobile(mobile)
+            if patient:
+                # Returning patient — load profile
+                session.patient_id = patient.get("patient_id")
+                session.patient_name = patient.get("name")
+                session.patient_email = patient.get("email")
+                session.cycle_id = patient.get("active_cycle_id")
+                session.state = ConversationState.MAIN_LOOP
+                return _ONBOARDING_RETURNING.format(
+                    name=session.patient_name,
+                    patient_id=session.patient_id,
+                    cycle_id=session.cycle_id or "No active cycle",
+                ), session
+            else:
+                # New patient — collect name
+                session.patient_id = mobile  # temp store mobile
+                session.onboarding_step = 1
+                return _ONBOARDING_NEW_NAME, session
 
         elif session.onboarding_step == 1:
-            # Collect patient_id
-            if msg.lower() == "new":
-                import uuid as _uuid
-                session.patient_id = f"P-{_uuid.uuid4().hex[:8].upper()}"
-            else:
-                session.patient_id = msg
+            # Step 1: received name
+            session.patient_name = msg
             session.onboarding_step = 2
-            return _ONBOARDING_STEP_2, session
+            return _ONBOARDING_NEW_EMAIL.format(name=msg), session
 
         elif session.onboarding_step == 2:
-            # Collect email
-            session.patient_email = msg
-            session.onboarding_step = 3
-            return _ONBOARDING_STEP_3, session
+            # Step 2: received email — register patient
+            mobile = session.patient_id  # we stored mobile here temporarily
+            email = None if msg.lower() == "skip" else msg
 
-        elif session.onboarding_step == 3:
-            # Collect cycle_id
-            if msg.lower() == "new":
-                import uuid as _uuid
-                session.cycle_id = f"C-{_uuid.uuid4().hex[:8].upper()}"
+            patient = _register_patient(
+                name=session.patient_name,
+                mobile_number=mobile,
+                email=email,
+            )
+            if patient:
+                session.patient_id = patient.get("patient_id")
+                session.patient_email = email
+                session.cycle_id = patient.get("active_cycle_id")
             else:
-                session.cycle_id = msg
+                # Fallback if API unavailable
+                import uuid as _uuid
+                session.patient_id = f"P-{_uuid.uuid4().hex[:8].upper()}"
+                session.cycle_id = f"C-{_uuid.uuid4().hex[:8].upper()}"
+
             session.state = ConversationState.MAIN_LOOP
             return _ONBOARDING_COMPLETE.format(
                 name=session.patient_name,
@@ -161,7 +189,6 @@ class ConversationOrchestrator:
                 cycle_id=session.cycle_id,
             ), session
 
-        # Fallback
         session.state = ConversationState.MAIN_LOOP
         return "Welcome! How can I help you today?", session
 
@@ -282,6 +309,53 @@ class ConversationOrchestrator:
         _update_topics(session, user_message)
 
         return response_text or "I'm sorry, I wasn't able to generate a response. Please try again.", session
+
+
+# ------------------------------------------------------------------
+# Patient API helpers
+# ------------------------------------------------------------------
+
+import os as _os
+import httpx as _httpx
+
+_TM_URL = _os.getenv("TASK_MANAGER_URL", "https://task-manager-api-100876575377.us-central1.run.app")
+_TM_KEY = _os.getenv("TASK_MANAGER_SECRET_KEY", "")
+
+
+def _tm_headers() -> dict:
+    return {"Authorization": f"Bearer {_TM_KEY}"}
+
+
+def _lookup_patient_by_mobile(mobile: str) -> dict | None:
+    """Look up a patient by mobile number via Task Manager API."""
+    try:
+        resp = _httpx.get(
+            f"{_TM_URL}/patients",
+            headers=_tm_headers(),
+            params={"mobile": mobile},
+            timeout=10.0,
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except Exception:
+        return None
+
+
+def _register_patient(name: str, mobile_number: str, email: str | None) -> dict | None:
+    """Register a new patient via Task Manager API."""
+    try:
+        resp = _httpx.post(
+            f"{_TM_URL}/patients",
+            headers={**_tm_headers(), "Content-Type": "application/json"},
+            json={"name": name, "mobile_number": mobile_number, "email": email},
+            timeout=10.0,
+        )
+        if resp.status_code == 201:
+            return resp.json()
+        return None
+    except Exception:
+        return None
 
 
 # ------------------------------------------------------------------
