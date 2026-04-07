@@ -271,6 +271,9 @@ class PriceBenchmark(BaseModel):
     benchmark_price: float
     currency: str = "INR"
     updated_at: datetime
+
+
+__all__ = [
     # Enums
     "TaskStatus",
     "Priority",
@@ -298,4 +301,5 @@ class PriceBenchmark(BaseModel):
     "Reminder",
     "CostRecord",
     "PriceBenchmark",
+    "PatientRecord",
 ]
