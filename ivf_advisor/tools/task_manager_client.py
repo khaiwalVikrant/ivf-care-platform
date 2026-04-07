@@ -390,8 +390,9 @@ def track_expense_tool(
     nurse visits, or any other expense.
 
     Args:
-        category: One of 'consultation', 'medication', 'test', 'procedure', 'nurse_visit'.
-        amount: Amount spent in the specified currency.
+        category: Type of expense. Use one of: 'consultation', 'medication',
+                  'test', 'procedure', 'nurse_visit'. If unsure, use 'consultation'.
+        amount: Amount spent as a number (e.g. 2500 not '2500').
         description: Brief description e.g. 'Initial consultation at CK Birla'.
         patient_id: The patient's identifier (auto-injected from session context).
         cycle_id: The IVF cycle identifier (auto-injected from session context).
@@ -400,13 +401,29 @@ def track_expense_tool(
     Returns:
         The created cost record.
     """
+    # Normalise category
+    valid_categories = {"consultation", "medication", "test", "procedure", "nurse_visit"}
+    cat_lower = category.lower().strip()
+    if cat_lower not in valid_categories:
+        # Map common variations
+        if any(w in cat_lower for w in ["consult", "doctor", "visit", "appointment"]):
+            cat_lower = "consultation"
+        elif any(w in cat_lower for w in ["drug", "medicine", "injection", "tablet"]):
+            cat_lower = "medication"
+        elif any(w in cat_lower for w in ["test", "scan", "blood", "ultrasound", "lab"]):
+            cat_lower = "test"
+        elif any(w in cat_lower for w in ["nurse", "home visit"]):
+            cat_lower = "nurse_visit"
+        else:
+            cat_lower = "procedure"
+
     if not patient_id or not cycle_id:
         return {
             "status": "noted",
-            "message": f"Expense noted: {description} — {currency} {amount} ({category}). "
+            "message": f"Expense noted: {description} — {currency} {amount} ({cat_lower}). "
                        "Complete your profile setup to save expenses to your account.",
             "amount": amount,
-            "category": category,
+            "category": cat_lower,
         }
     try:
         with _client() as client:
@@ -416,14 +433,16 @@ def track_expense_tool(
                 json={
                     "patient_id": patient_id,
                     "cycle_id": cycle_id,
-                    "category": category,
-                    "amount": amount,
+                    "category": cat_lower,
+                    "amount": float(amount),
                     "linked_record_id": description,
                     "currency": currency,
                 },
             )
-            resp.raise_for_status()
-            return resp.json()
+            if resp.status_code in (200, 201):
+                return resp.json()
+            logger.error("track_expense_tool HTTP %s: %s", resp.status_code, resp.text)
+            return {"error": f"API returned {resp.status_code}: {resp.text}"}
     except Exception as exc:
         logger.error("track_expense_tool failed: %s", exc)
         return {"error": str(exc)}

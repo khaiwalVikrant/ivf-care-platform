@@ -131,6 +131,16 @@ class AuditBillRequest(BaseModel):
     line_items: list[dict[str, Any]]
 
 
+class CreateCostRecordRequest(BaseModel):
+    patient_id: str
+    cycle_id: str
+    category: str
+    amount: float
+    linked_record_id: str = ""
+    currency: str = "INR"
+    flagged_unnecessary: bool = False
+
+
 # ---------------------------------------------------------------------------
 # Application factory
 # ---------------------------------------------------------------------------
@@ -552,15 +562,6 @@ def create_app(
     # ------------------------------------------------------------------
     # Costs
     # ------------------------------------------------------------------
-
-    class CreateCostRecordRequest(BaseModel):
-        patient_id: str
-        cycle_id: str
-        category: str
-        amount: float
-        linked_record_id: str = ""
-        currency: str = "INR"
-        flagged_unnecessary: bool = False
 
     @app.post("/costs/records", status_code=status.HTTP_201_CREATED)
     async def create_cost_record(
