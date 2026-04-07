@@ -373,3 +373,49 @@ def semantic_search_tool(
     except Exception as exc:
         logger.error("semantic_search_tool failed: %s", exc)
         return {"error": str(exc)}
+
+
+def track_expense_tool(
+    patient_id: str,
+    cycle_id: str,
+    category: str,
+    amount: float,
+    description: str,
+    currency: str = "INR",
+) -> dict:
+    """Record an expense for a patient's IVF cycle.
+
+    Use this when a patient mentions spending money on anything related to
+    their IVF treatment — consultations, medications, tests, procedures,
+    nurse visits, or any other expense.
+
+    Args:
+        patient_id: The patient's identifier.
+        cycle_id: The IVF cycle identifier.
+        category: One of 'consultation', 'medication', 'test', 'procedure', 'nurse_visit'.
+        amount: Amount spent in the specified currency.
+        description: Brief description e.g. 'Initial consultation at CK Birla'.
+        currency: Currency code, default 'INR'.
+
+    Returns:
+        The created cost record.
+    """
+    try:
+        with _client() as client:
+            resp = client.post(
+                f"{_BASE_URL}/costs/records",
+                headers=_headers(),
+                json={
+                    "patient_id": patient_id,
+                    "cycle_id": cycle_id,
+                    "category": category,
+                    "amount": amount,
+                    "linked_record_id": description,
+                    "currency": currency,
+                },
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as exc:
+        logger.error("track_expense_tool failed: %s", exc)
+        return {"error": str(exc)}

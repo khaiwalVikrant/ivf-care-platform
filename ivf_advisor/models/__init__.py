@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 class ConversationState(str, Enum):
     """Tracks which phase of the conversation flow the session is in."""
 
+    ONBOARDING = "onboarding"
     PROFILE_COLLECTION = "profile_collection"
     MAIN_LOOP = "main_loop"
 
@@ -53,12 +54,18 @@ class Session(BaseModel):
 
     session_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    state: ConversationState = ConversationState.MAIN_LOOP
+    state: ConversationState = ConversationState.ONBOARDING
     profile: Optional[PatientProfile] = None
     disclaimer_acknowledged: bool = True
     topics_discussed: list[str] = Field(default_factory=list)
-    tool_invocations: list[str] = Field(default_factory=list)  # for Phase 3 logging
+    tool_invocations: list[str] = Field(default_factory=list)
     turn_count: int = 0
+    # Patient identity — set during onboarding
+    patient_id: Optional[str] = None
+    patient_name: Optional[str] = None
+    patient_email: Optional[str] = None
+    cycle_id: Optional[str] = None
+    onboarding_step: int = 0  # tracks which onboarding question we're on
 
 
 # ---------------------------------------------------------------------------

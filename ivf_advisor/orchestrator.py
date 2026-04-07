@@ -16,13 +16,23 @@ from google.genai import types  # type: ignore
 from ivf_advisor.models import ConversationState, PatientProfile, Session
 from ivf_advisor.session import InMemorySessionStore, SessionStore
 
-_DISCLAIMER_TEXT = (
-    "🌸 Welcome to IVF Care Platform!\n\n"
-    "I'm your AI companion for the IVF journey. I can help you book appointments, "
-    "set medication reminders, arrange nurse home visits, track costs, and answer "
-    "clinical questions.\n\n"
-    "Use the quick action buttons on the left to get started, or just tell me what you need.\n\n"
-    "_(Note: I provide educational information only — always consult your fertility specialist.)_"
+_ONBOARDING_STEP_0 = (
+    "👋 Welcome! Before we get started, I need a few quick details so I can personalise your care.\n\n"
+    "**What is your full name?**"
+)
+
+_ONBOARDING_STEP_1 = "Thanks {name}! **What is your Patient ID?** (If you don't have one yet, type 'new' and I'll create one for you.)"
+
+_ONBOARDING_STEP_2 = "**What is your email address?** (Used for appointment confirmations and reminders)"
+
+_ONBOARDING_STEP_3 = "**What is your IVF Cycle ID?** (If this is your first cycle, type 'new' and I'll create one for you.)"
+
+_ONBOARDING_COMPLETE = (
+    "✅ All set, {name}! Your profile is ready.\n\n"
+    "- Patient ID: `{patient_id}`\n"
+    "- Cycle ID: `{cycle_id}`\n\n"
+    "I'll use these automatically for all your appointments, reminders, and cost tracking. "
+    "Use the quick action buttons on the left to get started, or just tell me what you need."
 )
 
 _PROFILE_PROMPT = (
@@ -88,7 +98,9 @@ class ConversationOrchestrator:
         if session is None:
             raise KeyError(f"Session '{session_id}' not found.")
 
-        if session.state == ConversationState.PROFILE_COLLECTION:
+        if session.state == ConversationState.ONBOARDING:
+            response, session = self._handle_onboarding(session, user_message)
+        elif session.state == ConversationState.PROFILE_COLLECTION:
             response, session = self._handle_profile_collection(session, user_message)
         else:  # MAIN_LOOP
             response, session = self._handle_main_loop(session, user_message)
@@ -105,6 +117,53 @@ class ConversationOrchestrator:
     # ------------------------------------------------------------------
     # State handlers
     # ------------------------------------------------------------------
+
+    def _handle_onboarding(
+        self, session: Session, user_message: str
+    ) -> tuple[str, Session]:
+        """Collect patient_id, name, email, cycle_id during onboarding."""
+        import re
+        msg = user_message.strip()
+
+        if session.onboarding_step == 0:
+            # Collect name
+            session.patient_name = msg
+            session.onboarding_step = 1
+            return _ONBOARDING_STEP_1.format(name=msg), session
+
+        elif session.onboarding_step == 1:
+            # Collect patient_id
+            if msg.lower() == "new":
+                import uuid as _uuid
+                session.patient_id = f"P-{_uuid.uuid4().hex[:8].upper()}"
+            else:
+                session.patient_id = msg
+            session.onboarding_step = 2
+            return _ONBOARDING_STEP_2, session
+
+        elif session.onboarding_step == 2:
+            # Collect email
+            session.patient_email = msg
+            session.onboarding_step = 3
+            return _ONBOARDING_STEP_3, session
+
+        elif session.onboarding_step == 3:
+            # Collect cycle_id
+            if msg.lower() == "new":
+                import uuid as _uuid
+                session.cycle_id = f"C-{_uuid.uuid4().hex[:8].upper()}"
+            else:
+                session.cycle_id = msg
+            session.state = ConversationState.MAIN_LOOP
+            return _ONBOARDING_COMPLETE.format(
+                name=session.patient_name,
+                patient_id=session.patient_id,
+                cycle_id=session.cycle_id,
+            ), session
+
+        # Fallback
+        session.state = ConversationState.MAIN_LOOP
+        return "Welcome! How can I help you today?", session
 
     def _handle_disclaimer(
         self, session: Session, user_message: str
@@ -170,9 +229,20 @@ class ConversationOrchestrator:
 
         asyncio.run(_ensure_adk_session())
 
+        # Inject patient context so agent uses correct IDs automatically
+        context_prefix = ""
+        if session.patient_id:
+            context_prefix = (
+                f"[Patient context — always use these IDs for all tool calls: "
+                f"patient_id='{session.patient_id}', "
+                f"cycle_id='{session.cycle_id or 'C-DEFAULT'}', "
+                f"patient_name='{session.patient_name or 'Patient'}', "
+                f"patient_email='{session.patient_email or ''}']\n\n"
+            )
+
         content = types.Content(
             role="user",
-            parts=[types.Part(text=user_message)],
+            parts=[types.Part(text=context_prefix + user_message)],
         )
 
         response_text = ""

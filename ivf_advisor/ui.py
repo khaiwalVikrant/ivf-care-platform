@@ -23,6 +23,7 @@ def _msg(role: str, content: str) -> dict:
 
 def _state_badge(state: ConversationState) -> str:
     labels = {
+        ConversationState.ONBOARDING: "📋 Setting up your profile",
         ConversationState.PROFILE_COLLECTION: "📋 Profile collection",
         ConversationState.MAIN_LOOP: "✅ Active session",
     }
@@ -45,7 +46,9 @@ def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     session_id = session.session_id
-    return [_msg("assistant", WELCOME_MESSAGE)], session_id, _state_badge(session.state)
+    # Start onboarding — ask for name
+    from ivf_advisor.orchestrator import _ONBOARDING_STEP_0
+    return [_msg("assistant", _ONBOARDING_STEP_0)], session_id, "📋 Setting up your profile"
 
 
 def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str]:

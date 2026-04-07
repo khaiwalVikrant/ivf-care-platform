@@ -19,6 +19,7 @@ from ivf_advisor.tools.task_manager_client import (
     get_schedule_tool,
     get_workflow_status_tool,
     semantic_search_tool,
+    track_expense_tool,
 )
 from ivf_advisor.tools.google_calendar import (
     add_to_calendar_tool,
@@ -88,7 +89,9 @@ ACTION TOOLS (use these to take real actions for the patient):
   calling the tool first. If you set a reminder using schedule_reminder_tool,
   tell the patient "I've set a reminder in the system" — NOT "added to Google Calendar"
   unless add_to_calendar_tool was explicitly called and succeeded.
-- Use get_cost_summary_tool when a patient asks about their spending or cycle costs.
+- Use track_expense_tool when a patient mentions spending money on any IVF-related
+  expense — consultations, medications, tests, procedures, or nurse visits.
+  Always record expenses to help the patient track their total cycle costs.
 - Use semantic_search_tool when a patient asks to find notes or test results
   using natural language.
 - Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
@@ -139,6 +142,7 @@ def create_agent() -> Agent:
             book_appointment_tool,
             book_nurse_visit_tool,
             get_cost_summary_tool,
+            track_expense_tool,
             submit_workflow_tool,
             get_schedule_tool,
             get_workflow_status_tool,

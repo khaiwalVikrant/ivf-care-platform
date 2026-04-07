@@ -513,10 +513,36 @@ def create_app(
     # Costs
     # ------------------------------------------------------------------
 
+    class CreateCostRecordRequest(BaseModel):
+        patient_id: str
+        cycle_id: str
+        category: str
+        amount: float
+        linked_record_id: str = ""
+        currency: str = "INR"
+        flagged_unnecessary: bool = False
+
+    @app.post("/costs/records", status_code=status.HTTP_201_CREATED)
+    async def create_cost_record(
+        body: CreateCostRecordRequest,
+        _token: str = Depends(_require_token),
+    ) -> dict[str, Any]:
+        db = get_db()
+        if not body.patient_id or not body.cycle_id:
+            raise HTTPException(status_code=400, detail="patient_id and cycle_id are required")
+        record = await db.create_cost_record(
+            patient_id=body.patient_id,
+            cycle_id=body.cycle_id,
+            category=body.category,
+            amount=body.amount,
+            linked_record_id=body.linked_record_id,
+            currency=body.currency,
+            flagged_unnecessary=body.flagged_unnecessary,
+        )
+        return record.model_dump(mode="json")
+
     @app.get("/costs/summary")
     async def cost_summary(
-        patient_id: str,
-        cycle_id: str,
         _token: str = Depends(_require_token),
     ) -> dict[str, Any]:
         db = get_db()
