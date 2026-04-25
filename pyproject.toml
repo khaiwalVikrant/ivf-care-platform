@@ -11,7 +11,7 @@ dependencies = [
     "google-adk>=1.0.0",
     "google-cloud-firestore>=2.16.0",
     "psycopg2-binary>=2.9.0",
-    "pydantic==2.10.6",
+    "pydantic>=2.12.0",
     "python-dotenv",
     "gradio==5.7.1",
 ]

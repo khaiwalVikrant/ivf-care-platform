@@ -236,6 +236,38 @@ footer, .footer { display: none !important; }
 .lang-selector .wrap { gap: 8px !important; }
 .lang-selector label { font-size: 0.82rem !important; color: #4c1d95 !important; }
 
+/* ── Help accordion ── */
+.help-accordion {
+    border-radius: 16px !important;
+    border: 1px solid #ede9fe !important;
+    background: white !important;
+    margin-top: 8px !important;
+    overflow: hidden !important;
+}
+.help-accordion .label-wrap {
+    background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    padding: 10px 16px !important;
+}
+.help-accordion .label-wrap span { color: white !important; }
+.help-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 4px;
+}
+.help-card {
+    background: #faf5ff;
+    border: 1px solid #ede9fe;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+.help-card .icon { font-size: 1.4rem; margin-bottom: 4px; }
+.help-card .title { font-weight: 700; color: #4c1d95; font-size: 0.85rem; margin-bottom: 4px; }
+.help-card .desc { color: #374151; font-size: 0.78rem; line-height: 1.5; margin: 0; }
+
 /* ── Disclaimer banner ── */
 .disclaimer-banner {
     background: #fff7ed;
@@ -445,6 +477,62 @@ with gr.Blocks(
             </div>
             """)
 
+            with gr.Accordion("❓ What can I help you with?", open=False, elem_classes=["help-accordion"]):
+                gr.HTML("""
+                <div class="help-grid">
+                    <div class="help-card">
+                        <div class="icon">🧬</div>
+                        <div class="title">Lab Result Interpreter</div>
+                        <p class="desc">Share your AMH, FSH, or AFC values and I'll explain what they mean for your IVF journey in plain language.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">📅</div>
+                        <div class="title">Treatment Timeline</div>
+                        <p class="desc">Tell me your start date and protocol — I'll generate a personalised week-by-week IVF schedule.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">💊</div>
+                        <div class="title">Injection Training</div>
+                        <p class="desc">Step-by-step guidance for subcutaneous and intramuscular injections, including site rotation and missed dose advice.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">💰</div>
+                        <div class="title">Cost Breakdown</div>
+                        <p class="desc">Get detailed IVF cost estimates in your city — including INR ranges for Indian cities like Mumbai, Delhi, Bangalore.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">📊</div>
+                        <div class="title">Success Rate Calculator</div>
+                        <p class="desc">Enter your age and diagnosis to get personalised IVF success rate estimates based on SART/HFEA data.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">🥗</div>
+                        <div class="title">Wellness Guide</div>
+                        <p class="desc">Stage-specific diet, exercise, sleep, and supplement advice for stimulation, egg retrieval, two-week wait, and transfer.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">🚩</div>
+                        <div class="title">Clinic Red Flag Checker</div>
+                        <p class="desc">Describe what a clinic told you — I'll flag unrealistic claims like guaranteed pregnancy or inflated success rates.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">❤️</div>
+                        <div class="title">Emotional Support</div>
+                        <p class="desc">IVF is emotionally hard. I'm here to listen, offer coping strategies, and connect you with support resources when you need them.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">🔬</div>
+                        <div class="title">Evidence Search</div>
+                        <p class="desc">Ask clinical questions and get answers grounded in ESHRE, ASRM, and NICE guidelines from the knowledge base.</p>
+                    </div>
+                    <div class="help-card">
+                        <div class="icon">🌐</div>
+                        <div class="title">Hindi Support</div>
+                        <p class="desc">Switch to Hindi using the language selector above — I'll respond in Devanagari script with medical terms in English.</p>
+                    </div>
+                </div>
+                """)
+
     # ── Event wiring ──
     send_btn.click(
         fn=chat,
@@ -476,6 +564,10 @@ with gr.Blocks(
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 7860))
-    demo.launch(server_name="0.0.0.0", server_port=port)
+port = int(os.environ.get("PORT", 7860))
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=port,
+    share=False,
+    show_error=True,
+)
