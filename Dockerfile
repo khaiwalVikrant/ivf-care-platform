@@ -1,4 +1,4 @@
-FROM us-central1-docker.pkg.dev/ivf-treatment-guidance-agent/ivf-advisor/base:latest
+FROM us-central1-docker.pkg.dev/ivf-agent/ivf-advisor/base:latest
 
 WORKDIR /app
 
