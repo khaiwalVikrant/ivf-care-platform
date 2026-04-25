@@ -5,8 +5,10 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY ivf_advisor/ ivf_advisor/
 
-RUN pip install --no-cache-dir "gradio==5.7.1" "pydantic==2.10.6" "python-dotenv" && \
-    pip install --no-cache-dir -e . --no-deps
+# Install the package properly (non-editable so it's found as a real package)
+RUN pip install --no-cache-dir "google-cloud-firestore>=2.16.0" "psycopg2-binary>=2.9.0" \
+    "pydantic==2.10.6" "python-dotenv" && \
+    pip install --no-cache-dir --no-deps .
 
 ENV PORT=8080
 EXPOSE 8080
