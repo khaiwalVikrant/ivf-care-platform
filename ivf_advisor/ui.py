@@ -1,4 +1,4 @@
-"""Gradio chat UI for the IVF Treatment Advisor Agent."""
+"""Gradio chat UI for the IVF Treatment Advisor Agent — premium redesign."""
 
 from __future__ import annotations
 
@@ -23,33 +23,265 @@ def _msg(role: str, content: str) -> dict:
 
 def _state_badge(state: ConversationState) -> str:
     labels = {
-        ConversationState.ONBOARDING: "📋 Setting up your profile",
-        ConversationState.PROFILE_COLLECTION: "📋 Profile collection",
-        ConversationState.MAIN_LOOP: "✅ Active session",
+        ConversationState.ONBOARDING: "🟣 Setting up your profile",
+        ConversationState.PROFILE_COLLECTION: "🟣 Collecting profile",
+        ConversationState.MAIN_LOOP: "🟢 Active session",
     }
     return labels.get(state, state.value)
 
 
 WELCOME_MESSAGE = (
-    "🌸 Welcome to IVF Care Platform!\n\n"
-    "I'm your AI companion for the IVF journey. I can help you:\n"
-    "- 📅 Book appointments and nurse home visits\n"
-    "- ⏰ Set medication and injection reminders\n"
-    "- 💰 Track your cycle costs\n"
-    "- 🔬 Answer clinical questions with evidence\n\n"
+    "🌸 **Welcome to IVF Care Platform!**\n\n"
+    "I'm your compassionate AI companion for the IVF journey. I can help you:\n\n"
+    "- 🧬 Interpret your lab results (AMH, FSH, AFC)\n"
+    "- 📅 Build a personalised treatment timeline\n"
+    "- 💊 Guide you through injections and medications\n"
+    "- 💰 Break down IVF costs in your city\n"
+    "- 🔬 Answer clinical questions with evidence\n"
+    "- ❤️ Provide emotional support when you need it\n\n"
     "Use the quick action buttons on the left, or just tell me what you need.\n\n"
-    "_(Note: I provide educational information only — always consult your fertility specialist.)_"
+    "_Note: I provide educational information only — always consult your fertility specialist._"
 )
 
+# ── Categorised quick actions ──────────────────────────────────────────────
+QUICK_PROMPTS: dict[str, list[tuple[str, str]]] = {
+    "🔬 Clinical": [
+        ("🧬 My lab results",     "I want to understand my AMH/FSH results"),
+        ("📊 Success rates",      "What are the success rates for someone my age?"),
+        ("🚩 Check clinic claim", "My clinic says they have 80% success rate for women over 40"),
+        ("🔬 Research evidence",  "Give me research references about IVF success rates"),
+    ],
+    "📅 Planning": [
+        ("📅 Treatment timeline", "Can you create a treatment timeline starting next Monday?"),
+        ("🏥 Book appointment",   "Book a consultation appointment for next week"),
+        ("💉 Book nurse visit",   "I need a nurse to come home for my injection tomorrow at 9am"),
+        ("⏰ My schedule",        "Tell me all my upcoming schedule and reminders"),
+    ],
+    "💊 Medications": [
+        ("💊 Injection guide",    "How do I self-administer subcutaneous injections?"),
+        ("⏰ Set reminder",       "Set a daily reminder for my Gonal-F injection at 9pm"),
+    ],
+    "💰 Costs": [
+        ("💰 India IVF costs",   "What does IVF cost in Mumbai?"),
+        ("📈 Cost summary",      "Show me my IVF cycle cost summary"),
+    ],
+    "🌿 Wellness & Support": [
+        ("🥗 Wellness tips",     "What should I eat during stimulation?"),
+        ("❤️ Emotional support", "I'm feeling overwhelmed and anxious about IVF"),
+    ],
+}
+
+# ── CSS ────────────────────────────────────────────────────────────────────
+CSS = """
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+body, .gradio-container {
+    font-family: 'Inter', 'Segoe UI', sans-serif !important;
+    background: #f8f4ff !important;
+}
+footer, .footer { display: none !important; }
+.gradio-container { max-width: 1280px !important; margin: 0 auto !important; }
+
+/* ── Gradient header ── */
+.ivf-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%);
+    border-radius: 20px;
+    padding: 28px 36px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 32px rgba(109,40,217,0.25);
+}
+.ivf-header h1 {
+    color: white !important;
+    margin: 0 0 6px 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+.ivf-header .tagline {
+    color: rgba(255,255,255,0.88) !important;
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* ── Sidebar card ── */
+.sidebar-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #ede9fe;
+    padding: 14px 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 12px rgba(109,40,217,0.07);
+}
+.sidebar-section-title {
+    color: #5b21b6 !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #ede9fe;
+}
+
+/* ── Quick action pill buttons ── */
+.quick-pill button {
+    border-radius: 999px !important;
+    font-size: 0.80rem !important;
+    padding: 5px 12px !important;
+    border: 1px solid #ddd6fe !important;
+    background: #faf5ff !important;
+    color: #4c1d95 !important;
+    font-weight: 500 !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin-bottom: 4px !important;
+    box-shadow: none !important;
+    transition: all 0.15s ease !important;
+}
+.quick-pill button:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(109,40,217,0.3) !important;
+}
+
+/* ── Chatbot ── */
+.chat-wrap {
+    border-radius: 20px !important;
+    border: 1px solid #ede9fe !important;
+    background: white !important;
+    box-shadow: 0 4px 24px rgba(109,40,217,0.08) !important;
+    overflow: hidden !important;
+}
+.chat-wrap .message.user {
+    background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%) !important;
+    color: white !important;
+    border-radius: 18px 18px 4px 18px !important;
+}
+.chat-wrap .message.bot {
+    background: #faf5ff !important;
+    border: 1px solid #ede9fe !important;
+    border-radius: 18px 18px 18px 4px !important;
+    color: #1f2937 !important;
+}
+
+/* ── Input area ── */
+.input-area {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #ede9fe;
+    padding: 12px 16px;
+    margin-top: 8px;
+    box-shadow: 0 2px 12px rgba(109,40,217,0.06);
+}
+.input-area textarea {
+    border-radius: 24px !important;
+    border: 2px solid #ede9fe !important;
+    padding: 12px 20px !important;
+    font-size: 0.95rem !important;
+    background: #faf5ff !important;
+    resize: none !important;
+    transition: border-color 0.2s !important;
+}
+.input-area textarea:focus {
+    border-color: #7c3aed !important;
+    background: white !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.12) !important;
+}
+
+/* ── Send button ── */
+.send-btn button {
+    border-radius: 24px !important;
+    background: linear-gradient(135deg, #6d28d9 0%, #be185d 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border: none !important;
+    padding: 10px 22px !important;
+    box-shadow: 0 2px 10px rgba(109,40,217,0.3) !important;
+    transition: opacity 0.15s !important;
+}
+.send-btn button:hover { opacity: 0.88 !important; }
+
+/* ── Status badge ── */
+.status-badge textarea, .status-badge input {
+    border-radius: 999px !important;
+    background: #f5f3ff !important;
+    border: 1px solid #ddd6fe !important;
+    color: #5b21b6 !important;
+    font-size: 0.80rem !important;
+    font-weight: 600 !important;
+    padding: 4px 14px !important;
+    text-align: center !important;
+}
+
+/* ── Action row ── */
+.action-row button {
+    border-radius: 999px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+}
+
+/* ── Save profile button ── */
+.save-btn button {
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3) !important;
+}
+
+/* ── Language selector ── */
+.lang-selector .wrap { gap: 8px !important; }
+.lang-selector label { font-size: 0.82rem !important; color: #4c1d95 !important; }
+
+/* ── Disclaimer banner ── */
+.disclaimer-banner {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-top: 8px;
+}
+.disclaimer-banner p {
+    color: #92400e !important;
+    font-size: 0.78rem !important;
+    margin: 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* ── About card ── */
+.about-card {
+    background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+    border-radius: 16px;
+    border: 1px solid #ede9fe;
+    padding: 14px;
+    box-shadow: 0 2px 12px rgba(109,40,217,0.05);
+}
+.about-card p {
+    color: #374151 !important;
+    font-size: 0.80rem !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+}
+"""
+
+
+# ── Business logic ─────────────────────────────────────────────────────────
 
 def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
-    session_id = session.session_id
-    return [_msg("assistant", WELCOME_MESSAGE)], session_id, "✅ Active session"
+    return [_msg("assistant", WELCOME_MESSAGE)], session.session_id, "🟢 Active session"
 
 
-def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str, gr.update]:
+def chat(
+    user_message: str,
+    history: list[dict],
+    session_id: str,
+    language: str = "English",
+) -> tuple[list[dict], str, str, gr.update]:
     if not user_message.strip():
         return history, session_id, "", gr.update()
 
@@ -60,8 +292,12 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
         session_id = session.session_id
         history = [_msg("assistant", WELCOME_MESSAGE)]
 
+    message_to_send = user_message
+    if language == "Hindi":
+        message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{user_message}"
+
     try:
-        response = orch.turn(session_id, user_message)
+        response = orch.turn(session_id, message_to_send)
     except Exception:
         session = orch.create_session()
         session_id = session.session_id
@@ -73,96 +309,24 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
         _msg("assistant", response),
     ]
     session = orch.get_session(session_id)
-    # Show save profile button after first user turn
     show_save = gr.update(visible=True) if len(new_history) >= 2 else gr.update()
     return new_history, session_id, _state_badge(session.state) if session else "", show_save
 
 
 def save_profile(history: list[dict], session_id: str) -> tuple[list[dict], str, str, gr.update]:
-    """Trigger the profile save opt-in flow."""
     return chat("I would like to save my profile", history, session_id)
 
 
-def quick_action(prompt: str, history: list[dict], session_id: str):
-    return chat(prompt, history, session_id)[:3]  # drop save_profile_btn update for quick actions
+def _make_quick_handler(prompt: str):
+    """Return a handler that fires a quick-action prompt."""
+    def _handler(history: list[dict], session_id: str):
+        return chat(prompt, history, session_id)[:3]
+    return _handler
 
 
-CSS = """
-/* ── Global ── */
-body, .gradio-container {
-    font-family: 'Inter', sans-serif !important;
-    background: #fdf6ff !important;
-}
-footer { display: none !important; }
+# ── UI layout ──────────────────────────────────────────────────────────────
 
-/* ── Header ── */
-.header-box {
-    background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
-    border-radius: 16px;
-    padding: 24px 32px;
-    margin-bottom: 8px;
-    color: white;
-}
-.header-box h1 { color: white !important; margin: 0 0 4px 0; font-size: 1.8rem; }
-.header-box p  { color: rgba(255,255,255,0.85) !important; margin: 0; font-size: 0.95rem; }
-
-/* ── Chatbot ── */
-.chatbot-wrap .wrap { border-radius: 16px !important; border: 1px solid #e9d5ff !important; }
-.chatbot-wrap { background: white; border-radius: 16px; }
-
-/* ── Quick action buttons ── */
-.quick-btn { border-radius: 20px !important; font-size: 0.82rem !important; }
-
-/* ── Input row ── */
-.input-row textarea {
-    border-radius: 24px !important;
-    border: 2px solid #e9d5ff !important;
-    padding: 12px 20px !important;
-    font-size: 0.95rem !important;
-}
-.input-row textarea:focus { border-color: #7c3aed !important; }
-.send-btn { border-radius: 24px !important; }
-
-/* ── Status badge ── */
-.status-box textarea {
-    border-radius: 8px !important;
-    background: #f5f3ff !important;
-    border: 1px solid #ddd6fe !important;
-    color: #5b21b6 !important;
-    font-size: 0.82rem !important;
-}
-
-/* ── Sidebar ── */
-.sidebar-card {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e9d5ff;
-    padding: 16px;
-}
-.sidebar-heading h3 {
-    color: #4c1d95 !important;
-    font-size: 0.95rem !important;
-    font-weight: 700 !important;
-}
-.sidebar-card p, .sidebar-card span, .sidebar-card label {
-    color: #374151 !important;
-    font-size: 0.85rem !important;
-}
-.small-text p {
-    color: #4b5563 !important;
-    font-size: 0.82rem !important;
-    line-height: 1.5 !important;
-}
-"""
-
-QUICK_PROMPTS = [
-    ("💉 Book nurse visit", "I need a nurse to come home for my injection tomorrow at 9am"),
-    ("📅 My schedule", "Tell me all my upcoming schedule and reminders"),
-    ("💊 Set medication reminder", "Set a daily reminder for my Gonal-F injection at 9pm"),
-    ("🏥 Book appointment", "Book a consultation appointment for next week"),
-    ("💰 Cost summary", "Show me my IVF cycle cost summary"),
-    ("🔬 Research evidence", "Give me research references about IVF success rates"),
-]
+_all_quick: list[tuple[gr.Button, str]] = []  # populated during layout
 
 with gr.Blocks(
     title="IVF Care Platform",
@@ -170,88 +334,131 @@ with gr.Blocks(
         primary_hue=gr.themes.colors.purple,
         secondary_hue=gr.themes.colors.pink,
         neutral_hue=gr.themes.colors.slate,
+        font=gr.themes.GoogleFont("Inter"),
     ),
     css=CSS,
 ) as demo:
 
-    # ── Header ──
+    # ── Gradient header ──
     gr.HTML("""
-    <div class="header-box">
+    <div class="ivf-header">
         <h1>🌸 IVF Care Platform</h1>
-        <p>Your compassionate AI companion for the IVF journey — ask questions, book appointments, set reminders, and more.</p>
+        <p class="tagline">Your compassionate AI companion — ask questions, plan your journey, and feel supported every step of the way.</p>
     </div>
     """)
 
-    with gr.Row(equal_height=True):
+    with gr.Row(equal_height=False):
+
         # ── Left sidebar ──
-        with gr.Column(scale=1, min_width=220):
-            gr.HTML('<div class="sidebar-card">')
-            gr.HTML('<p style="color:#4c1d95;font-weight:700;font-size:0.95rem;margin:0 0 10px 0">⚡ Quick Actions</p>')
-            quick_btns = []
-            for label, _ in QUICK_PROMPTS:
-                btn = gr.Button(label, variant="secondary", elem_classes=["quick-btn"])
-                quick_btns.append(btn)
-            gr.HTML('</div>')
+        with gr.Column(scale=1, min_width=230):
+            for _section_title, _prompts in QUICK_PROMPTS.items():
+                gr.HTML(
+                    f'<div class="sidebar-card">'
+                    f'<p class="sidebar-section-title">{_section_title}</p>'
+                )
+                for _label, _prompt in _prompts:
+                    _btn = gr.Button(_label, variant="secondary", elem_classes=["quick-pill"])
+                    _all_quick.append((_btn, _prompt))
+                gr.HTML('</div>')
 
-            gr.HTML('<div class="sidebar-card" style="margin-top:12px">')
-            gr.HTML('<p style="color:#4c1d95;font-weight:700;font-size:0.95rem;margin:0 0 8px 0">ℹ️ About</p>')
-            gr.HTML(
-                '<p style="color:#1f2937;font-size:0.82rem;line-height:1.5;margin:0">'
-                'This assistant provides <strong style="color:#4c1d95">educational information only</strong> '
-                'and does not constitute medical advice. Always consult your fertility specialist.'
-                '</p>'
-            )
-            gr.HTML('</div>')
+            gr.HTML("""
+            <div class="about-card">
+                <p>
+                    <strong style="color:#4c1d95">Educational use only.</strong><br>
+                    This assistant does not provide medical advice.
+                    Always consult your fertility specialist before making treatment decisions.
+                </p>
+            </div>
+            """)
 
-        # ── Main chat area ──
+        # ── Main chat column ──
         with gr.Column(scale=3):
-            state_display = gr.Textbox(
-                label="Session status",
-                interactive=False,
-                value="✅ Active session",
-                elem_classes=["status-box"],
-            )
+
+            with gr.Row(elem_classes=["action-row"]):
+                state_display = gr.Textbox(
+                    label="",
+                    interactive=False,
+                    value="🟢 Active session",
+                    elem_classes=["status-badge"],
+                    scale=2,
+                    show_label=False,
+                )
+                language_selector = gr.Radio(
+                    choices=["English", "Hindi"],
+                    value="English",
+                    label="🌐 Language",
+                    interactive=True,
+                    elem_classes=["lang-selector"],
+                    scale=2,
+                )
+                new_btn = gr.Button("🔄 New chat", variant="secondary", size="sm", scale=1)
+                save_profile_btn = gr.Button(
+                    "💾 Save my profile",
+                    variant="secondary",
+                    size="sm",
+                    visible=False,
+                    elem_classes=["save-btn"],
+                    scale=1,
+                )
+
             chatbot = gr.Chatbot(
                 label="",
-                height=480,
+                height=500,
                 type="messages",
                 value=[],
-                avatar_images=(None, "https://em-content.zobj.net/source/google/387/seedling_1f331.png"),
-                elem_classes=["chatbot-wrap"],
+                avatar_images=(
+                    None,
+                    "https://em-content.zobj.net/source/google/387/seedling_1f331.png",
+                ),
+                elem_classes=["chat-wrap"],
                 show_label=False,
+                bubble_full_width=False,
             )
+
             session_id_state = gr.State("")
 
-            with gr.Row(elem_classes=["input-row"]):
-                msg_input = gr.Textbox(
-                    placeholder="Ask me anything about IVF, or request an action…",
-                    label="",
-                    scale=8,
-                    show_label=False,
-                    lines=1,
-                )
-                send_btn = gr.Button("Send ➤", scale=1, variant="primary", elem_classes=["send-btn"])
+            with gr.Group(elem_classes=["input-area"]):
+                with gr.Row():
+                    msg_input = gr.Textbox(
+                        placeholder="Ask me anything about IVF, or request an action…",
+                        label="",
+                        scale=8,
+                        show_label=False,
+                        lines=1,
+                        max_lines=4,
+                    )
+                    send_btn = gr.Button(
+                        "Send ➤",
+                        scale=1,
+                        variant="primary",
+                        elem_classes=["send-btn"],
+                    )
 
-            new_btn = gr.Button("🔄 New conversation", variant="secondary", size="sm")
-            save_profile_btn = gr.Button("💾 Save my profile", variant="secondary", size="sm", visible=False)
+            gr.HTML("""
+            <div class="disclaimer-banner">
+                <p>
+                    ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
+                    information about IVF and fertility treatments. It is not a substitute for professional
+                    medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
+                    qualified fertility specialist with any questions you may have.
+                </p>
+            </div>
+            """)
 
     # ── Event wiring ──
     send_btn.click(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state],
+        inputs=[msg_input, chatbot, session_id_state, language_selector],
         outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state],
+        inputs=[msg_input, chatbot, session_id_state, language_selector],
         outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
 
-    new_btn.click(
-        fn=new_session,
-        outputs=[chatbot, session_id_state, state_display],
-    )
+    new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
     save_profile_btn.click(
         fn=save_profile,
@@ -259,11 +466,10 @@ with gr.Blocks(
         outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     )
 
-    # Wire quick action buttons
-    for btn, (_, prompt) in zip(quick_btns, QUICK_PROMPTS):
-        btn.click(
-            fn=quick_action,
-            inputs=[gr.State(prompt), chatbot, session_id_state],
+    for _btn, _prompt in _all_quick:
+        _btn.click(
+            fn=_make_quick_handler(_prompt),
+            inputs=[chatbot, session_id_state],
             outputs=[chatbot, session_id_state, state_display],
         )
 
