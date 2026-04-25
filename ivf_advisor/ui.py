@@ -46,14 +46,12 @@ def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     session_id = session.session_id
-    # Start onboarding — ask for name
-    from ivf_advisor.orchestrator import _ONBOARDING_STEP_0
-    return [_msg("assistant", _ONBOARDING_STEP_0)], session_id, "📋 Setting up your profile"
+    return [_msg("assistant", WELCOME_MESSAGE)], session_id, "✅ Active session"
 
 
-def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str]:
+def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[dict], str, str, gr.update]:
     if not user_message.strip():
-        return history, session_id, ""
+        return history, session_id, "", gr.update()
 
     orch = _get_orchestrator()
 
@@ -67,20 +65,26 @@ def chat(user_message: str, history: list[dict], session_id: str) -> tuple[list[
     except Exception:
         session = orch.create_session()
         session_id = session.session_id
-        orch.turn(session_id, "")
         history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        return history, session_id, _state_badge(orch.get_session(session_id).state)
+        return history, session_id, _state_badge(orch.get_session(session_id).state), gr.update(visible=True)
 
     new_history = list(history) + [
         _msg("user", user_message),
         _msg("assistant", response),
     ]
     session = orch.get_session(session_id)
-    return new_history, session_id, _state_badge(session.state) if session else ""
+    # Show save profile button after first user turn
+    show_save = gr.update(visible=True) if len(new_history) >= 2 else gr.update()
+    return new_history, session_id, _state_badge(session.state) if session else "", show_save
+
+
+def save_profile(history: list[dict], session_id: str) -> tuple[list[dict], str, str, gr.update]:
+    """Trigger the profile save opt-in flow."""
+    return chat("I would like to save my profile", history, session_id)
 
 
 def quick_action(prompt: str, history: list[dict], session_id: str):
-    return chat(prompt, history, session_id)
+    return chat(prompt, history, session_id)[:3]  # drop save_profile_btn update for quick actions
 
 
 CSS = """
@@ -229,23 +233,30 @@ with gr.Blocks(
                 send_btn = gr.Button("Send ➤", scale=1, variant="primary", elem_classes=["send-btn"])
 
             new_btn = gr.Button("🔄 New conversation", variant="secondary", size="sm")
+            save_profile_btn = gr.Button("💾 Save my profile", variant="secondary", size="sm", visible=False)
 
     # ── Event wiring ──
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
 
     new_btn.click(
         fn=new_session,
         outputs=[chatbot, session_id_state, state_display],
+    )
+
+    save_profile_btn.click(
+        fn=save_profile,
+        inputs=[chatbot, session_id_state],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     )
 
     # Wire quick action buttons

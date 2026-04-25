@@ -59,7 +59,7 @@ class Session(BaseModel):
 
     session_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    state: ConversationState = ConversationState.ONBOARDING
+    state: ConversationState = ConversationState.MAIN_LOOP
     profile: Optional[PatientProfile] = None
     disclaimer_acknowledged: bool = True
     topics_discussed: list[str] = Field(default_factory=list)
