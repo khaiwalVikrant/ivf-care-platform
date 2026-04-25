@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import uuid
 from typing import Optional
 
@@ -13,8 +14,14 @@ from google.adk.runners import Runner  # type: ignore
 from google.adk.sessions import InMemorySessionService  # type: ignore
 from google.genai import types  # type: ignore
 
+from ivf_advisor.config import ALLOYDB_CONNECTION_STRING, GOOGLE_CLOUD_PROJECT
 from ivf_advisor.models import ConversationState, PatientProfile, Session
-from ivf_advisor.session import InMemorySessionStore, SessionStore
+from ivf_advisor.session import (
+    AlloyDBSessionStore,
+    FirestoreSessionStore,
+    InMemorySessionStore,
+    SessionStore,
+)
 
 _ONBOARDING_STEP_0 = (
     "👋 Welcome to IVF Care Platform!\n\n"
@@ -67,7 +74,14 @@ class ConversationOrchestrator:
         session_store: Optional[SessionStore] = None,
     ) -> None:
         self._agent = agent
-        self._store = session_store or InMemorySessionStore()
+        if session_store is not None:
+            self._store = session_store
+        elif os.getenv("ALLOYDB_SESSION_STORE", "").lower() == "true":
+            self._store = AlloyDBSessionStore(connection_string=ALLOYDB_CONNECTION_STRING)
+        elif os.getenv("FIRESTORE_SESSION_STORE", "").lower() == "true":
+            self._store = FirestoreSessionStore(project=GOOGLE_CLOUD_PROJECT)
+        else:
+            self._store = InMemorySessionStore()
         # ADK session service and runner for MAIN_LOOP turns
         self._adk_sessions = InMemorySessionService()
         self._runner = Runner(
@@ -144,6 +158,10 @@ class ConversationOrchestrator:
                 session.patient_name = patient.get("name")
                 session.patient_email = patient.get("email")
                 session.cycle_id = patient.get("active_cycle_id")
+                # Attempt to load persisted profile from Firestore
+                loaded_profile = _load_patient_profile(session.patient_id)
+                if loaded_profile:
+                    session.profile = loaded_profile
                 session.state = ConversationState.MAIN_LOOP
                 return _ONBOARDING_RETURNING.format(
                     name=session.patient_name,
@@ -181,6 +199,20 @@ class ConversationOrchestrator:
                 import uuid as _uuid
                 session.patient_id = f"P-{_uuid.uuid4().hex[:8].upper()}"
                 session.cycle_id = f"C-{_uuid.uuid4().hex[:8].upper()}"
+
+            session.onboarding_step = 3
+            return (
+                "Would you like me to save your profile so I can personalise your experience "
+                "on future visits? Your data is stored securely and only used to tailor guidance. "
+                "(Reply **yes** to opt in, or **no** to continue without saving.)"
+            ), session
+
+        elif session.onboarding_step == 3:
+            # Step 3: profile save opt-in
+            if msg.lower() in {"yes", "y", "ok", "okay", "sure", "yep", "yeah"}:
+                session.profile_opted_in = True
+                if session.profile:
+                    _persist_patient_profile(session.patient_id, session.profile)
 
             session.state = ConversationState.MAIN_LOOP
             return _ONBOARDING_COMPLETE.format(
@@ -231,6 +263,10 @@ class ConversationOrchestrator:
         confirmation = _build_profile_confirmation(profile)
         profile.confirmed = True
         session.profile = profile
+
+        # Persist if patient has opted in
+        if session.profile_opted_in and session.patient_id:
+            _persist_patient_profile(session.patient_id, session.profile)
 
         return confirmation, session
 
@@ -309,6 +345,47 @@ class ConversationOrchestrator:
         _update_topics(session, user_message)
 
         return response_text or "I'm sorry, I wasn't able to generate a response. Please try again.", session
+
+
+# ------------------------------------------------------------------
+# Patient profile persistence helpers
+# ------------------------------------------------------------------
+
+
+def _persist_patient_profile(patient_id: str, profile: PatientProfile) -> None:
+    """Write PatientProfile to Firestore at patient_profiles/{patient_id}.
+
+    Only runs when FIRESTORE_SESSION_STORE=true. Logs warning on failure, never raises.
+    """
+    if os.getenv("FIRESTORE_SESSION_STORE", "").lower() != "true":
+        return
+    try:
+        from datetime import datetime as _dt
+        import google.cloud.firestore as _firestore  # type: ignore
+
+        client = _firestore.Client(project=GOOGLE_CLOUD_PROJECT)
+        data = profile.model_dump(mode="json")
+        data["last_updated"] = _dt.utcnow().isoformat()
+        client.collection("patient_profiles").document(patient_id).set(data)
+    except Exception as exc:
+        logger.warning("Failed to persist patient profile for %s: %s", patient_id, exc)
+
+
+def _load_patient_profile(patient_id: str) -> Optional[PatientProfile]:
+    """Load PatientProfile from Firestore. Returns None on miss or error."""
+    if os.getenv("FIRESTORE_SESSION_STORE", "").lower() != "true":
+        return None
+    try:
+        import google.cloud.firestore as _firestore  # type: ignore
+
+        client = _firestore.Client(project=GOOGLE_CLOUD_PROJECT)
+        doc = client.collection("patient_profiles").document(patient_id).get()
+        if not doc.exists:
+            return None
+        return PatientProfile.model_validate(doc.to_dict())
+    except Exception as exc:
+        logger.warning("Failed to load patient profile for %s: %s", patient_id, exc)
+        return None
 
 
 # ------------------------------------------------------------------

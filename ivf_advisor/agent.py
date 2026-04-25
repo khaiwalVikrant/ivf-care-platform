@@ -31,6 +31,13 @@ from ivf_advisor.tools.email_notifications import (
     send_nurse_visit_notification_tool,
     send_reminder_notification_tool,
 )
+from ivf_advisor.tools.success_rate import success_rate_tool
+from ivf_advisor.tools.lab_result import lab_result_tool
+from ivf_advisor.tools.timeline import timeline_tool
+from ivf_advisor.tools.red_flag import red_flag_tool
+from ivf_advisor.tools.emotional_support import emotional_support_tool
+from ivf_advisor.tools.wellness_guide import wellness_guide_tool
+from ivf_advisor.tools.injection_guide import injection_guide_tool
 
 SYSTEM_INSTRUCTION = f"""
 You are the IVF Treatment Advisor — a knowledgeable, compassionate, and evidence-based
@@ -61,8 +68,14 @@ TOOL USAGE:
 - Use scope_guard_tool to check ambiguous queries before responding.
 - Use journey_guide_tool when patients ask about IVF stages, what to expect, or timelines.
 - Use cost_breakdown_tool when patients ask about costs, fees, or financial planning.
-  Pass region='india' or the specific Indian city (e.g. 'mumbai', 'delhi') when
-  the patient mentions India or an Indian city — this returns INR cost ranges.
+  When the patient mentions India or an Indian city, pass the detected city name as
+  the `region` parameter (e.g. region='mumbai', region='ahmedabad', region='jaipur',
+  region='chandigarh', region='kochi', region='delhi', region='bangalore',
+  region='chennai', region='hyderabad', region='pune', region='kolkata').
+  If the patient mentions India without specifying a city, pass region='india'.
+  This returns INR cost ranges specific to that city.
+  When the patient is writing in Hindi or has requested Hindi labels, also pass
+  include_hindi_labels=True to display bilingual component names.
 - Use evidence_search_tool when patients ask clinical questions requiring grounded evidence.
 - If scope_guard_tool returns is_emergency=True, instruct the patient to seek immediate
   medical attention and do not attempt to advise on the emergency.
@@ -117,6 +130,27 @@ Keep hints brief — one short sentence at the end of your response.
 NOTE: schedule_reminder_tool saves reminders in the system database only.
 To add to Google Calendar, you must separately call add_to_calendar_tool.
 
+NEW SPECIALIST TOOLS:
+- Use success_rate_tool when patients ask about success rates, chances of pregnancy, or statistics.
+- Use lab_result_tool when patients share or ask about AMH, FSH, AFC, or any test results.
+- Use timeline_tool when patients ask about scheduling, timelines, or what to expect when;
+  ask for their start date if not already provided.
+- Use red_flag_tool when patients describe clinic offers, quotes, or claims that may need scrutiny.
+- Use emotional_support_tool when distress signals are detected (e.g. "devastated", "hopeless",
+  "can't cope", "failed again", "giving up"); ALWAYS lead with an empathy response before
+  providing any clinical information.
+- Use wellness_guide_tool when patients ask about diet, exercise, sleep, lifestyle, or what
+  to do or avoid during treatment.
+- Use injection_guide_tool when patients ask about injections, medications, self-administration,
+  or missed doses.
+
+LANGUAGE:
+- If the patient writes in Hindi (Devanagari script) or explicitly requests Hindi responses,
+  respond entirely in Hindi using Devanagari script. Preserve medical terminology in English
+  within parentheses where no standard Hindi equivalent exists (e.g. 'IVF (आईवीएफ)').
+  Include the standard disclaimer in Hindi:
+  '(याद दिलाएं: यह केवल जानकारी के लिए है — कृपया अपने प्रजनन विशेषज्ञ से परामर्श करें।)'
+
 SCOPE GUARD RULES:
 - If a question is outside IVF/fertility: decline and refer to the appropriate professional.
 - If symptoms suggest a medical emergency: instruct immediate medical attention.
@@ -157,5 +191,12 @@ def create_agent() -> Agent:
             send_appointment_confirmation_tool,
             send_nurse_visit_notification_tool,
             send_reminder_notification_tool,
+            success_rate_tool,
+            lab_result_tool,
+            timeline_tool,
+            red_flag_tool,
+            emotional_support_tool,
+            wellness_guide_tool,
+            injection_guide_tool,
         ],
     )
