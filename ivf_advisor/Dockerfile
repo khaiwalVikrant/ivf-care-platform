@@ -10,9 +10,10 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY ivf_advisor/ ivf_advisor/
 
-# Non-editable install so ivf_advisor package is found in site-packages
 RUN pip install --no-cache-dir --no-deps .
 
+# Add /app to PYTHONPATH so ivf_advisor package is always found
+ENV PYTHONPATH=/app
 ENV PORT=8080
 EXPOSE 8080
 
