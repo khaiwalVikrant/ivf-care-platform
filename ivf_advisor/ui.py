@@ -70,6 +70,7 @@ body, .gradio-container {
     font-family: 'Inter', 'Segoe UI', sans-serif !important;
     background: #ffffff !important;
     color: #1A1A2E !important;
+    font-size: 14px !important;
 }
 footer, .footer { display: none !important; }
 .gradio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -89,42 +90,43 @@ footer, .footer { display: none !important; }
 .left-sidebar {
     background: #f9fafb !important;
     border-right: 1px solid #e5e7eb !important;
-    padding: 20px 16px !important;
+    padding: 16px 14px !important;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 0;
     overflow-y: auto;
 }
 .sidebar-logo {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    color: #0d9488;
+    color: #7c3aed;
     letter-spacing: -0.3px;
     padding-bottom: 12px;
     border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 14px;
 }
 .sidebar-section-title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #6b7280;
+    color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+    margin: 14px 0 6px 0;
 }
 
 /* ── Agent status — prominent banner ── */
 .agent-status-wrap {
-    background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%);
-    border: 1px solid #e5e7eb;
-    border-left: 4px solid #7c3aed;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.83rem;
+    background: #f5f3ff;
+    border-left: 3px solid #7c3aed;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
     color: #7c3aed;
     font-weight: 500;
-    min-height: 44px;
+    min-height: 36px;
+    margin-bottom: 4px;
 }
-.agent-status-wrap p { margin: 0 !important; color: #7c3aed !important; }
+.agent-status-wrap p { margin: 0 !important; color: #7c3aed !important; font-size: 0.82rem !important; }
 
 @keyframes pulse-glow {
     0%   { box-shadow: 0 0 0 0px rgba(124, 58, 237, 0.4); }
@@ -137,20 +139,27 @@ footer, .footer { display: none !important; }
 }
 
 /* ── Quick access buttons ── */
+.quick-btn {
+    margin-bottom: 6px !important;
+    display: block !important;
+    width: 100% !important;
+}
 .quick-btn button {
     width: 100% !important;
     text-align: left !important;
     border-radius: 8px !important;
     font-size: 0.80rem !important;
-    padding: 7px 12px !important;
+    padding: 8px 12px !important;
     border: 1px solid #7c3aed !important;
     background: #ffffff !important;
     color: #7c3aed !important;
     font-weight: 500 !important;
-    margin-bottom: 4px !important;
     transition: all 0.15s ease !important;
     height: auto !important;
+    min-height: 36px !important;
     justify-content: flex-start !important;
+    display: flex !important;
+    align-items: center !important;
 }
 .quick-btn button:hover {
     background: #7c3aed !important;
@@ -159,14 +168,11 @@ footer, .footer { display: none !important; }
     box-shadow: 0 2px 8px rgba(124,58,237,0.25) !important;
 }
 
-/* ── Support communities ── */
+/* ── Support communities — flat list, no box ── */
 .communities-block {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 0.78rem;
-    line-height: 1.7;
+    font-size: 0.82rem;
+    line-height: 2;
+    padding: 0;
 }
 .communities-block a {
     color: #7c3aed;
@@ -332,6 +338,28 @@ footer, .footer { display: none !important; }
     font-size: 0.76rem !important;
     margin: 0 !important;
     line-height: 1.5 !important;
+}
+
+/* ── Remove grey space from audio and examples ── */
+.audio-compact {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.audio-compact > div {
+    background: transparent !important;
+    border: none !important;
+    padding: 4px 0 0 0 !important;
+}
+.examples-compact {
+    background: transparent !important;
+    border: none !important;
+    padding: 4px 0 0 0 !important;
+}
+.examples-compact > div {
+    background: transparent !important;
+    padding: 0 !important;
 }
 
 /* ── Right sidebar ── */
@@ -559,10 +587,10 @@ with gr.Blocks(
             # Logo
             gr.HTML('<div class="sidebar-logo">🌸 IVF Care</div>')
 
-            # Active Agents section
-            gr.HTML('<div class="sidebar-section-title">🤖 Active Agents</div>')
+            # Current activity section — patient-friendly label
+            gr.HTML('<div class="sidebar-section-title">💬 Current Activity</div>')
             agent_status = gr.Markdown(
-                value="No agent active",
+                value="Ready to help you",
                 visible=True,
                 elem_classes=["agent-status-wrap"],
             )
@@ -584,13 +612,14 @@ with gr.Blocks(
                 _quick_sidebar.append((_btn, _prompt))
                 _all_quick.append((_btn, _prompt))
 
-            # Support Communities
+            # Support Communities — verified working links
             gr.HTML('<div class="sidebar-section-title">🌐 Support Communities</div>')
             gr.HTML("""
             <div class="communities-block">
-                <div>🇮🇳 <a href="https://ivfconnections.in" target="_blank">IVF Connections India</a></div>
+                <div>🇮🇳 <a href="https://www.ivfbabble.com/india" target="_blank">IVF Babble India</a></div>
+                <div>🇮🇳 <a href="https://www.practo.com/ivf" target="_blank">Practo IVF Forum</a></div>
                 <div>🇬🇧 <a href="https://fertilitynetworkuk.org" target="_blank">Fertility Network UK</a></div>
-                <div>🇺🇸 <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
+                <div>� <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
             </div>
             """)
 
@@ -612,13 +641,13 @@ with gr.Blocks(
                 show_label=True,
             )
 
-            # New chat + Save profile buttons
+            # New chat + Save profile buttons — always visible
             new_btn = gr.Button("🔄 New Chat", variant="secondary", size="sm", elem_classes=["sidebar-action-btn"])
             save_profile_btn = gr.Button(
                 "💾 Save Profile",
                 variant="secondary",
                 size="sm",
-                visible=False,
+                visible=True,
                 elem_classes=["save-btn"],
             )
 
@@ -667,8 +696,17 @@ with gr.Blocks(
                         variant="primary",
                         elem_classes=["send-btn"],
                     )
+                with gr.Row():
+                    audio_input = gr.Audio(
+                        sources=["microphone"],
+                        type="filepath",
+                        label="🎤 Speak (Hindi or English)",
+                        show_label=True,
+                        scale=1,
+                        elem_classes=["audio-compact"],
+                    )
 
-            # gr.Examples below chatbot, above audio
+            # Examples — shown as chips above input
             gr.Examples(
                 examples=[
                     "What are the success rates for women over 38?",
@@ -678,14 +716,7 @@ with gr.Blocks(
                 ],
                 inputs=msg_input,
                 label="💡 Try asking:",
-            )
-
-            # Audio microphone
-            audio_input = gr.Audio(
-                sources=["microphone"],
-                type="filepath",
-                label="🎤 Speak your question (Hindi or English)",
-                show_label=True,
+                elem_classes=["examples-compact"],
             )
 
             # Disclaimer
