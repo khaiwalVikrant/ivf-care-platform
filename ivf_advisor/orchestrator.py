@@ -133,6 +133,24 @@ class ConversationOrchestrator:
     def delete_session(self, session_id: str) -> None:
         self._store.delete(session_id)
 
+    def turn_stream(self, session_id: str, user_message: str):
+        """Streaming version of turn() — yields (partial_text, session) tuples."""
+        session = self._store.get(session_id)
+        if session is None:
+            yield "Session not found.", None
+            return
+
+        if session.state == ConversationState.MAIN_LOOP:
+            for chunk, updated_session in self._handle_main_loop_stream(session, user_message):
+                if updated_session:
+                    self._store.update(updated_session)
+                yield chunk, updated_session
+        else:
+            # Non-streaming fallback for onboarding/profile states
+            response = self.turn(session_id, user_message)
+            session = self._store.get(session_id)
+            yield response, session
+
     # ------------------------------------------------------------------
     # State handlers
     # ------------------------------------------------------------------
@@ -345,6 +363,68 @@ class ConversationOrchestrator:
         _update_topics(session, user_message)
 
         return response_text or "I'm sorry, I wasn't able to generate a response. Please try again.", session
+
+    def _handle_main_loop_stream(
+        self, session: Session, user_message: str
+    ):
+        """Streaming version of _handle_main_loop — yields partial text chunks."""
+        session.turn_count += 1
+        adk_session_id = session.session_id
+
+        async def _ensure_adk_session():
+            try:
+                await self._adk_sessions.create_session(
+                    app_name="ivf_advisor",
+                    user_id=adk_session_id,
+                    session_id=adk_session_id,
+                )
+            except Exception:
+                pass
+
+        asyncio.run(_ensure_adk_session())
+
+        context_prefix = ""
+        if session.patient_id:
+            context_prefix = (
+                f"[Patient context — patient_id='{session.patient_id}', "
+                f"cycle_id='{session.cycle_id or 'C-DEFAULT'}', "
+                f"patient_name='{session.patient_name or 'Patient'}', "
+                f"patient_email='{session.patient_email or ''}']\n\n"
+            )
+
+        content = types.Content(
+            role="user",
+            parts=[types.Part(text=context_prefix + user_message)],
+        )
+
+        response_text = ""
+        try:
+            for event in self._runner.run(
+                user_id=adk_session_id,
+                session_id=adk_session_id,
+                new_message=content,
+            ):
+                # Yield intermediate tool-use indicators
+                if hasattr(event, "content") and event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if hasattr(part, "function_call") and part.function_call:
+                            tool_name = part.function_call.name
+                            yield f"_thinking:{tool_name}_", session
+                if event.is_final_response() and event.content and event.content.parts:
+                    text_parts = [
+                        p.text for p in event.content.parts
+                        if hasattr(p, "text") and p.text
+                    ]
+                    if text_parts:
+                        response_text = " ".join(text_parts)
+                        break
+        except Exception as e:
+            logger.exception("ADK runner stream error: %s", e)
+            yield "I'm sorry, I wasn't able to generate a response. Please try again.", session
+            return
+
+        _update_topics(session, user_message)
+        yield response_text or "I'm sorry, I wasn't able to generate a response. Please try again.", session
 
 
 # ------------------------------------------------------------------
