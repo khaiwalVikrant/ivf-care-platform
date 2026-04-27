@@ -597,4 +597,5 @@ demo.launch(
     server_port=port,
     share=False,
     show_error=True,
+    show_api=False,
 )
