@@ -82,7 +82,6 @@ footer, .footer { display: none !important; }
     display: flex;
     flex-direction: row;
     width: 100%;
-    min-height: 100vh;
     gap: 0;
 }
 
@@ -95,7 +94,10 @@ footer, .footer { display: none !important; }
     flex-direction: column;
     gap: 0;
     overflow-y: auto;
-    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    min-width: 200px;
 }
 .sidebar-logo {
     font-size: 1.1rem;
@@ -193,19 +195,6 @@ footer, .footer { display: none !important; }
 #qbtn-5 button { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important; color: #881337 !important; }
 #qbtn-5 button:hover { background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important; border-color: #fb7185 !important; }
 
-/* ── Support communities — flat list, no box ── */
-.communities-block {
-    font-size: 0.82rem;
-    line-height: 2;
-    padding: 0;
-}
-.communities-block a {
-    color: #7c3aed;
-    text-decoration: none;
-    font-weight: 500;
-}
-.communities-block a:hover { text-decoration: underline; }
-
 /* ── Language selector ── */
 .lang-selector {
     background: #f5f3ff;
@@ -300,7 +289,7 @@ footer, .footer { display: none !important; }
 
 /* ── Central chat column ── */
 .center-col {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 0 !important;
@@ -327,6 +316,21 @@ footer, .footer { display: none !important; }
     padding: 12px 24px 16px 24px;
     background: #ffffff;
     border-top: 1px solid #e5e7eb;
+}
+
+/* ── Right sidebar ── */
+.right-sidebar {
+    background: #ffffff !important;
+    border-left: 1px solid #e5e7eb !important;
+    padding: 20px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    min-width: 200px;
 }
 
 /* ── Chatbot bubbles ── */
@@ -459,17 +463,6 @@ footer, .footer { display: none !important; }
     border-color: #7c3aed !important;
     color: #7c3aed !important;
     background: #f5f3ff !important;
-}
-
-/* ── Right sidebar ── */
-.right-sidebar {
-    background: #ffffff !important;
-    border-left: 1px solid #e5e7eb !important;
-    padding: 20px 16px !important;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    overflow-y: auto;
 }
 
 /* ── Journey progress bar ── */
@@ -684,6 +677,23 @@ footer, .footer { display: none !important; }
     pointer-events: none !important;
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* ── Responsive layout ── */
+
+/* Medium screens (tablets, small laptops ~768–1100px) — hide right sidebar */
+@media (max-width: 1100px) {
+    .right-sidebar { display: none !important; }
+}
+
+/* Small screens (<768px) — stack to single column */
+@media (max-width: 768px) {
+    .left-sidebar {
+        display: none !important;
+    }
+    .center-col {
+        min-height: 100svh !important;
+    }
 }
 """
 
@@ -951,15 +961,7 @@ with gr.Blocks(
                 _quick_sidebar.append((_btn, _prompt))
                 _all_quick.append((_btn, _prompt))
 
-            # Support Communities
-            gr.HTML('<div class="sidebar-section-title">🌐 Support Communities</div>')
-            gr.HTML("""
-            <div class="communities-block">
-                <div>🇮🇳 <a href="https://www.ivfbabble.com/india" target="_blank">IVF Babble India</a></div>
-                <div>🇬🇧 <a href="https://fertilitynetworkuk.org" target="_blank">Fertility Network UK</a></div>
-                <div>🇺🇸 <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
-            </div>
-            """)
+            # Support Communities removed — covered by Documents & Support in right sidebar
 
             # Current Activity — bottom, subtle, for context only
             gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px">⚡ Agent Activity</div>')
