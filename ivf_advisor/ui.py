@@ -95,6 +95,7 @@ footer, .footer { display: none !important; }
     flex-direction: column;
     gap: 0;
     overflow-y: auto;
+    min-height: 100vh;
 }
 .sidebar-logo {
     font-size: 1.1rem;
@@ -114,20 +115,6 @@ footer, .footer { display: none !important; }
     margin: 14px 0 6px 0;
 }
 
-/* ── Agent status — prominent banner ── */
-.agent-status-wrap {
-    background: #f5f3ff;
-    border-left: 3px solid #7c3aed;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.82rem;
-    color: #7c3aed;
-    font-weight: 500;
-    min-height: 36px;
-    margin-bottom: 4px;
-}
-.agent-status-wrap p { margin: 0 !important; color: #7c3aed !important; font-size: 0.82rem !important; }
-
 @keyframes pulse-glow {
     0%   { box-shadow: 0 0 0 0px rgba(124, 58, 237, 0.4); }
     70%  { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
@@ -140,63 +127,71 @@ footer, .footer { display: none !important; }
 
 /* ── Quick access buttons ── */
 .quick-btn {
-    margin-bottom: 6px !important;
+    margin-bottom: 5px !important;
     display: block !important;
     width: 100% !important;
 }
 .quick-btn button {
     width: 100% !important;
     text-align: left !important;
-    border-radius: 10px !important;
-    font-size: 0.81rem !important;
-    padding: 9px 13px 9px 14px !important;
-    border: 1px solid #e5e7eb !important;
-    background: #ffffff !important;
-    color: #374151 !important;
-    font-weight: 500 !important;
+    border-radius: 12px !important;
+    font-size: 0.82rem !important;
+    padding: 10px 12px 10px 12px !important;
+    border: 1.5px solid transparent !important;
+    background: #f5f3ff !important;
+    color: #4c1d95 !important;
+    font-weight: 600 !important;
     transition: all 0.18s ease !important;
     height: auto !important;
-    min-height: 38px !important;
+    min-height: 40px !important;
     justify-content: flex-start !important;
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    gap: 9px !important;
+    box-shadow: 0 1px 4px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.8) !important;
     position: relative !important;
     overflow: hidden !important;
+    letter-spacing: 0.01em !important;
 }
-/* Coloured left accent bar */
-.quick-btn button::before {
+/* Shimmer sweep on hover */
+.quick-btn button::after {
     content: '' !important;
     position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    width: 3px !important;
-    border-radius: 10px 0 0 10px !important;
-    background: linear-gradient(180deg, #7c3aed, #db2777) !important;
-    opacity: 0.7 !important;
-    transition: opacity 0.18s ease !important;
+    inset: 0 !important;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.45) 50%, transparent 60%) !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.4s ease !important;
+}
+.quick-btn button:hover::after {
+    transform: translateX(100%) !important;
 }
 .quick-btn button:hover {
-    background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%) !important;
-    border-color: #c4b5fd !important;
-    color: #6d28d9 !important;
-    box-shadow: 0 3px 12px rgba(124,58,237,0.18) !important;
-    transform: translateX(3px) !important;
+    transform: translateX(4px) scale(1.01) !important;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.22) !important;
+    border-color: rgba(124,58,237,0.3) !important;
 }
-.quick-btn button:hover::before {
-    opacity: 1 !important;
-    width: 4px !important;
+.quick-btn button:active {
+    transform: translateX(2px) scale(0.99) !important;
 }
 
-/* Per-button accent colours via elem_id */
-#qbtn-0 button::before { background: linear-gradient(180deg, #7c3aed, #a78bfa) !important; }
-#qbtn-1 button::before { background: linear-gradient(180deg, #0ea5e9, #38bdf8) !important; }
-#qbtn-2 button::before { background: linear-gradient(180deg, #059669, #34d399) !important; }
-#qbtn-3 button::before { background: linear-gradient(180deg, #f59e0b, #fbbf24) !important; }
-#qbtn-4 button::before { background: linear-gradient(180deg, #ec4899, #f472b6) !important; }
-#qbtn-5 button::before { background: linear-gradient(180deg, #db2777, #f43f5e) !important; }
+/* Per-button tinted backgrounds + accent borders */
+#qbtn-0 button { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important; color: #5b21b6 !important; }
+#qbtn-0 button:hover { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%) !important; border-color: #a78bfa !important; }
+
+#qbtn-1 button { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; color: #1e40af !important; }
+#qbtn-1 button:hover { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important; border-color: #60a5fa !important; }
+
+#qbtn-2 button { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important; color: #14532d !important; }
+#qbtn-2 button:hover { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border-color: #4ade80 !important; }
+
+#qbtn-3 button { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important; color: #78350f !important; }
+#qbtn-3 button:hover { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; border-color: #fbbf24 !important; }
+
+#qbtn-4 button { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%) !important; color: #701a75 !important; }
+#qbtn-4 button:hover { background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%) !important; border-color: #e879f9 !important; }
+
+#qbtn-5 button { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important; color: #881337 !important; }
+#qbtn-5 button:hover { background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important; border-color: #fb7185 !important; }
 
 /* ── Support communities — flat list, no box ── */
 .communities-block {
@@ -212,8 +207,37 @@ footer, .footer { display: none !important; }
 .communities-block a:hover { text-decoration: underline; }
 
 /* ── Language selector ── */
-.lang-selector .wrap { gap: 6px !important; }
-.lang-selector label { font-size: 0.80rem !important; color: #7c3aed !important; font-weight: 500 !important; }
+.lang-selector {
+    background: #f5f3ff;
+    border-radius: 10px;
+    padding: 8px 10px !important;
+    margin-bottom: 4px !important;
+    border: 1px solid #ede9fe;
+}
+.lang-selector .wrap { gap: 12px !important; }
+.lang-selector label { font-size: 0.80rem !important; color: #7c3aed !important; font-weight: 600 !important; }
+.lang-selector span { font-size: 0.79rem !important; color: #374151 !important; }
+
+/* ── Agent activity — bottom of sidebar, subtle ── */
+.agent-status-wrap {
+    background: #f9fafb;
+    border-left: 3px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    font-weight: 400;
+    min-height: 32px;
+    margin-top: 4px;
+}
+.agent-status-wrap p { margin: 0 !important; color: #9ca3af !important; font-size: 0.78rem !important; }
+.agent-active-pulse .agent-status-wrap,
+.agent-status-wrap.agent-active-pulse {
+    background: #f5f3ff;
+    border-left-color: #7c3aed;
+    color: #7c3aed;
+}
+.agent-status-wrap.agent-active-pulse p { color: #7c3aed !important; }
 
 /* ── Session badge ── */
 .status-badge textarea, .status-badge input {
@@ -227,32 +251,52 @@ footer, .footer { display: none !important; }
     text-align: center !important;
 }
 
-/* ── Sidebar action buttons ── */
-.sidebar-action-btn button {
-    border-radius: 8px !important;
-    font-size: 0.80rem !important;
-    padding: 7px 12px !important;
-    border: 1px solid #7c3aed !important;
-    background: #ffffff !important;
-    color: #7c3aed !important;
-    font-weight: 600 !important;
+/* ── New Conversation button — top of sidebar ── */
+.new-convo-btn {
+    margin-bottom: 12px !important;
     width: 100% !important;
-    transition: all 0.15s ease !important;
 }
-.sidebar-action-btn button:hover {
+.new-convo-btn button {
+    width: 100% !important;
+    border-radius: 10px !important;
+    border: 1.5px dashed #c4b5fd !important;
+    background: #faf5ff !important;
+    color: #7c3aed !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    padding: 9px 12px !important;
+    transition: all 0.18s ease !important;
+    letter-spacing: 0.01em !important;
+}
+.new-convo-btn button:hover {
     background: #7c3aed !important;
     color: #ffffff !important;
+    border-color: #7c3aed !important;
+    border-style: solid !important;
 }
-.save-btn button {
-    border-radius: 8px !important;
-    background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 600 !important;
-    font-size: 0.80rem !important;
+
+/* ── Save Profile — inline below chat, contextual ── */
+.save-profile-inline-btn {
     width: 100% !important;
-    padding: 7px 12px !important;
+    margin: 6px 0 4px 0 !important;
 }
+.save-profile-inline-btn button {
+    width: 100% !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-size: 0.80rem !important;
+    font-weight: 600 !important;
+    padding: 9px 16px !important;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.25) !important;
+    transition: opacity 0.15s, transform 0.1s !important;
+}
+.save-profile-inline-btn button:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+}
+
 
 /* ── Central chat column ── */
 .center-col {
@@ -319,7 +363,7 @@ footer, .footer { display: none !important; }
     background: #ffffff;
     border-radius: 16px;
     border: 1.5px solid #e5e7eb;
-    padding: 12px 14px 10px 14px;
+    padding: 8px 10px 8px 14px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.06);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -327,32 +371,54 @@ footer, .footer { display: none !important; }
     border-color: #7c3aed !important;
     box-shadow: 0 0 0 3px rgba(124,58,237,0.1) !important;
 }
+/* Remove Gradio's own border/bg on the row inside the group */
+.input-area > .gap,
+.input-area .gr-row {
+    gap: 8px !important;
+    align-items: flex-end !important;
+}
 .input-area textarea {
     border-radius: 10px !important;
-    border: 1px solid #e5e7eb !important;
-    padding: 10px 14px !important;
+    border: none !important;
+    padding: 10px 4px !important;
     font-size: 0.93rem !important;
-    background: #f9fafb !important;
+    background: transparent !important;
     resize: none !important;
     color: #1A1A2E !important;
+    box-shadow: none !important;
 }
 .input-area textarea:focus {
-    border-color: #7c3aed !important;
-    background: #ffffff !important;
+    border-color: transparent !important;
+    background: transparent !important;
     outline: none !important;
+    box-shadow: none !important;
 }
 
 /* ── Send button ── */
+.send-btn {
+    display: flex !important;
+    align-items: flex-end !important;
+    padding-bottom: 2px !important;
+    min-width: unset !important;
+}
 .send-btn button {
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%) !important;
     color: white !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
     border: none !important;
-    padding: 10px 20px !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
     box-shadow: 0 2px 10px rgba(124,58,237,0.3) !important;
     transition: opacity 0.15s, transform 0.1s !important;
-    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
 }
 .send-btn button:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
 
@@ -406,6 +472,160 @@ footer, .footer { display: none !important; }
     overflow-y: auto;
 }
 
+/* ── Journey progress bar ── */
+.journey-panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+}
+.journey-panel h4 {
+    color: #7c3aed;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.journey-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+.journey-steps::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
+    background: #e5e7eb;
+    z-index: 0;
+}
+.journey-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    position: relative;
+    z-index: 1;
+}
+.journey-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid #e5e7eb;
+    background: #ffffff;
+    color: #9ca3af;
+    transition: all 0.2s;
+}
+.journey-dot.done {
+    background: linear-gradient(135deg, #7c3aed, #db2777);
+    border-color: transparent;
+    color: #ffffff;
+}
+.journey-dot.active {
+    background: #ffffff;
+    border-color: #7c3aed;
+    color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+.journey-step-info { padding-top: 4px; }
+.journey-step-label {
+    font-size: 0.80rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.2;
+}
+.journey-step-label.active { color: #7c3aed; }
+.journey-step-label.done { color: #6b7280; }
+.journey-step-sub {
+    font-size: 0.70rem;
+    color: #9ca3af;
+    margin-top: 1px;
+}
+
+/* ── Documents & Support panel ── */
+.docs-panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+}
+.docs-panel h4 {
+    color: #7c3aed;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.docs-section-label {
+    font-size: 0.70rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 10px 0 5px 0;
+}
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #374151;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    margin-bottom: 2px;
+}
+.doc-item:hover {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+.doc-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.doc-icon.purple { background: #f5f3ff; }
+.doc-icon.blue   { background: #eff6ff; }
+.doc-icon.green  { background: #f0fdf4; }
+.doc-icon.pink   { background: #fdf2f8; }
+.support-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin: 3px 3px 0 0;
+    transition: opacity 0.15s;
+    border: 1px solid transparent;
+}
+.support-pill:hover { opacity: 0.8; }
+.support-pill.india  { background: #fdf2f8; color: #db2777; border-color: #fbcfe8; }
+.support-pill.uk     { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+.support-pill.global { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
+
 /* ── Sources panel ── */
 .sources-panel {
     background: #ffffff;
@@ -435,38 +655,35 @@ footer, .footer { display: none !important; }
 .sources-list { display: flex; flex-direction: column; gap: 4px; }
 
 /* ── Bento cards ── */
-.bento-btn {
-    margin-bottom: 8px !important;
-    display: block !important;
-    width: 100% !important;
+.bento-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s;
 }
-.bento-btn button {
-    width: 100% !important;
-    text-align: left !important;
-    border-radius: 12px !important;
-    border: 1px solid #e5e7eb !important;
-    background: #ffffff !important;
-    padding: 14px !important;
-    height: auto !important;
-    min-height: unset !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    cursor: pointer !important;
-    white-space: normal !important;
-    line-height: 1.4 !important;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s !important;
-    box-shadow: none !important;
-    /* reset Gradio secondary button styles */
-    color: #1A1A2E !important;
-    font-weight: 400 !important;
-    font-size: 0.82rem !important;
+.bento-card:hover {
+    background: #fdf2f8;
+    border-color: #db2777;
+    box-shadow: 0 4px 16px rgba(219,39,119,0.15);
+    transform: translateY(-3px);
 }
-.bento-btn button:hover {
-    background: #fdf2f8 !important;
-    border-color: #db2777 !important;
-    box-shadow: 0 4px 16px rgba(219,39,119,0.15) !important;
-    transform: translateY(-3px) !important;
+.bento-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; margin-bottom: 4px; }
+.bento-card-desc { color: #6b7280; font-size: 0.76rem; line-height: 1.5; margin: 0; }
+
+/* Hidden trigger button — zero size, invisible, but still clickable by JS */
+.bento-btn-hidden {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 """
 
@@ -485,9 +702,9 @@ def chat(
     session_id: str,
     language: str = "English",
 ):
-    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, agent_status, sources_html)."""
+    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, agent_status, sources_html, journey_bar)."""
     if not user_message.strip():
-        yield history, session_id, "", gr.update(), gr.update(visible=False), gr.update()
+        yield history, session_id, "", gr.update(), gr.update(visible=False), gr.update(), gr.update()
         return
 
     orch = _get_orchestrator()
@@ -505,10 +722,11 @@ def chat(
         _msg("user", user_message),
         _msg("assistant", "🤔 Thinking..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update()
 
     response = ""
     last_sources_html = _build_sources_html([])  # default empty
+    last_journey_html = gr.update()
     try:
         for chunk, session in orch.turn_stream(session_id, message_to_send):
             if chunk.startswith("_thinking:"):
@@ -529,20 +747,22 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
                 citations = _extract_citations(response)
                 if citations:
                     last_sources_html = _build_sources_html(citations)
+                stage = _detect_journey_stage(response)
+                last_journey_html = _build_journey_html(stage)
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
-                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), last_sources_html
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=False), gr.update()
+        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
 
 
 def save_profile(history: list[dict], session_id: str):
@@ -599,6 +819,83 @@ def _build_sources_html(citations: list[str]) -> str:
     return f'<div class="sources-list" style="max-height: 300px; overflow-y: auto;">{items}</div>'
 
 
+# IVF journey stages definition
+_JOURNEY_STAGES = [
+    ("1", "Initial Consultation", "Assessment & planning"),
+    ("2", "Stimulation", "Hormone injections phase"),
+    ("3", "Egg Retrieval", "Follicle aspiration"),
+    ("4", "Embryo Transfer", "Implantation step"),
+    ("5", "Result", "Pregnancy test"),
+]
+
+
+def _build_journey_html(active_stage: int = 1) -> str:
+    """Build the journey progress bar HTML. active_stage is 1-indexed."""
+    steps_html = ""
+    for i, (num, label, sub) in enumerate(_JOURNEY_STAGES, start=1):
+        if i < active_stage:
+            dot_cls = "done"
+            label_cls = "done"
+            icon = "✓"
+        elif i == active_stage:
+            dot_cls = "active"
+            label_cls = "active"
+            icon = num
+        else:
+            dot_cls = ""
+            label_cls = ""
+            icon = num
+        steps_html += f"""
+        <div class="journey-step">
+            <div class="journey-dot {dot_cls}">{icon}</div>
+            <div class="journey-step-info">
+                <div class="journey-step-label {label_cls}">{label}</div>
+                <div class="journey-step-sub">{sub}</div>
+            </div>
+        </div>"""
+    return f'<div class="journey-steps">{steps_html}</div>'
+
+
+_DOCS_HTML = """
+<div class="docs-section-label">📄 Patient Guides</div>
+<a class="doc-item" href="https://www.eshre.eu/Guidelines-and-Legal/Guidelines/Ovarian-stimulation-in-IVF" target="_blank">
+    <span class="doc-icon purple">📋</span>ESHRE Stimulation Guide
+</a>
+<a class="doc-item" href="https://www.hfea.gov.uk/treatments/explore-all-treatments/in-vitro-fertilisation-ivf/" target="_blank">
+    <span class="doc-icon blue">📘</span>HFEA IVF Patient Guide
+</a>
+<a class="doc-item" href="https://www.icmr.gov.in/cder/dir/ART%20GUIDELINES-%20FINAL.pdf" target="_blank">
+    <span class="doc-icon green">📗</span>ICMR ART Guidelines (India)
+</a>
+<a class="doc-item" href="https://www.asrm.org/topics/topics-index/in-vitro-fertilization-ivf/" target="_blank">
+    <span class="doc-icon pink">📙</span>ASRM IVF Patient Resources
+</a>
+
+<div class="docs-section-label" style="margin-top:12px">🤝 Support Groups</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+    <a class="support-pill india" href="https://www.ivfbabble.com/india" target="_blank">🇮🇳 IVF Babble India</a>
+    <a class="support-pill india" href="https://www.practo.com/ivf" target="_blank">🇮🇳 Practo Forum</a>
+    <a class="support-pill uk" href="https://fertilitynetworkuk.org" target="_blank">🇬🇧 Fertility Network UK</a>
+    <a class="support-pill global" href="https://resolve.org" target="_blank">🌍 RESOLVE (US)</a>
+    <a class="support-pill global" href="https://www.ifmh.org" target="_blank">🌍 IFMH Global</a>
+</div>
+"""
+
+
+def _detect_journey_stage(response: str) -> int:
+    """Infer IVF journey stage (1-5) from the assistant response text."""
+    text = response.lower()
+    if any(k in text for k in ["pregnancy test", "beta hcg", "positive test", "implantation success", "congratulations"]):
+        return 5
+    if any(k in text for k in ["embryo transfer", "transfer day", "blastocyst transfer", "fet", "frozen embryo transfer"]):
+        return 4
+    if any(k in text for k in ["egg retrieval", "egg collection", "follicle aspiration", "oocyte retrieval", "fertilisation result"]):
+        return 3
+    if any(k in text for k in ["stimulation", "gonal-f", "menopur", "follicle monitoring", "trigger injection", "self-administer"]):
+        return 2
+    return 1
+
+
 # ── UI layout ──────────────────────────────────────────────────────────────
 
 _all_quick: list[tuple[gr.Button, str]] = []  # populated during layout
@@ -623,18 +920,20 @@ with gr.Blocks(
         # ══════════════════════════════════════════════════════════════════
         with gr.Column(scale=1, elem_classes=["left-sidebar"]):
 
-            # Logo
+            # Logo + New Conversation button side by side
             gr.HTML('<div class="sidebar-logo">🌸 IVF Care</div>')
+            new_btn = gr.Button("✦ New Conversation", variant="secondary", size="sm", elem_classes=["new-convo-btn"])
 
-            # Current activity section — patient-friendly label
-            gr.HTML('<div class="sidebar-section-title">💬 Current Activity</div>')
-            agent_status = gr.Markdown(
-                value="Ready to help you",
-                visible=True,
-                elem_classes=["agent-status-wrap"],
+            # Language selector — top priority, affects all responses
+            language_selector = gr.Radio(
+                choices=["English", "Hindi"],
+                value="English",
+                label="🌐 Language / भाषा",
+                interactive=True,
+                elem_classes=["lang-selector"],
             )
 
-            # Quick Access section — renamed to "Start a Conversation"
+            # Quick Access — Start a Conversation
             gr.HTML('<div class="sidebar-section-title">💬 Start a Conversation</div>')
             gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0">Tap to send a question instantly</p>')
 
@@ -652,43 +951,32 @@ with gr.Blocks(
                 _quick_sidebar.append((_btn, _prompt))
                 _all_quick.append((_btn, _prompt))
 
-            # Support Communities — verified working links
+            # Support Communities
             gr.HTML('<div class="sidebar-section-title">🌐 Support Communities</div>')
             gr.HTML("""
             <div class="communities-block">
                 <div>🇮🇳 <a href="https://www.ivfbabble.com/india" target="_blank">IVF Babble India</a></div>
-                <div>🇮🇳 <a href="https://www.practo.com/ivf" target="_blank">Practo IVF Forum</a></div>
                 <div>🇬🇧 <a href="https://fertilitynetworkuk.org" target="_blank">Fertility Network UK</a></div>
-                <div>� <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
+                <div>🇺🇸 <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
             </div>
             """)
 
-            # Language selector
-            language_selector = gr.Radio(
-                choices=["English", "Hindi"],
-                value="English",
-                label="🌐 Language",
-                interactive=True,
-                elem_classes=["lang-selector"],
+            # Current Activity — bottom, subtle, for context only
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px">⚡ Agent Activity</div>')
+            agent_status = gr.Markdown(
+                value="Ready to help you",
+                visible=True,
+                elem_classes=["agent-status-wrap"],
             )
 
-            # Session status badge
+            # Hidden session state — needed for wiring but not shown to patient
             state_display = gr.Textbox(
-                label="Session",
+                label="",
                 interactive=False,
                 value="🟢 Active session",
                 elem_classes=["status-badge"],
-                show_label=True,
-            )
-
-            # New chat + Save profile buttons — always visible
-            new_btn = gr.Button("🔄 New Chat", variant="secondary", size="sm", elem_classes=["sidebar-action-btn"])
-            save_profile_btn = gr.Button(
-                "💾 Save Profile",
-                variant="secondary",
-                size="sm",
-                visible=True,
-                elem_classes=["save-btn"],
+                show_label=False,
+                visible=False,
             )
 
         # ══════════════════════════════════════════════════════════════════
@@ -731,8 +1019,8 @@ with gr.Blocks(
                         max_lines=4,
                     )
                     send_btn = gr.Button(
-                        "Send ➤",
-                        scale=1,
+                        "➤",
+                        scale=0,
                         variant="primary",
                         elem_classes=["send-btn"],
                     )
@@ -759,6 +1047,15 @@ with gr.Blocks(
                     _eb = gr.Button(_chip_label, size="sm", elem_classes=["example-chip"])
                     _example_btns.append((_eb, _chip_prompt))
 
+            # Save Profile — appears after first turn, contextual to conversation
+            save_profile_btn = gr.Button(
+                "� Remember me for future visits",
+                variant="secondary",
+                size="sm",
+                visible=False,
+                elem_classes=["save-profile-inline-btn"],
+            )
+
             # Disclaimer
             gr.HTML("""
             <div class="disclaimer-banner">
@@ -775,6 +1072,11 @@ with gr.Blocks(
         # COLUMN 3 — Right Bento Sidebar
         # ══════════════════════════════════════════════════════════════════
         with gr.Column(scale=1, elem_classes=["right-sidebar"]):
+
+            # ── Patient Journey Progress Bar ──────────────────────────────
+            gr.HTML('<div class="journey-panel"><h4>🗺️ Your IVF Journey</h4>')
+            journey_bar = gr.HTML(value=_build_journey_html(1))
+            gr.HTML('</div>')
 
             # Evidence & Sources panel
             gr.HTML('<div class="sources-panel"><h4>📚 Evidence &amp; Sources</h4>')
@@ -799,30 +1101,42 @@ with gr.Blocks(
             ]
 
             _bento_btns: list[tuple[gr.Button, str]] = []
-            for _icon, _title, _desc, _prompt in _bento_defs:
+            for _i, (_icon, _title, _desc, _prompt) in enumerate(_bento_defs):
+                _card_id = f"bento-card-{_i}"
+                _btn_id  = f"bento-btn-{_i}"
+                gr.HTML(f"""
+                <div class="bento-card" id="{_card_id}" onclick="document.getElementById('{_btn_id}').querySelector('button').click()">
+                    <div class="bento-card-icon">{_icon}</div>
+                    <div class="bento-card-title">{_title}</div>
+                    <p class="bento-card-desc">{_desc}</p>
+                </div>
+                """)
                 _bbtn = gr.Button(
-                    value=(
-                        f'<span style="font-size:1.4rem;margin-bottom:6px;display:block">{_icon}</span>'
-                        f'<span style="font-weight:700;color:#7c3aed;font-size:0.85rem;margin-bottom:4px;display:block">{_title}</span>'
-                        f'<span style="color:#6b7280;font-size:0.76rem;line-height:1.5;display:block">{_desc}</span>'
-                    ),
+                    value=_title,
                     variant="secondary",
-                    elem_classes=["bento-btn"],
+                    elem_classes=["bento-btn-hidden"],
+                    elem_id=_btn_id,
+                    visible=True,
                 )
                 _bento_btns.append((_bbtn, _prompt))
                 _all_quick.append((_bbtn, _prompt))
+
+            # ── Documents & Support Group ─────────────────────────────────
+            gr.HTML('<div class="docs-panel"><h4>📁 Documents &amp; Support</h4>')
+            gr.HTML(_DOCS_HTML)
+            gr.HTML('</div>')
 
     # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     # Audio: transcribe when recording stops, fill text box then auto-send
@@ -833,7 +1147,7 @@ with gr.Blocks(
     ).then(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
@@ -841,14 +1155,14 @@ with gr.Blocks(
     save_profile_btn.click(
         fn=save_profile,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
     )
 
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
             inputs=[chatbot, session_id_state],
-            outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
+            outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
