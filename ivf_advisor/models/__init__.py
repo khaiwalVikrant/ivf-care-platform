@@ -232,5 +232,5 @@ class EmotionalSupportOutput(BaseModel):
     distress_level: str
     empathy_response: str
     coping_strategies: list[str]
-    support_resources: dict
+    support_resources: dict[str, list[str]]
     crisis_mode: bool
