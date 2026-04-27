@@ -374,7 +374,7 @@ footer, .footer { display: none !important; }
 }
 
 /* ── Main content padding ── */
-.main-content { padding: 0 32px 80px 32px; max-width: 960px; margin: 0 auto; }
+.main-content { padding: 0 24px 80px 24px; width: 100%; }
 
 /* ── Agent status indicator ── */
 .agent-status {
@@ -636,24 +636,6 @@ with gr.Blocks(
 
     with gr.Column(elem_classes=["main-content"]):
 
-        # ── Feature pills — always visible, shows all capabilities ──
-        gr.HTML("""
-        <div class="feature-pills">
-            <span class="feature-pill">🧬 Lab Results</span>
-            <span class="feature-pill">📅 Treatment Timeline</span>
-            <span class="feature-pill">💊 Injection Training</span>
-            <span class="feature-pill">💰 Cost Breakdown (INR)</span>
-            <span class="feature-pill">📊 Success Rates</span>
-            <span class="feature-pill">🥗 Wellness Guide</span>
-            <span class="feature-pill">🚩 Clinic Red Flags</span>
-            <span class="feature-pill">❤️ Emotional Support</span>
-            <span class="feature-pill">🔬 Evidence Search</span>
-            <span class="feature-pill">🌐 Hindi Support</span>
-            <span class="feature-pill">📅 Book Appointments</span>
-            <span class="feature-pill">⏰ Medication Reminders</span>
-        </div>
-        """)
-
         # ── Welcome feature cards ──
         gr.HTML("""
         <div class="welcome-cards">
@@ -754,25 +736,6 @@ with gr.Blocks(
                     value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
                 )
                 gr.HTML('</div>')
-
-                gr.HTML("""
-                <div class="sources-panel" style="margin-top:12px">
-                    <h4>⚡ Quick Actions</h4>
-                    <p style="color:#6b7280;font-size:0.78rem;margin:0 0 8px 0">Use the chips above the input to quickly access all features.</p>
-                    <div style="font-size:0.78rem;color:#374151;line-height:2">
-                        🧬 Lab Results<br>
-                        📅 Treatment Timeline<br>
-                        💊 Injection Training<br>
-                        💰 Cost Breakdown<br>
-                        📊 Success Rates<br>
-                        🥗 Wellness Guide<br>
-                        🚩 Clinic Red Flags<br>
-                        ❤️ Emotional Support<br>
-                        🔬 Evidence Search<br>
-                        🌐 Hindi Support
-                    </div>
-                </div>
-                """)
 
     # ── Event wiring ──
     send_btn.click(
