@@ -1,4 +1,4 @@
-"""Gradio chat UI for the IVF Treatment Advisor Agent — premium redesign."""
+"""Gradio chat UI for the IVF Treatment Advisor Agent — Command Center layout."""
 
 from __future__ import annotations
 
@@ -61,13 +61,14 @@ QUICK_CHIPS: list[tuple[str, str]] = [
     ("📅 Book appointment",  "Book a consultation appointment for next week"),
 ]
 
+
 # ── CSS ────────────────────────────────────────────────────────────────────
 CSS = """
 /* ── Reset & base ── */
 *, *::before, *::after { box-sizing: border-box; }
 body, .gradio-container {
     font-family: 'Inter', 'Segoe UI', sans-serif !important;
-    background: #FAFAF8 !important;
+    background: #ffffff !important;
     color: #1A1A2E !important;
 }
 footer, .footer { display: none !important; }
@@ -75,386 +76,311 @@ footer, .footer { display: none !important; }
 .contain { max-width: 100% !important; padding: 0 !important; }
 .gap { gap: 0 !important; }
 
-/* ── Sticky top bar ── */
-.top-bar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(250,250,248,0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(13,115,119,0.12);
-    padding: 10px 24px;
+/* ── Three-column layout ── */
+.cmd-layout {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0;
-}
-.top-bar-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.top-bar-logo .logo-icon { font-size: 1.6rem; }
-.top-bar-logo .logo-text {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #0D7377;
-    letter-spacing: -0.3px;
-}
-.top-bar-logo .logo-sub {
-    font-size: 0.72rem;
-    color: #6b7280;
-    font-weight: 400;
-    display: block;
-    margin-top: -2px;
-}
-.top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: row;
+    width: 100%;
+    min-height: 100vh;
+    gap: 0;
 }
 
-/* ── Status badge ── */
+/* ── Left sidebar ── */
+.left-sidebar {
+    background: #f9fafb !important;
+    border-right: 1px solid #e5e7eb !important;
+    padding: 20px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+.sidebar-logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0d9488;
+    letter-spacing: -0.3px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.sidebar-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+/* ── Agent status — prominent banner ── */
+.agent-status-wrap {
+    background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%);
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #7c3aed;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.83rem;
+    color: #7c3aed;
+    font-weight: 500;
+    min-height: 44px;
+}
+.agent-status-wrap p { margin: 0 !important; color: #7c3aed !important; }
+
+/* ── Quick access buttons ── */
+.quick-btn button {
+    width: 100% !important;
+    text-align: left !important;
+    border-radius: 8px !important;
+    font-size: 0.80rem !important;
+    padding: 7px 12px !important;
+    border: 1px solid #7c3aed !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-weight: 500 !important;
+    margin-bottom: 4px !important;
+    transition: all 0.15s ease !important;
+    height: auto !important;
+    justify-content: flex-start !important;
+}
+.quick-btn button:hover {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+    border-color: #7c3aed !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.25) !important;
+}
+
+/* ── Support communities ── */
+.communities-block {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.78rem;
+    line-height: 1.7;
+}
+.communities-block a {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 500;
+}
+.communities-block a:hover { text-decoration: underline; }
+
+/* ── Language selector ── */
+.lang-selector .wrap { gap: 6px !important; }
+.lang-selector label { font-size: 0.80rem !important; color: #7c3aed !important; font-weight: 500 !important; }
+
+/* ── Session badge ── */
 .status-badge textarea, .status-badge input {
     border-radius: 999px !important;
-    background: #f0fafa !important;
-    border: 1px solid rgba(13,115,119,0.25) !important;
-    color: #0D7377 !important;
+    background: #f5f3ff !important;
+    border: 1px solid rgba(124,58,237,0.3) !important;
+    color: #7c3aed !important;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     padding: 4px 14px !important;
     text-align: center !important;
-    min-width: 160px !important;
 }
 
-/* ── Language selector ── */
-.lang-selector .wrap { gap: 6px !important; }
-.lang-selector label { font-size: 0.80rem !important; color: #0D7377 !important; font-weight: 500 !important; }
-.lang-selector .gr-radio-row { gap: 6px !important; }
+/* ── Sidebar action buttons ── */
+.sidebar-action-btn button {
+    border-radius: 8px !important;
+    font-size: 0.80rem !important;
+    padding: 7px 12px !important;
+    border: 1px solid #7c3aed !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    transition: all 0.15s ease !important;
+}
+.sidebar-action-btn button:hover {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+}
+.save-btn button {
+    border-radius: 8px !important;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+    font-size: 0.80rem !important;
+    width: 100% !important;
+    padding: 7px 12px !important;
+}
 
-/* ── Welcome feature cards ── */
-.welcome-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    padding: 24px 0 8px 0;
+/* ── Central chat column ── */
+.center-col {
+    padding: 20px 24px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
 }
-.welcome-card {
-    background: white;
-    border: 1px solid rgba(13,115,119,0.15);
-    border-radius: 16px;
-    padding: 20px 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 12px rgba(13,115,119,0.06);
+.chat-header-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #7c3aed;
+    margin: 0 0 2px 0;
 }
-.welcome-card:hover {
-    border-color: #0D7377;
-    box-shadow: 0 6px 24px rgba(13,115,119,0.15);
-    transform: translateY(-2px);
+.chat-header-sub {
+    font-size: 0.82rem;
+    color: #6b7280;
+    margin: 0;
 }
-.welcome-card .wc-icon { font-size: 2rem; margin-bottom: 10px; }
-.welcome-card .wc-title { font-weight: 700; color: #0D7377; font-size: 0.95rem; margin-bottom: 6px; }
-.welcome-card .wc-desc { color: #4b5563; font-size: 0.80rem; line-height: 1.55; margin: 0; }
 
 /* ── Chatbot bubbles ── */
 .chat-wrap {
-    border-radius: 20px !important;
-    border: 1px solid rgba(13,115,119,0.12) !important;
-    background: #FAFAF8 !important;
-    box-shadow: 0 4px 24px rgba(13,115,119,0.07) !important;
+    border-radius: 16px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.07) !important;
     overflow: hidden !important;
 }
 /* User bubble */
 .chat-wrap .message.user > div,
 .chat-wrap [data-testid="user"] .bubble-wrap {
-    background: linear-gradient(135deg, #0D7377 0%, #14A085 100%) !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%) !important;
     color: white !important;
     border-radius: 18px 18px 4px 18px !important;
-    box-shadow: 0 2px 10px rgba(13,115,119,0.25) !important;
+    box-shadow: 0 2px 10px rgba(124,58,237,0.25) !important;
 }
 /* Bot bubble */
 .chat-wrap .message.bot > div,
 .chat-wrap [data-testid="bot"] .bubble-wrap {
-    background: rgba(255,255,255,0.92) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(13,115,119,0.12) !important;
-    border-left: 3px solid #0D7377 !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-left: 3px solid #7c3aed !important;
     border-radius: 18px 18px 18px 4px !important;
     color: #1A1A2E !important;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06) !important;
-}
-
-/* ── Quick action chips row ── */
-.chips-row {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 10px 0 6px 0;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-.chips-row::-webkit-scrollbar { display: none; }
-.chip-btn button {
-    border-radius: 999px !important;
-    font-size: 0.80rem !important;
-    padding: 6px 14px !important;
-    border: 1.5px solid rgba(13,115,119,0.3) !important;
-    background: white !important;
-    color: #0D7377 !important;
-    font-weight: 500 !important;
-    white-space: nowrap !important;
-    box-shadow: none !important;
-    transition: all 0.15s ease !important;
-    height: auto !important;
-    min-width: unset !important;
-}
-.chip-btn button:hover {
-    background: #0D7377 !important;
-    color: white !important;
-    border-color: #0D7377 !important;
-    box-shadow: 0 2px 8px rgba(13,115,119,0.3) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
 }
 
 /* ── Input area ── */
 .input-area {
-    background: white;
-    border-radius: 20px;
-    border: 1.5px solid rgba(13,115,119,0.2);
-    padding: 14px 16px 10px 16px;
-    margin-top: 6px;
-    box-shadow: 0 2px 16px rgba(13,115,119,0.06);
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
+    padding: 12px 14px 10px 14px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.06);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 .input-area:focus-within {
-    border-color: #0D7377 !important;
-    box-shadow: 0 0 0 3px rgba(13,115,119,0.12), 0 2px 16px rgba(13,115,119,0.1) !important;
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1) !important;
 }
 .input-area textarea {
-    border-radius: 12px !important;
-    border: 1.5px solid rgba(13,115,119,0.15) !important;
-    padding: 10px 16px !important;
-    font-size: 0.95rem !important;
-    background: #FAFAF8 !important;
+    border-radius: 10px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 10px 14px !important;
+    font-size: 0.93rem !important;
+    background: #f9fafb !important;
     resize: none !important;
     color: #1A1A2E !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
 }
 .input-area textarea:focus {
-    border-color: #0D7377 !important;
-    background: white !important;
+    border-color: #7c3aed !important;
+    background: #ffffff !important;
     outline: none !important;
-    box-shadow: none !important;
-}
-
-/* ── Glowing input animation while waiting ── */
-@keyframes glow-pulse {
-    0%   { box-shadow: 0 0 0 3px rgba(13,115,119,0.15); border-color: #0D7377; }
-    50%  { box-shadow: 0 0 0 5px rgba(244,132,95,0.2);  border-color: #F4845F; }
-    100% { box-shadow: 0 0 0 3px rgba(13,115,119,0.15); border-color: #0D7377; }
-}
-.input-waiting {
-    animation: glow-pulse 1.6s ease-in-out infinite !important;
 }
 
 /* ── Send button ── */
 .send-btn button {
-    border-radius: 12px !important;
-    background: linear-gradient(135deg, #0D7377 0%, #14A085 100%) !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%) !important;
     color: white !important;
     font-weight: 600 !important;
     border: none !important;
-    padding: 10px 22px !important;
-    box-shadow: 0 2px 10px rgba(13,115,119,0.3) !important;
+    padding: 10px 20px !important;
+    box-shadow: 0 2px 10px rgba(124,58,237,0.3) !important;
     transition: opacity 0.15s, transform 0.1s !important;
     height: 42px !important;
 }
 .send-btn button:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
-.send-btn button:active { transform: translateY(0) !important; }
-
-/* ── Action row ── */
-.action-row { align-items: center !important; gap: 8px !important; }
-.action-row button {
-    border-radius: 999px !important;
-    font-size: 0.82rem !important;
-    font-weight: 500 !important;
-}
-
-/* ── Save profile button ── */
-.save-btn button {
-    border-radius: 999px !important;
-    background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(5,150,105,0.3) !important;
-    font-size: 0.82rem !important;
-}
-
-/* ── Floating mic button ── */
-.floating-mic {
-    position: fixed !important;
-    bottom: 28px !important;
-    right: 28px !important;
-    z-index: 200 !important;
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 50% !important;
-    background: linear-gradient(135deg, #F4845F 0%, #e8623a 100%) !important;
-    box-shadow: 0 4px 20px rgba(244,132,95,0.45) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    border: none !important;
-    transition: transform 0.15s, box-shadow 0.15s !important;
-}
-.floating-mic:hover {
-    transform: scale(1.08) !important;
-    box-shadow: 0 6px 28px rgba(244,132,95,0.55) !important;
-}
-/* Hide the default audio widget label/border, keep it minimal */
-.audio-hidden {
-    opacity: 0;
-    position: absolute;
-    pointer-events: none;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-}
-
-/* ── Help accordion ── */
-.help-accordion {
-    border-radius: 16px !important;
-    border: 1px solid rgba(13,115,119,0.15) !important;
-    background: white !important;
-    margin-top: 8px !important;
-    overflow: hidden !important;
-}
-.help-accordion .label-wrap {
-    background: linear-gradient(135deg, #0D7377 0%, #14A085 100%) !important;
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 0.9rem !important;
-    padding: 10px 16px !important;
-}
-.help-accordion .label-wrap span { color: white !important; }
-.help-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 14px;
-}
-.help-card {
-    background: #f0fafa;
-    border: 1px solid rgba(13,115,119,0.12);
-    border-radius: 12px;
-    padding: 12px 14px;
-}
-.help-card .icon { font-size: 1.4rem; margin-bottom: 4px; }
-.help-card .title { font-weight: 700; color: #0D7377; font-size: 0.85rem; margin-bottom: 4px; }
-.help-card .desc { color: #374151; font-size: 0.78rem; line-height: 1.5; margin: 0; }
 
 /* ── Disclaimer banner ── */
 .disclaimer-banner {
     background: #fffbeb;
     border: 1px solid #fcd34d;
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin-top: 8px;
+    border-radius: 10px;
+    padding: 10px 14px;
 }
 .disclaimer-banner p {
     color: #92400e !important;
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
     margin: 0 !important;
     line-height: 1.5 !important;
 }
 
-/* ── Main content padding ── */
-.main-content { padding: 0 24px 80px 24px; width: 100%; }
-
-/* ── Agent status indicator ── */
-.agent-status {
-    background: linear-gradient(135deg, #f0fafa 0%, #fdf2f8 100%);
-    border: 1px solid rgba(13,115,119,0.2);
-    border-left: 4px solid #0D7377;
-    border-radius: 10px;
-    padding: 10px 16px;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    color: #0D7377;
-    font-weight: 500;
+/* ── Right sidebar ── */
+.right-sidebar {
+    background: #ffffff !important;
+    border-left: 1px solid #e5e7eb !important;
+    padding: 20px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
 }
 
-/* ── Sources sidebar ── */
+/* ── Sources panel ── */
 .sources-panel {
-    background: white;
-    border: 1px solid rgba(13,115,119,0.15);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 2px 12px rgba(13,115,119,0.06);
-    min-height: 200px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.05);
 }
 .sources-panel h4 {
-    color: #0D7377;
+    color: #7c3aed;
     font-size: 0.85rem;
     font-weight: 700;
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(13,115,119,0.12);
+    border-bottom: 1px solid #e5e7eb;
 }
 .source-item {
-    background: #f0fafa;
-    border: 1px solid rgba(13,115,119,0.1);
+    background: #f5f3ff;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 8px 10px;
-    margin-bottom: 6px;
-    font-size: 0.78rem;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    font-size: 0.76rem;
     color: #374151;
     line-height: 1.4;
 }
 .sources-list { display: flex; flex-direction: column; gap: 4px; }
 
-/* ── Two-column layout ── */
-.chat-col { flex: 3 !important; }
-.sidebar-col { flex: 1 !important; min-width: 220px !important; max-width: 280px !important; }
-.feature-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px 0 4px 0;
+/* ── Bento cards ── */
+.bento-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 }
-.feature-pill {
-    background: white;
-    border: 1px solid rgba(13,115,119,0.2);
-    border-radius: 999px;
-    padding: 5px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #0D7377;
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(13,115,119,0.08);
+.bento-card:hover {
+    border-color: #7c3aed !important;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.15) !important;
 }
-
-/* ── Top bar controls (Gradio components inside top bar area) ── */
-.top-controls {
-    background: rgba(250,250,248,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(13,115,119,0.1);
-    padding: 8px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+.bento-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; margin-bottom: 4px; }
+.bento-card-desc { color: #6b7280; font-size: 0.76rem; line-height: 1.5; margin: 0 0 8px 0; }
+.bento-btn button {
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    padding: 4px 10px !important;
+    border: 1px solid #7c3aed !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-weight: 500 !important;
+    height: auto !important;
+    transition: all 0.15s ease !important;
 }
-.top-controls .status-badge textarea {
-    min-width: 130px !important;
-    max-width: 160px !important;
+.bento-btn button:hover {
+    background: #7c3aed !important;
+    color: #ffffff !important;
 }
-.top-controls .lang-selector { flex-shrink: 0; }
 """
 
 
@@ -495,6 +421,7 @@ def chat(
     yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update()
 
     response = ""
+    last_sources_html = _build_sources_html([])  # default empty
     try:
         for chunk, session in orch.turn_stream(session_id, message_to_send):
             if chunk.startswith("_thinking:"):
@@ -515,14 +442,16 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True), gr.update()
+                # Keep last known sources — don't reset them
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True), last_sources_html
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
                 citations = _extract_citations(response)
-                sources_html = _build_sources_html(citations)
+                if citations:
+                    last_sources_html = _build_sources_html(citations)
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
-                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), sources_html
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), last_sources_html
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
@@ -533,6 +462,7 @@ def chat(
 def save_profile(history: list[dict], session_id: str):
     """Trigger profile save via chat."""
     yield from chat("I would like to save my profile", history, session_id)
+
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
     """Transcribe recorded audio and return text for the input box."""
@@ -583,161 +513,209 @@ def _build_sources_html(citations: list[str]) -> str:
 _all_quick: list[tuple[gr.Button, str]] = []  # populated during layout
 
 with gr.Blocks(
-    title="IVF Care Platform",
+    title="IVF Advisor Command Center",
     theme=gr.themes.Base(
-        primary_hue=gr.themes.colors.teal,
-        secondary_hue=gr.themes.colors.orange,
+        primary_hue=gr.themes.colors.purple,
+        secondary_hue=gr.themes.colors.pink,
         neutral_hue=gr.themes.colors.gray,
         font=gr.themes.GoogleFont("Inter"),
     ),
     css=CSS,
 ) as demo:
 
-    # ── Sticky top bar ──
-    gr.HTML("""
-    <div class="top-bar">
-        <div class="top-bar-logo">
-            <span class="logo-icon">🌸</span>
+    session_id_state = gr.State("")
+
+    with gr.Row(equal_height=False):
+
+        # ══════════════════════════════════════════════════════════════════
+        # COLUMN 1 — Left Navigation Sidebar
+        # ══════════════════════════════════════════════════════════════════
+        with gr.Column(scale=1, elem_classes=["left-sidebar"]):
+
+            # Logo
+            gr.HTML('<div class="sidebar-logo">🌸 IVF Care</div>')
+
+            # Active Agents section
+            gr.HTML('<div class="sidebar-section-title">🤖 Active Agents</div>')
+            agent_status = gr.Markdown(
+                value="No agent active",
+                visible=True,
+                elem_classes=["agent-status-wrap"],
+            )
+
+            # Quick Access section
+            gr.HTML('<div class="sidebar-section-title">⚡ Quick Access</div>')
+
+            _quick_sidebar: list[tuple[gr.Button, str]] = []
+            _sidebar_quick_defs = [
+                ("🧬 Lab Results",   "I want to understand my AMH/FSH results"),
+                ("📅 My Timeline",   "Can you create a treatment timeline starting next Monday?"),
+                ("💰 Cost Estimate", "What does IVF cost in Mumbai?"),
+                ("📊 Success Rates", "What are the success rates for someone my age?"),
+                ("💊 Injections",    "How do I self-administer subcutaneous injections?"),
+                ("❤️ Support",       "I'm feeling overwhelmed and anxious about IVF"),
+            ]
+            for _label, _prompt in _sidebar_quick_defs:
+                _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["quick-btn"])
+                _quick_sidebar.append((_btn, _prompt))
+                _all_quick.append((_btn, _prompt))
+
+            # Support Communities
+            gr.HTML('<div class="sidebar-section-title">🌐 Support Communities</div>')
+            gr.HTML("""
+            <div class="communities-block">
+                <div>🇮🇳 <a href="https://ivfconnections.in" target="_blank">IVF Connections India</a></div>
+                <div>🇬🇧 <a href="https://fertilitynetworkuk.org" target="_blank">Fertility Network UK</a></div>
+                <div>🇺🇸 <a href="https://resolve.org" target="_blank">RESOLVE (US)</a></div>
+            </div>
+            """)
+
+            # Language selector
+            language_selector = gr.Radio(
+                choices=["English", "Hindi"],
+                value="English",
+                label="🌐 Language",
+                interactive=True,
+                elem_classes=["lang-selector"],
+            )
+
+            # Session status badge
+            state_display = gr.Textbox(
+                label="Session",
+                interactive=False,
+                value="🟢 Active session",
+                elem_classes=["status-badge"],
+                show_label=True,
+            )
+
+            # New chat + Save profile buttons
+            new_btn = gr.Button("🔄 New Chat", variant="secondary", size="sm", elem_classes=["sidebar-action-btn"])
+            save_profile_btn = gr.Button(
+                "💾 Save Profile",
+                variant="secondary",
+                size="sm",
+                visible=False,
+                elem_classes=["save-btn"],
+            )
+
+        # ══════════════════════════════════════════════════════════════════
+        # COLUMN 2 — Central Chat
+        # ══════════════════════════════════════════════════════════════════
+        with gr.Column(scale=3, elem_classes=["center-col"]):
+
+            # Header
+            gr.HTML("""
             <div>
-                <span class="logo-text">IVF Care Platform</span>
-                <span class="logo-sub">Your compassionate AI companion</span>
+                <p class="chat-header-title">IVF Advisor Command Center</p>
+                <p class="chat-header-sub">Your compassionate AI companion — evidence-based, always supportive</p>
             </div>
-        </div>
-    </div>
-    """)
+            """)
 
-    # ── Top controls row — clean, compact ──
-    with gr.Row(elem_classes=["top-controls"]):
-        state_display = gr.Textbox(
-            label="",
-            interactive=False,
-            value="🟢 Active session",
-            elem_classes=["status-badge"],
-            scale=1,
-            show_label=False,
-        )
-        language_selector = gr.Radio(
-            choices=["English", "Hindi"],
-            value="English",
-            label="🌐",
-            interactive=True,
-            elem_classes=["lang-selector"],
-            scale=1,
-        )
-        new_btn = gr.Button("🔄 New", variant="secondary", size="sm", scale=0)
-        save_profile_btn = gr.Button(
-            "💾 Save profile",
-            variant="secondary",
-            size="sm",
-            visible=False,
-            elem_classes=["save-btn"],
-            scale=0,
-        )
+            # Chatbot
+            chatbot = gr.Chatbot(
+                label="",
+                height=520,
+                type="messages",
+                value=[],
+                avatar_images=(
+                    None,
+                    "https://em-content.zobj.net/source/google/387/seedling_1f331.png",
+                ),
+                elem_classes=["chat-wrap"],
+                show_label=False,
+                bubble_full_width=False,
+            )
 
-    with gr.Column(elem_classes=["main-content"]):
+            # Input area
+            with gr.Group(elem_classes=["input-area"]):
+                with gr.Row():
+                    msg_input = gr.Textbox(
+                        placeholder="Ask me anything about IVF, or request an action…",
+                        label="",
+                        scale=8,
+                        show_label=False,
+                        lines=1,
+                        max_lines=4,
+                    )
+                    send_btn = gr.Button(
+                        "Send ➤",
+                        scale=1,
+                        variant="primary",
+                        elem_classes=["send-btn"],
+                    )
 
-        # ── Welcome feature cards ──
-        gr.HTML("""
-        <div class="welcome-cards">
-            <div class="welcome-card">
-                <div class="wc-icon">🧬</div>
-                <div class="wc-title">Lab Results</div>
-                <p class="wc-desc">Share your AMH, FSH, AFC values for plain-language interpretation tailored to your situation.</p>
+            # gr.Examples below chatbot, above audio
+            gr.Examples(
+                examples=[
+                    "What are the success rates for women over 38?",
+                    "How do I self-administer Gonal-F injections?",
+                    "What does IVF cost in Delhi?",
+                    "I'm feeling anxious about my upcoming egg retrieval",
+                ],
+                inputs=msg_input,
+                label="💡 Try asking:",
+            )
+
+            # Audio microphone
+            audio_input = gr.Audio(
+                sources=["microphone"],
+                type="filepath",
+                label="🎤 Speak your question (Hindi or English)",
+                show_label=True,
+            )
+
+            # Disclaimer
+            gr.HTML("""
+            <div class="disclaimer-banner">
+                <p>
+                    ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
+                    information about IVF and fertility treatments. It is not a substitute for professional
+                    medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
+                    qualified fertility specialist with any questions you may have.
+                </p>
             </div>
-            <div class="welcome-card">
-                <div class="wc-icon">💰</div>
-                <div class="wc-title">Cost Planning</div>
-                <p class="wc-desc">Get IVF cost estimates in your city including detailed INR ranges for Indian clinics.</p>
-            </div>
-            <div class="welcome-card">
-                <div class="wc-icon">❤️</div>
-                <div class="wc-title">Support &amp; Guidance</div>
-                <p class="wc-desc">Evidence-based answers, emotional support, and step-by-step injection training.</p>
-            </div>
-        </div>
-        """)
+            """)
 
-        # ── Two-column layout: chat + sources sidebar ──
-        with gr.Row():
-            with gr.Column(scale=3, elem_classes=["chat-col"]):
+        # ══════════════════════════════════════════════════════════════════
+        # COLUMN 3 — Right Bento Sidebar
+        # ══════════════════════════════════════════════════════════════════
+        with gr.Column(scale=1, elem_classes=["right-sidebar"]):
 
-                # ── Agent status indicator ──
-                agent_status = gr.Markdown(
-                    value="",
-                    visible=False,
-                    elem_classes=["agent-status"],
-                )
+            # Evidence & Sources panel
+            gr.HTML('<div class="sources-panel"><h4>📚 Evidence &amp; Sources</h4>')
+            sources_box = gr.HTML(
+                value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
+            )
+            gr.HTML('</div>')
 
-                # ── Chatbot ──
-                chatbot = gr.Chatbot(
-                    label="",
-                    height=480,
-                    type="messages",
-                    value=[],
-                    avatar_images=(
-                        None,
-                        "https://em-content.zobj.net/source/google/387/seedling_1f331.png",
-                    ),
-                    elem_classes=["chat-wrap"],
-                    show_label=False,
-                    bubble_full_width=False,
-                )
+            # Bento feature cards
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:8px">✨ Features</div>')
 
-                session_id_state = gr.State("")
+            _bento_defs = [
+                ("📈", "Success Predictor",  "Personalised success rates by age & diagnosis",
+                 "What are the success rates for someone my age?"),
+                ("🥗", "Wellness Guide",     "Stage-specific diet, sleep & exercise tips",
+                 "What should I eat during stimulation?"),
+                ("🚩", "Clinic Checker",     "Detect misleading clinic claims",
+                 "My clinic says they have 80% success rate for women over 40"),
+                ("🔬", "Evidence Search",    "ESHRE/ASRM/NICE guidelines",
+                 "Give me research references about IVF success rates"),
+            ]
 
-                # ── Quick action chips row ──
-                with gr.Row(elem_classes=["chips-row"]):
-                    for _label, _prompt in QUICK_CHIPS:
-                        _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["chip-btn"])
-                        _all_quick.append((_btn, _prompt))
-
-                # ── Input area ──
-                with gr.Group(elem_classes=["input-area"]):
-                    with gr.Row():
-                        msg_input = gr.Textbox(
-                            placeholder="Ask me anything about IVF, or request an action…",
-                            label="",
-                            scale=8,
-                            show_label=False,
-                            lines=1,
-                            max_lines=4,
-                        )
-                        send_btn = gr.Button(
-                            "Send ➤",
-                            scale=1,
-                            variant="primary",
-                            elem_classes=["send-btn"],
-                        )
-                    with gr.Row():
-                        audio_input = gr.Audio(
-                            sources=["microphone"],
-                            type="filepath",
-                            label="🎤 Speak your question (Hindi or English)",
-                            show_label=True,
-                            scale=1,
-                        )
-
-                # ── Disclaimer ──
-                gr.HTML("""
-                <div class="disclaimer-banner">
-                    <p>
-                        ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
-                        information about IVF and fertility treatments. It is not a substitute for professional
-                        medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
-                        qualified fertility specialist with any questions you may have.
-                    </p>
+            _bento_btns: list[tuple[gr.Button, str]] = []
+            for _icon, _title, _desc, _prompt in _bento_defs:
+                gr.HTML(f"""
+                <div class="bento-card">
+                    <div class="bento-card-icon">{_icon}</div>
+                    <div class="bento-card-title">{_title}</div>
+                    <p class="bento-card-desc">{_desc}</p>
                 </div>
                 """)
+                _bbtn = gr.Button(f"Try {_title}", variant="secondary", size="sm", elem_classes=["bento-btn"])
+                _bento_btns.append((_bbtn, _prompt))
+                _all_quick.append((_bbtn, _prompt))
 
-            # ── Sources sidebar ──
-            with gr.Column(scale=1, elem_classes=["sidebar-col"]):
-                gr.HTML('<div class="sources-panel"><h4>📚 Evidence &amp; Sources</h4>')
-                sources_box = gr.HTML(
-                    value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
-                )
-                gr.HTML('</div>')
-
-    # ── Event wiring ──
+    # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
