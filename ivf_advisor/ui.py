@@ -349,6 +349,33 @@ def save_profile(history: list[dict], session_id: str) -> tuple[list[dict], str,
     return chat("I would like to save my profile", history, session_id)
 
 
+def transcribe_and_fill(audio_data: tuple | None, language: str = "English") -> str:
+    """Transcribe recorded audio and return text for the input box."""
+    if audio_data is None:
+        return ""
+    try:
+        import numpy as np
+        import wave
+        import io
+
+        sample_rate, audio_array = audio_data
+        # Convert to 16-bit PCM WAV bytes
+        audio_int16 = (audio_array * 32767).astype(np.int16) if audio_array.dtype != np.int16 else audio_array
+        buf = io.BytesIO()
+        with wave.open(buf, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(sample_rate)
+            wf.writeframes(audio_int16.tobytes())
+        audio_bytes = buf.getvalue()
+
+        lang_code = "hi-IN" if language == "Hindi" else "en-IN"
+        transcript = transcribe_audio_bytes(audio_bytes, language_code=lang_code)
+        return transcript or ""
+    except Exception:
+        return ""
+
+
 def _make_quick_handler(prompt: str):
     """Return a handler that fires a quick-action prompt."""
     def _handler(history: list[dict], session_id: str):
