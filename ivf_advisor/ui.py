@@ -595,8 +595,9 @@ with gr.Blocks(
                 elem_classes=["agent-status-wrap"],
             )
 
-            # Quick Access section
-            gr.HTML('<div class="sidebar-section-title">⚡ Quick Access</div>')
+            # Quick Access section — renamed to "Start a Conversation"
+            gr.HTML('<div class="sidebar-section-title">💬 Start a Conversation</div>')
+            gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0">Tap to send a question instantly</p>')
 
             _quick_sidebar: list[tuple[gr.Button, str]] = []
             _sidebar_quick_defs = [
@@ -716,7 +717,6 @@ with gr.Blocks(
                 ],
                 inputs=msg_input,
                 label="💡 Try asking:",
-                elem_classes=["examples-compact"],
             )
 
             # Disclaimer
@@ -743,8 +743,9 @@ with gr.Blocks(
             )
             gr.HTML('</div>')
 
-            # Bento feature cards
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:8px">✨ Features</div>')
+            # Bento feature cards — renamed to "Tools & Capabilities"
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:8px">🛠️ Tools &amp; Capabilities</div>')
+            gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0">Specialist tools — click a card to explore</p>')
 
             _bento_defs = [
                 ("📈", "Success Predictor",  "Personalised success rates by age & diagnosis",
