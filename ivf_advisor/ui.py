@@ -71,7 +71,9 @@ body, .gradio-container {
     color: #1A1A2E !important;
 }
 footer, .footer { display: none !important; }
-.gradio-container { max-width: 1100px !important; margin: 0 auto !important; padding: 0 !important; }
+.gradio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.contain { max-width: 100% !important; padding: 0 !important; }
+.gap { gap: 0 !important; }
 
 /* ── Sticky top bar ── */
 .top-bar {
@@ -372,7 +374,87 @@ footer, .footer { display: none !important; }
 }
 
 /* ── Main content padding ── */
-.main-content { padding: 0 20px 80px 20px; }
+.main-content { padding: 0 32px 80px 32px; max-width: 960px; margin: 0 auto; }
+
+/* ── Agent status indicator ── */
+.agent-status {
+    background: linear-gradient(135deg, #f0fafa 0%, #fdf2f8 100%);
+    border: 1px solid rgba(13,115,119,0.2);
+    border-left: 4px solid #0D7377;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: #0D7377;
+    font-weight: 500;
+}
+
+/* ── Sources sidebar ── */
+.sources-panel {
+    background: white;
+    border: 1px solid rgba(13,115,119,0.15);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(13,115,119,0.06);
+    min-height: 200px;
+}
+.sources-panel h4 {
+    color: #0D7377;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(13,115,119,0.12);
+}
+.source-item {
+    background: #f0fafa;
+    border: 1px solid rgba(13,115,119,0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    color: #374151;
+    line-height: 1.4;
+}
+.sources-list { display: flex; flex-direction: column; gap: 4px; }
+
+/* ── Two-column layout ── */
+.chat-col { flex: 3 !important; }
+.sidebar-col { flex: 1 !important; min-width: 220px !important; max-width: 280px !important; }
+.feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 0 4px 0;
+}
+.feature-pill {
+    background: white;
+    border: 1px solid rgba(13,115,119,0.2);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #0D7377;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(13,115,119,0.08);
+}
+
+/* ── Top bar controls (Gradio components inside top bar area) ── */
+.top-controls {
+    background: rgba(250,250,248,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(13,115,119,0.1);
+    padding: 8px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.top-controls .status-badge textarea {
+    min-width: 130px !important;
+    max-width: 160px !important;
+}
+.top-controls .lang-selector { flex-shrink: 0; }
 """
 
 
@@ -390,9 +472,9 @@ def chat(
     session_id: str,
     language: str = "English",
 ):
-    """Streaming chat — yields (history, session_id, state_badge, save_btn_update)."""
+    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, agent_status, sources_html)."""
     if not user_message.strip():
-        yield history, session_id, "", gr.update()
+        yield history, session_id, "", gr.update(), gr.update(visible=False), gr.update()
         return
 
     orch = _get_orchestrator()
@@ -410,7 +492,7 @@ def chat(
         _msg("user", user_message),
         _msg("assistant", "🤔 Thinking..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update()
 
     response = ""
     try:
@@ -418,36 +500,39 @@ def chat(
             if chunk.startswith("_thinking:"):
                 tool = chunk.replace("_thinking:", "").replace("_", " ").strip()
                 tool_labels = {
-                    "lab result": "🧬 Analysing lab results...",
-                    "evidence search": "🔬 Searching evidence...",
-                    "cost breakdown": "💰 Calculating costs...",
-                    "injection guide": "💊 Checking medications...",
-                    "timeline": "📅 Building timeline...",
-                    "success rate": "📊 Computing success rates...",
-                    "wellness guide": "🥗 Preparing wellness tips...",
-                    "emotional support": "❤️ Preparing support...",
-                    "red flag": "🚩 Checking clinic claims...",
-                    "journey guide": "🗺️ Mapping your journey...",
-                    "scope guard": "🛡️ Checking scope...",
+                    "lab result": ("🧬 Lab Result Agent", "Analysing your test values..."),
+                    "evidence search": ("🔬 Evidence Agent", "Searching clinical guidelines..."),
+                    "cost breakdown": ("💰 Cost Agent", "Calculating costs for your region..."),
+                    "injection guide": ("💊 Medication Agent", "Preparing injection guidance..."),
+                    "timeline": ("📅 Timeline Agent", "Building your treatment schedule..."),
+                    "success rate": ("📊 Statistics Agent", "Computing personalised success rates..."),
+                    "wellness guide": ("🥗 Wellness Agent", "Preparing lifestyle recommendations..."),
+                    "emotional support": ("❤️ Support Agent", "Preparing empathetic response..."),
+                    "red flag": ("🚩 Safety Agent", "Checking clinic claims..."),
+                    "journey guide": ("🗺️ Journey Agent", "Mapping your IVF journey..."),
+                    "scope guard": ("🛡️ Safety Check", "Verifying query scope..."),
                 }
-                display = tool_labels.get(tool.lower(), f"🔍 {tool.title()}...")
-                new_history[-1] = _msg("assistant", display)
+                agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
+                status_html = f"**{agent_name}** — {agent_action}"
+                new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True), gr.update()
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
-            state_str = _state_badge(session.state) if session else "🟢 Active session"
-            yield new_history, session_id, state_str, gr.update(visible=True)
+                citations = _extract_citations(response)
+                sources_html = _build_sources_html(citations)
+                state_str = _state_badge(session.state) if session else "🟢 Active session"
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), sources_html
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        yield new_history, session_id, "🟢 Active session", gr.update(visible=True)
+        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=False), gr.update()
 
 
 def save_profile(history: list[dict], session_id: str):
     """Trigger profile save via chat."""
     yield from chat("I would like to save my profile", history, session_id)
-
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
     """Transcribe recorded audio and return text for the input box."""
@@ -468,6 +553,29 @@ def _make_quick_handler(prompt: str):
     def _handler(history: list[dict], session_id: str):
         yield from chat(prompt, history, session_id)
     return _handler
+
+
+def _extract_citations(text: str) -> list[str]:
+    """Extract citation lines from evidence search responses."""
+    citations = []
+    lines = text.split("\n")
+    for line in lines:
+        line = line.strip()
+        # Look for lines that look like citations (numbered, bulleted, or contain URLs/guideline names)
+        if any(kw in line.lower() for kw in ["eshre", "asrm", "nice", "hfea", "icmr", "sart", "pubmed", "doi", "guideline", "journal"]):
+            if len(line) > 10:
+                citations.append(line.lstrip("•-*123456789. "))
+    return citations[:5]  # max 5 citations
+
+
+def _build_sources_html(citations: list[str]) -> str:
+    if not citations:
+        return '<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>'
+    items = "".join(
+        f'<div class="source-item">📄 {c}</div>'
+        for c in citations
+    )
+    return f'<div class="sources-list">{items}</div>'
 
 
 # ── UI layout ──────────────────────────────────────────────────────────────
@@ -495,41 +603,58 @@ with gr.Blocks(
                 <span class="logo-sub">Your compassionate AI companion</span>
             </div>
         </div>
-        <div class="top-bar-right" id="top-bar-right-slot"></div>
     </div>
     """)
 
+    # ── Top controls row — clean, compact ──
+    with gr.Row(elem_classes=["top-controls"]):
+        state_display = gr.Textbox(
+            label="",
+            interactive=False,
+            value="🟢 Active session",
+            elem_classes=["status-badge"],
+            scale=1,
+            show_label=False,
+        )
+        language_selector = gr.Radio(
+            choices=["English", "Hindi"],
+            value="English",
+            label="🌐",
+            interactive=True,
+            elem_classes=["lang-selector"],
+            scale=1,
+        )
+        new_btn = gr.Button("🔄 New", variant="secondary", size="sm", scale=0)
+        save_profile_btn = gr.Button(
+            "💾 Save profile",
+            variant="secondary",
+            size="sm",
+            visible=False,
+            elem_classes=["save-btn"],
+            scale=0,
+        )
+
     with gr.Column(elem_classes=["main-content"]):
 
-        # ── Top controls row (language + session badge + buttons) ──
-        with gr.Row(elem_classes=["action-row"]):
-            state_display = gr.Textbox(
-                label="",
-                interactive=False,
-                value="🟢 Active session",
-                elem_classes=["status-badge"],
-                scale=2,
-                show_label=False,
-            )
-            language_selector = gr.Radio(
-                choices=["English", "Hindi"],
-                value="English",
-                label="🌐 Language",
-                interactive=True,
-                elem_classes=["lang-selector"],
-                scale=2,
-            )
-            new_btn = gr.Button("🔄 New chat", variant="secondary", size="sm", scale=1)
-            save_profile_btn = gr.Button(
-                "💾 Save my profile",
-                variant="secondary",
-                size="sm",
-                visible=False,
-                elem_classes=["save-btn"],
-                scale=1,
-            )
+        # ── Feature pills — always visible, shows all capabilities ──
+        gr.HTML("""
+        <div class="feature-pills">
+            <span class="feature-pill">🧬 Lab Results</span>
+            <span class="feature-pill">📅 Treatment Timeline</span>
+            <span class="feature-pill">💊 Injection Training</span>
+            <span class="feature-pill">💰 Cost Breakdown (INR)</span>
+            <span class="feature-pill">📊 Success Rates</span>
+            <span class="feature-pill">🥗 Wellness Guide</span>
+            <span class="feature-pill">🚩 Clinic Red Flags</span>
+            <span class="feature-pill">❤️ Emotional Support</span>
+            <span class="feature-pill">🔬 Evidence Search</span>
+            <span class="feature-pill">🌐 Hindi Support</span>
+            <span class="feature-pill">📅 Book Appointments</span>
+            <span class="feature-pill">⏰ Medication Reminders</span>
+        </div>
+        """)
 
-        # ── Welcome feature cards (shown before first message) ──
+        # ── Welcome feature cards ──
         gr.HTML("""
         <div class="welcome-cards">
             <div class="welcome-card">
@@ -550,135 +675,116 @@ with gr.Blocks(
         </div>
         """)
 
-        # ── Chatbot ──
-        chatbot = gr.Chatbot(
-            label="",
-            height=480,
-            type="messages",
-            value=[],
-            avatar_images=(
-                None,
-                "https://em-content.zobj.net/source/google/387/seedling_1f331.png",
-            ),
-            elem_classes=["chat-wrap"],
-            show_label=False,
-            bubble_full_width=False,
-        )
+        # ── Two-column layout: chat + sources sidebar ──
+        with gr.Row():
+            with gr.Column(scale=3, elem_classes=["chat-col"]):
 
-        session_id_state = gr.State("")
+                # ── Agent status indicator ──
+                agent_status = gr.Markdown(
+                    value="",
+                    visible=False,
+                    elem_classes=["agent-status"],
+                )
 
-        # ── Quick action chips row ──
-        with gr.Row(elem_classes=["chips-row"]):
-            for _label, _prompt in QUICK_CHIPS:
-                _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["chip-btn"])
-                _all_quick.append((_btn, _prompt))
-
-        # ── Input area ──
-        with gr.Group(elem_classes=["input-area"]):
-            with gr.Row():
-                msg_input = gr.Textbox(
-                    placeholder="Ask me anything about IVF, or request an action…",
+                # ── Chatbot ──
+                chatbot = gr.Chatbot(
                     label="",
-                    scale=8,
+                    height=480,
+                    type="messages",
+                    value=[],
+                    avatar_images=(
+                        None,
+                        "https://em-content.zobj.net/source/google/387/seedling_1f331.png",
+                    ),
+                    elem_classes=["chat-wrap"],
                     show_label=False,
-                    lines=1,
-                    max_lines=4,
-                )
-                send_btn = gr.Button(
-                    "Send ➤",
-                    scale=1,
-                    variant="primary",
-                    elem_classes=["send-btn"],
-                )
-            with gr.Row():
-                audio_input = gr.Audio(
-                    sources=["microphone"],
-                    type="filepath",
-                    label="🎤 Speak your question (Hindi or English)",
-                    show_label=True,
-                    scale=1,
+                    bubble_full_width=False,
                 )
 
-        # ── Disclaimer ──
-        gr.HTML("""
-        <div class="disclaimer-banner">
-            <p>
-                ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
-                information about IVF and fertility treatments. It is not a substitute for professional
-                medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
-                qualified fertility specialist with any questions you may have.
-            </p>
-        </div>
-        """)
+                session_id_state = gr.State("")
 
-        # ── Help accordion ──
-        with gr.Accordion("❓ What can I help you with?", open=False, elem_classes=["help-accordion"]):
-            gr.HTML("""
-            <div class="help-grid">
-                <div class="help-card">
-                    <div class="icon">🧬</div>
-                    <div class="title">Lab Result Interpreter</div>
-                    <p class="desc">Share your AMH, FSH, or AFC values and I'll explain what they mean for your IVF journey in plain language.</p>
+                # ── Quick action chips row ──
+                with gr.Row(elem_classes=["chips-row"]):
+                    for _label, _prompt in QUICK_CHIPS:
+                        _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["chip-btn"])
+                        _all_quick.append((_btn, _prompt))
+
+                # ── Input area ──
+                with gr.Group(elem_classes=["input-area"]):
+                    with gr.Row():
+                        msg_input = gr.Textbox(
+                            placeholder="Ask me anything about IVF, or request an action…",
+                            label="",
+                            scale=8,
+                            show_label=False,
+                            lines=1,
+                            max_lines=4,
+                        )
+                        send_btn = gr.Button(
+                            "Send ➤",
+                            scale=1,
+                            variant="primary",
+                            elem_classes=["send-btn"],
+                        )
+                    with gr.Row():
+                        audio_input = gr.Audio(
+                            sources=["microphone"],
+                            type="filepath",
+                            label="🎤 Speak your question (Hindi or English)",
+                            show_label=True,
+                            scale=1,
+                        )
+
+                # ── Disclaimer ──
+                gr.HTML("""
+                <div class="disclaimer-banner">
+                    <p>
+                        ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
+                        information about IVF and fertility treatments. It is not a substitute for professional
+                        medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
+                        qualified fertility specialist with any questions you may have.
+                    </p>
                 </div>
-                <div class="help-card">
-                    <div class="icon">📅</div>
-                    <div class="title">Treatment Timeline</div>
-                    <p class="desc">Tell me your start date and protocol — I'll generate a personalised week-by-week IVF schedule.</p>
+                """)
+
+            # ── Sources sidebar ──
+            with gr.Column(scale=1, elem_classes=["sidebar-col"]):
+                gr.HTML('<div class="sources-panel"><h4>📚 Evidence &amp; Sources</h4>')
+                sources_box = gr.HTML(
+                    value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
+                )
+                gr.HTML('</div>')
+
+                gr.HTML("""
+                <div class="sources-panel" style="margin-top:12px">
+                    <h4>⚡ Quick Actions</h4>
+                    <p style="color:#6b7280;font-size:0.78rem;margin:0 0 8px 0">Use the chips above the input to quickly access all features.</p>
+                    <div style="font-size:0.78rem;color:#374151;line-height:2">
+                        🧬 Lab Results<br>
+                        📅 Treatment Timeline<br>
+                        💊 Injection Training<br>
+                        💰 Cost Breakdown<br>
+                        📊 Success Rates<br>
+                        🥗 Wellness Guide<br>
+                        🚩 Clinic Red Flags<br>
+                        ❤️ Emotional Support<br>
+                        🔬 Evidence Search<br>
+                        🌐 Hindi Support
+                    </div>
                 </div>
-                <div class="help-card">
-                    <div class="icon">💊</div>
-                    <div class="title">Injection Training</div>
-                    <p class="desc">Step-by-step guidance for subcutaneous and intramuscular injections, including site rotation and missed dose advice.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">💰</div>
-                    <div class="title">Cost Breakdown</div>
-                    <p class="desc">Get detailed IVF cost estimates in your city — including INR ranges for Indian cities like Mumbai, Delhi, Bangalore.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">📊</div>
-                    <div class="title">Success Rate Calculator</div>
-                    <p class="desc">Enter your age and diagnosis to get personalised IVF success rate estimates based on SART/HFEA data.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">🥗</div>
-                    <div class="title">Wellness Guide</div>
-                    <p class="desc">Stage-specific diet, exercise, sleep, and supplement advice for stimulation, egg retrieval, two-week wait, and transfer.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">🚩</div>
-                    <div class="title">Clinic Red Flag Checker</div>
-                    <p class="desc">Describe what a clinic told you — I'll flag unrealistic claims like guaranteed pregnancy or inflated success rates.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">❤️</div>
-                    <div class="title">Emotional Support</div>
-                    <p class="desc">IVF is emotionally hard. I'm here to listen, offer coping strategies, and connect you with support resources when you need them.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">🔬</div>
-                    <div class="title">Evidence Search</div>
-                    <p class="desc">Ask clinical questions and get answers grounded in ESHRE, ASRM, and NICE guidelines from the knowledge base.</p>
-                </div>
-                <div class="help-card">
-                    <div class="icon">🌐</div>
-                    <div class="title">Hindi Support</div>
-                    <p class="desc">Switch to Hindi using the language selector above — I'll respond in Devanagari script with medical terms in English.</p>
-                </div>
-            </div>
-            """)
+                """)
 
     # ── Event wiring ──
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
     ).then(lambda: "", outputs=msg_input)
 
     # Audio: transcribe when recording stops, fill text box then auto-send
@@ -689,7 +795,7 @@ with gr.Blocks(
     ).then(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
     ).then(lambda: "", outputs=msg_input)
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
@@ -697,14 +803,14 @@ with gr.Blocks(
     save_profile_btn.click(
         fn=save_profile,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
     )
 
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
             inputs=[chatbot, session_id_state],
-            outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+            outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box],
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
