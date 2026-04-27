@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import os
 
+# Apply gradio patch before importing gradio
+import ivf_advisor.patch_gradio  # noqa: F401
+
 import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState

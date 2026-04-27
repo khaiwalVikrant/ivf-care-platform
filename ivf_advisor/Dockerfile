@@ -11,8 +11,7 @@ COPY pyproject.toml .
 COPY ivf_advisor/ ivf_advisor/
 
 RUN pip install --no-cache-dir --no-deps . && \
-    python -c "from ivf_advisor.models import ConversationState; print('ivf_advisor.models OK')" && \
-    python /app/ivf_advisor/patch_gradio.py
+    python -c "from ivf_advisor.models import ConversationState; print('ivf_advisor.models OK')"
 
 # Add /app to PYTHONPATH so ivf_advisor package is always found
 ENV PYTHONPATH=/app
