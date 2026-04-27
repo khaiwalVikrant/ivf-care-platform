@@ -11,7 +11,22 @@ COPY pyproject.toml .
 COPY ivf_advisor/ ivf_advisor/
 
 RUN pip install --no-cache-dir --no-deps . && \
-    python -c "from ivf_advisor.models import ConversationState; print('ivf_advisor.models OK')"
+    python -c "from ivf_advisor.models import ConversationState; print('ivf_advisor.models OK')" && \
+    python -c "
+# Patch gradio_client bug: get_type crashes when schema is bool
+import gradio_client.utils as u, re
+path = u.__file__
+with open(path) as f:
+    src = f.read()
+old = 'def get_type(schema: dict):\n    if \"const\" in schema:'
+new = 'def get_type(schema: dict):\n    if not isinstance(schema, dict): return \"any\"\n    if \"const\" in schema:'
+if old in src:
+    with open(path, 'w') as f:
+        f.write(src.replace(old, new))
+    print('Patched gradio_client.utils.get_type')
+else:
+    print('Patch not needed or already applied')
+"
 
 # Add /app to PYTHONPATH so ivf_advisor package is always found
 ENV PYTHONPATH=/app
