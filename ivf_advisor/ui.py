@@ -147,26 +147,56 @@ footer, .footer { display: none !important; }
 .quick-btn button {
     width: 100% !important;
     text-align: left !important;
-    border-radius: 8px !important;
-    font-size: 0.80rem !important;
-    padding: 8px 12px !important;
-    border: 1px solid #7c3aed !important;
+    border-radius: 10px !important;
+    font-size: 0.81rem !important;
+    padding: 9px 13px 9px 14px !important;
+    border: 1px solid #e5e7eb !important;
     background: #ffffff !important;
-    color: #7c3aed !important;
+    color: #374151 !important;
     font-weight: 500 !important;
-    transition: all 0.15s ease !important;
+    transition: all 0.18s ease !important;
     height: auto !important;
-    min-height: 36px !important;
+    min-height: 38px !important;
     justify-content: flex-start !important;
     display: flex !important;
     align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+/* Coloured left accent bar */
+.quick-btn button::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 3px !important;
+    border-radius: 10px 0 0 10px !important;
+    background: linear-gradient(180deg, #7c3aed, #db2777) !important;
+    opacity: 0.7 !important;
+    transition: opacity 0.18s ease !important;
 }
 .quick-btn button:hover {
-    background: #7c3aed !important;
-    color: #ffffff !important;
-    border-color: #7c3aed !important;
-    box-shadow: 0 2px 8px rgba(124,58,237,0.25) !important;
+    background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%) !important;
+    border-color: #c4b5fd !important;
+    color: #6d28d9 !important;
+    box-shadow: 0 3px 12px rgba(124,58,237,0.18) !important;
+    transform: translateX(3px) !important;
 }
+.quick-btn button:hover::before {
+    opacity: 1 !important;
+    width: 4px !important;
+}
+
+/* Per-button accent colours via elem_id */
+#qbtn-0 button::before { background: linear-gradient(180deg, #7c3aed, #a78bfa) !important; }
+#qbtn-1 button::before { background: linear-gradient(180deg, #0ea5e9, #38bdf8) !important; }
+#qbtn-2 button::before { background: linear-gradient(180deg, #059669, #34d399) !important; }
+#qbtn-3 button::before { background: linear-gradient(180deg, #f59e0b, #fbbf24) !important; }
+#qbtn-4 button::before { background: linear-gradient(180deg, #ec4899, #f472b6) !important; }
+#qbtn-5 button::before { background: linear-gradient(180deg, #db2777, #f43f5e) !important; }
 
 /* ── Support communities — flat list, no box ── */
 .communities-block {
@@ -340,26 +370,29 @@ footer, .footer { display: none !important; }
     line-height: 1.5 !important;
 }
 
-/* ── Remove grey space from audio and examples ── */
-.audio-compact {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+/* ── Example chips row ── */
+.custom-chips-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 6px 0 4px 0;
 }
-.audio-compact > div {
-    background: transparent !important;
-    border: none !important;
-    padding: 4px 0 0 0 !important;
+.example-chip button {
+    border-radius: 20px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    color: #6b7280 !important;
+    font-size: 0.78rem !important;
+    padding: 4px 12px !important;
+    height: auto !important;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+    font-weight: 400 !important;
 }
-.examples-compact {
-    background: transparent !important;
-    border: none !important;
-    padding: 4px 0 0 0 !important;
-}
-.examples-compact > div {
-    background: transparent !important;
-    padding: 0 !important;
+.example-chip button:hover {
+    border-color: #7c3aed !important;
+    color: #7c3aed !important;
+    background: #f5f3ff !important;
 }
 
 /* ── Right sidebar ── */
@@ -402,37 +435,38 @@ footer, .footer { display: none !important; }
 .sources-list { display: flex; flex-direction: column; gap: 4px; }
 
 /* ── Bento cards ── */
-.bento-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s;
-    cursor: pointer;
+.bento-btn {
+    margin-bottom: 8px !important;
+    display: block !important;
+    width: 100% !important;
 }
-.bento-card:hover {
+.bento-btn button {
+    width: 100% !important;
+    text-align: left !important;
+    border-radius: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    padding: 14px !important;
+    height: auto !important;
+    min-height: unset !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    cursor: pointer !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s !important;
+    box-shadow: none !important;
+    /* reset Gradio secondary button styles */
+    color: #1A1A2E !important;
+    font-weight: 400 !important;
+    font-size: 0.82rem !important;
+}
+.bento-btn button:hover {
     background: #fdf2f8 !important;
     border-color: #db2777 !important;
     box-shadow: 0 4px 16px rgba(219,39,119,0.15) !important;
     transform: translateY(-3px) !important;
-}
-.bento-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
-.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; margin-bottom: 4px; }
-.bento-card-desc { color: #6b7280; font-size: 0.76rem; line-height: 1.5; margin: 0 0 8px 0; }
-.bento-btn button {
-    border-radius: 6px !important;
-    font-size: 0.75rem !important;
-    padding: 4px 10px !important;
-    border: 1px solid #7c3aed !important;
-    background: #ffffff !important;
-    color: #7c3aed !important;
-    font-weight: 500 !important;
-    height: auto !important;
-    transition: all 0.15s ease !important;
-}
-.bento-btn button:hover {
-    background: #7c3aed !important;
-    color: #ffffff !important;
 }
 """
 
@@ -530,6 +564,11 @@ def handle_audio(audio_path: str | None, language: str = "English") -> str:
         return f"🎤 Transcription error: {e}"
 
 
+def set_example(text: str) -> str:
+    """Fill the input box with an example prompt."""
+    return text
+
+
 def _make_quick_handler(prompt: str):
     """Return a streaming handler that fires a quick-action prompt."""
     def _handler(history: list[dict], session_id: str):
@@ -608,8 +647,8 @@ with gr.Blocks(
                 ("💊 Injections",    "How do I self-administer subcutaneous injections?"),
                 ("❤️ Support",       "I'm feeling overwhelmed and anxious about IVF"),
             ]
-            for _label, _prompt in _sidebar_quick_defs:
-                _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["quick-btn"])
+            for _i, (_label, _prompt) in enumerate(_sidebar_quick_defs):
+                _btn = gr.Button(_label, variant="secondary", size="sm", elem_classes=["quick-btn"], elem_id=f"qbtn-{_i}")
                 _quick_sidebar.append((_btn, _prompt))
                 _all_quick.append((_btn, _prompt))
 
@@ -707,17 +746,18 @@ with gr.Blocks(
                         elem_classes=["audio-compact"],
                     )
 
-            # Examples — shown as chips above input
-            gr.Examples(
-                examples=[
-                    "What are the success rates for women over 38?",
-                    "How do I self-administer Gonal-F injections?",
-                    "What does IVF cost in Delhi?",
-                    "I'm feeling anxious about my upcoming egg retrieval",
-                ],
-                inputs=msg_input,
-                label="💡 Try asking:",
-            )
+            # Example chips — custom styled buttons replacing gr.Examples
+            _example_prompts = [
+                ("🧬 Lab results", "What are the success rates for women over 38?"),
+                ("💊 Injections", "How do I self-administer Gonal-F injections?"),
+                ("💰 Delhi costs", "What does IVF cost in Delhi?"),
+                ("❤️ Feeling anxious", "I'm feeling anxious about my upcoming egg retrieval"),
+            ]
+            _example_btns = []
+            with gr.Row(elem_classes=["custom-chips-row"]):
+                for _chip_label, _chip_prompt in _example_prompts:
+                    _eb = gr.Button(_chip_label, size="sm", elem_classes=["example-chip"])
+                    _example_btns.append((_eb, _chip_prompt))
 
             # Disclaimer
             gr.HTML("""
@@ -760,14 +800,15 @@ with gr.Blocks(
 
             _bento_btns: list[tuple[gr.Button, str]] = []
             for _icon, _title, _desc, _prompt in _bento_defs:
-                gr.HTML(f"""
-                <div class="bento-card">
-                    <div class="bento-card-icon">{_icon}</div>
-                    <div class="bento-card-title">{_title}</div>
-                    <p class="bento-card-desc">{_desc}</p>
-                </div>
-                """)
-                _bbtn = gr.Button(f"Try {_title}", variant="secondary", size="sm", elem_classes=["bento-btn"])
+                _bbtn = gr.Button(
+                    value=(
+                        f'<span style="font-size:1.4rem;margin-bottom:6px;display:block">{_icon}</span>'
+                        f'<span style="font-weight:700;color:#7c3aed;font-size:0.85rem;margin-bottom:4px;display:block">{_title}</span>'
+                        f'<span style="color:#6b7280;font-size:0.76rem;line-height:1.5;display:block">{_desc}</span>'
+                    ),
+                    variant="secondary",
+                    elem_classes=["bento-btn"],
+                )
                 _bento_btns.append((_bbtn, _prompt))
                 _all_quick.append((_bbtn, _prompt))
 
@@ -811,6 +852,10 @@ with gr.Blocks(
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
+
+    # Wire example chips — fill input box on click
+    for _eb, _ep in _example_btns:
+        _eb.click(fn=set_example, inputs=gr.State(_ep), outputs=msg_input)
 
 
 port = int(os.environ.get("PORT", 7860))
