@@ -12,6 +12,7 @@ import gradio as gr  # type: ignore
 from ivf_advisor.models import ConversationState
 from ivf_advisor.agent import create_agent
 from ivf_advisor.orchestrator import ConversationOrchestrator
+from ivf_advisor.tools.speech_to_text import transcribe_audio
 
 _orchestrator = ConversationOrchestrator(agent=create_agent())
 
@@ -352,6 +353,15 @@ def save_profile(history: list[dict], session_id: str) -> tuple[list[dict], str,
     return chat("I would like to save my profile", history, session_id)
 
 
+def handle_audio(audio_path: str | None, language: str = "English") -> str:
+    """Transcribe recorded audio and return text for the input box."""
+    if not audio_path:
+        return ""
+    lang_code = "hi-IN" if language == "Hindi" else "en-IN"
+    transcript = transcribe_audio(audio_path, language_code=lang_code)
+    return transcript or ""
+
+
 def transcribe_and_fill(audio_data: tuple | None, language: str = "English") -> str:
     """Transcribe recorded audio and return text for the input box."""
     if audio_data is None:
@@ -495,6 +505,14 @@ with gr.Blocks(
                         variant="primary",
                         elem_classes=["send-btn"],
                     )
+                with gr.Row():
+                    audio_input = gr.Audio(
+                        sources=["microphone"],
+                        type="filepath",
+                        label="🎤 Speak your question (Hindi or English)",
+                        show_label=True,
+                        scale=1,
+                    )
 
             gr.HTML("""
             <div class="disclaimer-banner">
@@ -575,6 +593,13 @@ with gr.Blocks(
         inputs=[msg_input, chatbot, session_id_state, language_selector],
         outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
+
+    # Audio: transcribe when recording stops, fill text box
+    audio_input.stop_recording(
+        fn=handle_audio,
+        inputs=[audio_input, language_selector],
+        outputs=[msg_input],
+    )
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
