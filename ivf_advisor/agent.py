@@ -38,6 +38,7 @@ from ivf_advisor.tools.red_flag import red_flag_tool
 from ivf_advisor.tools.emotional_support import emotional_support_tool
 from ivf_advisor.tools.wellness_guide import wellness_guide_tool
 from ivf_advisor.tools.injection_guide import injection_guide_tool
+from ivf_advisor.tools.report_generator import generate_report_tool
 
 SYSTEM_INSTRUCTION = f"""
 You are the IVF Treatment Advisor — a knowledgeable, compassionate, and evidence-based
@@ -151,6 +152,17 @@ LANGUAGE:
   Include the standard disclaimer in Hindi:
   '(याद दिलाएं: यह केवल जानकारी के लिए है — कृपया अपने प्रजनन विशेषज्ञ से परामर्श करें।)'
 
+PDF REPORT GENERATION:
+- Use generate_report_tool when a patient asks to download, save, or get a copy of their
+  personalized IVF plan. This creates a professional PDF document they can share with their
+  partner or doctor.
+- Include relevant sections based on what has been discussed: profile, lab results, timeline,
+  costs, wellness guide, injection guide.
+- After generating the report, provide the download link and explain what's included in the PDF.
+- Suggest generating a report proactively after covering multiple topics (e.g., after discussing
+  costs, timeline, and lab results, say: "Would you like me to generate a PDF summary of
+  everything we've discussed that you can download and share?")
+
 SCOPE GUARD RULES:
 - If a question is outside IVF/fertility: decline and refer to the appropriate professional.
 - If symptoms suggest a medical emergency: instruct immediate medical attention.
@@ -198,5 +210,6 @@ def create_agent() -> Agent:
             emotional_support_tool,
             wellness_guide_tool,
             injection_guide_tool,
+            generate_report_tool,
         ],
     )

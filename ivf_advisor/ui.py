@@ -286,6 +286,28 @@ footer, .footer { display: none !important; }
     transform: translateY(-1px) !important;
 }
 
+/* ── Download Report — inline below chat ── */
+.download-report-btn {
+    width: 100% !important;
+    margin: 6px 0 4px 0 !important;
+}
+.download-report-btn button {
+    width: 100% !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-size: 0.80rem !important;
+    font-weight: 600 !important;
+    padding: 9px 16px !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.25) !important;
+    transition: opacity 0.15s, transform 0.1s !important;
+}
+.download-report-btn button:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+}
+
 
 /* ── Central chat column ── */
 .center-col {
@@ -807,9 +829,9 @@ def chat(
     session_id: str,
     language: str = "English",
 ):
-    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, agent_status, sources_html, journey_bar)."""
+    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, download_btn_update, agent_status, sources_html, journey_bar)."""
     if not user_message.strip():
-        yield history, session_id, "", gr.update(), gr.update(visible=False), gr.update(), gr.update()
+        yield history, session_id, "", gr.update(), gr.update(), gr.update(visible=False), gr.update(), gr.update()
         return
 
     orch = _get_orchestrator()
@@ -827,7 +849,7 @@ def chat(
         _msg("user", user_message),
         _msg("assistant", "🤔 Thinking..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update()
 
     response = ""
     last_sources_html = _build_sources_html([])  # default empty
@@ -852,7 +874,7 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
@@ -862,17 +884,26 @@ def chat(
                 stage = _detect_journey_stage(response)
                 last_journey_html = _build_journey_html(stage)
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
-                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
 
 
 def save_profile(history: list[dict], session_id: str):
     """Trigger profile save via chat."""
     yield from chat("I would like to save my profile", history, session_id)
+
+
+def download_report(history: list[dict], session_id: str):
+    """Trigger PDF report generation via chat."""
+    yield from chat(
+        "Please generate a personalized IVF plan PDF report for me with all the information we've discussed",
+        history,
+        session_id
+    )
 
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
@@ -1153,6 +1184,15 @@ with gr.Blocks(
                 visible=False,
                 elem_classes=["save-profile-inline-btn"],
             )
+            
+            # Download Report — appears after first turn
+            download_report_btn = gr.Button(
+                "📄 Download My IVF Plan (PDF)",
+                variant="primary",
+                size="sm",
+                visible=False,
+                elem_classes=["download-report-btn"],
+            )
 
             # Disclaimer
             gr.HTML("""
@@ -1226,13 +1266,13 @@ with gr.Blocks(
     send_btn.click(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     # Audio: transcribe when recording stops, fill text box then auto-send
@@ -1243,7 +1283,7 @@ with gr.Blocks(
     ).then(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
@@ -1251,14 +1291,20 @@ with gr.Blocks(
     save_profile_btn.click(
         fn=save_profile,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+    )
+    
+    download_report_btn.click(
+        fn=download_report,
+        inputs=[chatbot, session_id_state],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
     )
 
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
             inputs=[chatbot, session_id_state],
-            outputs=[chatbot, session_id_state, state_display, save_profile_btn, agent_status, sources_box, journey_bar],
+            outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
