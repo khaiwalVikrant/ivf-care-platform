@@ -356,10 +356,15 @@ def save_profile(history: list[dict], session_id: str) -> tuple[list[dict], str,
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
     """Transcribe recorded audio and return text for the input box."""
     if not audio_path:
-        return ""
-    lang_code = "hi-IN" if language == "Hindi" else "en-IN"
-    transcript = transcribe_audio(audio_path, language_code=lang_code)
-    return transcript or ""
+        return "🎤 No audio recorded — please try again"
+    try:
+        lang_code = "hi-IN" if language == "Hindi" else "en-IN"
+        transcript = transcribe_audio(audio_path, language_code=lang_code)
+        if transcript:
+            return transcript
+        return "🎤 Could not transcribe audio — please type your question"
+    except Exception as e:
+        return f"🎤 Transcription error — please type your question"
 
 
 def transcribe_and_fill(audio_data: tuple | None, language: str = "English") -> str:
@@ -594,12 +599,16 @@ with gr.Blocks(
         outputs=[chatbot, session_id_state, state_display, save_profile_btn],
     ).then(lambda: "", outputs=msg_input)
 
-    # Audio: transcribe when recording stops, fill text box
+    # Audio: transcribe when recording stops, fill text box then auto-send
     audio_input.stop_recording(
         fn=handle_audio,
         inputs=[audio_input, language_selector],
         outputs=[msg_input],
-    )
+    ).then(
+        fn=chat,
+        inputs=[msg_input, chatbot, session_id_state, language_selector],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn],
+    ).then(lambda: "", outputs=msg_input)
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
