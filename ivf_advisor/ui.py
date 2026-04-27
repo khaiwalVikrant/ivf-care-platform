@@ -364,7 +364,7 @@ def handle_audio(audio_path: str | None, language: str = "English") -> str:
             return transcript
         return "🎤 Could not transcribe audio — please type your question"
     except Exception as e:
-        return f"🎤 Transcription error — please type your question"
+        return f"🎤 Transcription error: {e}"
 
 
 def transcribe_and_fill(audio_data: tuple | None, language: str = "English") -> str:

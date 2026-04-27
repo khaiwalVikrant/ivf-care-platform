@@ -9,49 +9,34 @@ logger = logging.getLogger(__name__)
 
 
 def transcribe_audio(audio_path: str, language_code: str = "en-IN") -> Optional[str]:
-    """Transcribe an audio file to text using Google Cloud Speech-to-Text.
+    """Transcribe an audio file to text using Google Cloud Speech-to-Text."""
+    from google.cloud import speech  # type: ignore
 
-    Args:
-        audio_path: Path to the audio file (WAV, FLAC, or MP3).
-        language_code: BCP-47 language code. Defaults to "en-IN" (English, India).
-                       Use "hi-IN" for Hindi.
+    client = speech.SpeechClient()
 
-    Returns:
-        Transcribed text string, or None if transcription failed.
-    """
-    try:
-        from google.cloud import speech  # type: ignore
+    with open(audio_path, "rb") as f:
+        audio_content = f.read()
 
-        client = speech.SpeechClient()
+    audio = speech.RecognitionAudio(content=audio_content)
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED,
+        language_code=language_code,
+        alternative_language_codes=["hi-IN", "en-US"] if language_code == "en-IN" else ["en-IN"],
+        enable_automatic_punctuation=True,
+        audio_channel_count=1,
+    )
 
-        with open(audio_path, "rb") as f:
-            audio_content = f.read()
+    response = client.recognize(config=config, audio=audio)
 
-        audio = speech.RecognitionAudio(content=audio_content)
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=16000,
-            language_code=language_code,
-            alternative_language_codes=["hi-IN", "en-US"] if language_code == "en-IN" else ["en-IN"],
-            enable_automatic_punctuation=True,
-            model="latest_long",
-        )
-
-        response = client.recognize(config=config, audio=audio)
-
-        if not response.results:
-            return None
-
-        transcript = " ".join(
-            result.alternatives[0].transcript
-            for result in response.results
-            if result.alternatives
-        )
-        return transcript.strip() or None
-
-    except Exception as exc:
-        logger.error("Speech transcription failed: %s", exc)
+    if not response.results:
         return None
+
+    transcript = " ".join(
+        result.alternatives[0].transcript
+        for result in response.results
+        if result.alternatives
+    )
+    return transcript.strip() or None
 
 
 def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "en-IN") -> Optional[str]:
