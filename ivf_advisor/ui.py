@@ -126,6 +126,16 @@ footer, .footer { display: none !important; }
 }
 .agent-status-wrap p { margin: 0 !important; color: #7c3aed !important; }
 
+@keyframes pulse-glow {
+    0%   { box-shadow: 0 0 0 0px rgba(124, 58, 237, 0.4); }
+    70%  { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(124, 58, 237, 0); }
+}
+.agent-active-pulse {
+    animation: pulse-glow 2s infinite;
+    border-color: #db2777 !important;
+}
+
 /* ── Quick access buttons ── */
 .quick-btn button {
     width: 100% !important;
@@ -210,12 +220,13 @@ footer, .footer { display: none !important; }
 
 /* ── Central chat column ── */
 .center-col {
-    padding: 20px 24px !important;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
+    padding: 0 !important;
+    overflow: hidden;
 }
+.chat-header-wrap { padding: 16px 24px 8px 24px; }
 .chat-header-title {
     font-size: 1.25rem;
     font-weight: 800;
@@ -227,6 +238,16 @@ footer, .footer { display: none !important; }
     color: #6b7280;
     margin: 0;
 }
+.chat-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 24px;
+}
+.input-area-container {
+    padding: 12px 24px 16px 24px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+}
 
 /* ── Chatbot bubbles ── */
 .chat-wrap {
@@ -235,6 +256,8 @@ footer, .footer { display: none !important; }
     background: #ffffff !important;
     box-shadow: 0 2px 12px rgba(124,58,237,0.07) !important;
     overflow: hidden !important;
+    flex-grow: 1 !important;
+    overflow-y: auto !important;
 }
 /* User bubble */
 .chat-wrap .message.user > div,
@@ -356,12 +379,14 @@ footer, .footer { display: none !important; }
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 14px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s;
     cursor: pointer;
 }
 .bento-card:hover {
-    border-color: #7c3aed !important;
-    box-shadow: 0 4px 16px rgba(124,58,237,0.15) !important;
+    background: #fdf2f8 !important;
+    border-color: #db2777 !important;
+    box-shadow: 0 4px 16px rgba(219,39,119,0.15) !important;
+    transform: translateY(-3px) !important;
 }
 .bento-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
 .bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; margin-bottom: 4px; }
@@ -442,8 +467,7 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                # Keep last known sources — don't reset them
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True), last_sources_html
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
@@ -500,12 +524,12 @@ def _extract_citations(text: str) -> list[str]:
 
 def _build_sources_html(citations: list[str]) -> str:
     if not citations:
-        return '<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>'
+        return '<p style="color:#6b7280;font-size:0.82rem;margin:0">No sources cited for this response.</p>'
     items = "".join(
-        f'<div class="source-item">📄 {c}</div>'
+        f'<div class="source-item" style="border-left: 2px solid #7c3aed;">{c}</div>'
         for c in citations
     )
-    return f'<div class="sources-list">{items}</div>'
+    return f'<div class="sources-list" style="max-height: 300px; overflow-y: auto;">{items}</div>'
 
 
 # ── UI layout ──────────────────────────────────────────────────────────────
