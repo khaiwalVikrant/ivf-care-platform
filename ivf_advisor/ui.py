@@ -177,23 +177,23 @@ footer, .footer { display: none !important; }
 }
 
 /* Per-button tinted backgrounds + accent borders */
-#qbtn-0 button { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important; color: #5b21b6 !important; }
-#qbtn-0 button:hover { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%) !important; border-color: #a78bfa !important; }
+#qbtn-0 button { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%) !important; color: #5b21b6 !important; border-color: #c4b5fd !important; }
+#qbtn-0 button:hover { background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%) !important; border-color: #a78bfa !important; }
 
-#qbtn-1 button { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; color: #1e40af !important; }
-#qbtn-1 button:hover { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important; border-color: #60a5fa !important; }
+#qbtn-1 button { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important; color: #1e40af !important; border-color: #93c5fd !important; }
+#qbtn-1 button:hover { background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%) !important; border-color: #60a5fa !important; }
 
-#qbtn-2 button { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important; color: #14532d !important; }
-#qbtn-2 button:hover { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border-color: #4ade80 !important; }
+#qbtn-2 button { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; color: #14532d !important; border-color: #86efac !important; }
+#qbtn-2 button:hover { background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%) !important; border-color: #4ade80 !important; }
 
-#qbtn-3 button { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important; color: #78350f !important; }
-#qbtn-3 button:hover { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; border-color: #fbbf24 !important; }
+#qbtn-3 button { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important; color: #78350f !important; border-color: #fcd34d !important; }
+#qbtn-3 button:hover { background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%) !important; border-color: #fbbf24 !important; }
 
-#qbtn-4 button { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%) !important; color: #701a75 !important; }
-#qbtn-4 button:hover { background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%) !important; border-color: #e879f9 !important; }
+#qbtn-4 button { background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%) !important; color: #701a75 !important; border-color: #e879f9 !important; }
+#qbtn-4 button:hover { background: linear-gradient(135deg, #f5d0fe 0%, #f0abfc 100%) !important; border-color: #d946ef !important; }
 
-#qbtn-5 button { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important; color: #881337 !important; }
-#qbtn-5 button:hover { background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important; border-color: #fb7185 !important; }
+#qbtn-5 button { background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important; color: #881337 !important; border-color: #fda4af !important; }
+#qbtn-5 button:hover { background: linear-gradient(135deg, #fecdd3 0%, #fda4af 100%) !important; border-color: #fb7185 !important; }
 
 /* ── Language selector ── */
 .lang-selector {
@@ -327,10 +327,28 @@ footer, .footer { display: none !important; }
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
+    overflow-x: hidden;
     position: sticky;
     top: 0;
+    height: 100vh;
     max-height: 100vh;
     min-width: 200px;
+    scrollbar-width: thin;
+    scrollbar-color: #c4b5fd #f5f3ff;
+}
+.right-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.right-sidebar::-webkit-scrollbar-track {
+    background: #f5f3ff;
+    border-radius: 4px;
+}
+.right-sidebar::-webkit-scrollbar-thumb {
+    background: #c4b5fd;
+    border-radius: 4px;
+}
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed;
 }
 
 /* ── Chatbot bubbles ── */
@@ -491,10 +509,10 @@ footer, .footer { display: none !important; }
     content: '';
     position: absolute;
     left: 13px;
-    top: 14px;
-    bottom: 14px;
+    top: 20px;
+    bottom: 20px;
     width: 2px;
-    background: #e5e7eb;
+    background: linear-gradient(to bottom, #e5e7eb 0%, #e5e7eb 100%);
     z-index: 0;
 }
 .journey-step {
@@ -679,7 +697,51 @@ footer, .footer { display: none !important; }
     padding: 0 !important;
 }
 
-/* ── Responsive layout ── */
+/* ── Audio recorder — compact, minimal ── */
+.audio-compact {
+    margin: 0 !important;
+}
+.audio-compact > .wrap,
+.audio-compact .component-wrapper {
+    padding: 0 !important;
+}
+/* Hide the waveform/device name row, keep only the mic button */
+.audio-compact .waveform-container,
+.audio-compact .waveform,
+.audio-compact .device-name,
+.audio-compact .record-button-container ~ *,
+.audio-compact audio {
+    display: none !important;
+}
+.audio-compact .record-button-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 !important;
+}
+.audio-compact .record-button-container button {
+    border-radius: 20px !important;
+    background: #f5f3ff !important;
+    border: 1.5px solid #c4b5fd !important;
+    color: #7c3aed !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 5px 12px !important;
+    height: auto !important;
+    min-height: 32px !important;
+    width: auto !important;
+    min-width: unset !important;
+}
+.audio-compact .record-button-container button:hover {
+    background: #ede9fe !important;
+    border-color: #7c3aed !important;
+}
+/* Fallback: constrain the whole audio widget height */
+.audio-compact > div {
+    max-height: 44px !important;
+    overflow: hidden !important;
+}
+
 
 /* Medium screens (tablets, small laptops ~768–1100px) — hide right sidebar */
 @media (max-width: 1100px) {
@@ -911,7 +973,7 @@ def _detect_journey_stage(response: str) -> int:
 _all_quick: list[tuple[gr.Button, str]] = []  # populated during layout
 
 with gr.Blocks(
-    title="IVF Advisor Command Center",
+    title="IVF Care — Your Compassionate Companion",
     theme=gr.themes.Base(
         primary_hue=gr.themes.colors.purple,
         secondary_hue=gr.themes.colors.pink,
@@ -989,15 +1051,15 @@ with gr.Blocks(
             # Header
             gr.HTML("""
             <div>
-                <p class="chat-header-title">IVF Advisor Command Center</p>
-                <p class="chat-header-sub">Your compassionate AI companion — evidence-based, always supportive</p>
+                <p class="chat-header-title">🌸 Your IVF Care Companion</p>
+                <p class="chat-header-sub">Compassionate, evidence-based support — every step of your journey</p>
             </div>
             """)
 
             # Chatbot
             chatbot = gr.Chatbot(
                 label="",
-                height=520,
+                height=420,
                 type="messages",
                 value=[],
                 avatar_images=(
@@ -1034,6 +1096,7 @@ with gr.Blocks(
                         show_label=True,
                         scale=1,
                         elem_classes=["audio-compact"],
+                        waveform_options={"show_controls": False},
                     )
 
             # Example chips — custom styled buttons replacing gr.Examples
