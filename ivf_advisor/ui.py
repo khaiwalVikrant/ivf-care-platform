@@ -350,6 +350,12 @@ footer, .footer { display: none !important; }
 .right-sidebar::-webkit-scrollbar-thumb:hover {
     background: #7c3aed;
 }
+/* Prevent any child from overflowing horizontally */
+.right-sidebar > * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
 
 /* ── Chatbot bubbles ── */
 .chat-wrap {
@@ -666,35 +672,62 @@ footer, .footer { display: none !important; }
 .sources-list { display: flex; flex-direction: column; gap: 4px; }
 
 /* ── Bento cards ── */
-.bento-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s;
-}
-.bento-card:hover {
-    background: #fdf2f8;
-    border-color: #db2777;
-    box-shadow: 0 4px 16px rgba(219,39,119,0.15);
-    transform: translateY(-3px);
-}
-.bento-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
-.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; margin-bottom: 4px; }
-.bento-card-desc { color: #6b7280; font-size: 0.76rem; line-height: 1.5; margin: 0; }
-
-/* Hidden trigger button — zero size, invisible, but still clickable by JS */
-.bento-btn-hidden {
-    position: absolute !important;
-    width: 0 !important;
-    height: 0 !important;
+.bento-card-wrap {
+    position: relative !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    margin-bottom: 8px !important;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.05) !important;
     overflow: hidden !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+}
+.bento-card-wrap:hover {
+    background: #fdf2f8 !important;
+    border-color: #db2777 !important;
+    box-shadow: 0 4px 16px rgba(219,39,119,0.15) !important;
+    transform: translateY(-2px) !important;
+}
+.bento-card-visual {
+    padding: 12px 14px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.bento-card-icon { font-size: 1.4rem; display: block; }
+.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.85rem; display: block; }
+.bento-card-desc { color: #6b7280; font-size: 0.76rem; line-height: 1.5; display: block; }
+
+/* Transparent full-cover button overlay */
+.bento-card-overlay-btn {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     opacity: 0 !important;
-    pointer-events: none !important;
+    cursor: pointer !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    z-index: 2 !important;
+}
+.bento-card-overlay-btn button {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
 }
 
 /* ── Audio recorder — compact, minimal ── */
@@ -1167,22 +1200,20 @@ with gr.Blocks(
 
             _bento_btns: list[tuple[gr.Button, str]] = []
             for _i, (_icon, _title, _desc, _prompt) in enumerate(_bento_defs):
-                _card_id = f"bento-card-{_i}"
-                _btn_id  = f"bento-btn-{_i}"
-                gr.HTML(f"""
-                <div class="bento-card" id="{_card_id}" onclick="document.getElementById('{_btn_id}').querySelector('button').click()">
-                    <div class="bento-card-icon">{_icon}</div>
-                    <div class="bento-card-title">{_title}</div>
-                    <p class="bento-card-desc">{_desc}</p>
-                </div>
-                """)
-                _bbtn = gr.Button(
-                    value=_title,
-                    variant="secondary",
-                    elem_classes=["bento-btn-hidden"],
-                    elem_id=_btn_id,
-                    visible=True,
-                )
+                with gr.Group(elem_classes=["bento-card-wrap"]):
+                    gr.HTML(f"""
+                    <div class="bento-card-visual" aria-hidden="true">
+                        <span class="bento-card-icon">{_icon}</span>
+                        <span class="bento-card-title">{_title}</span>
+                        <span class="bento-card-desc">{_desc}</span>
+                    </div>
+                    """)
+                    _bbtn = gr.Button(
+                        value="",
+                        variant="secondary",
+                        elem_classes=["bento-card-overlay-btn"],
+                        size="sm",
+                    )
                 _bento_btns.append((_bbtn, _prompt))
                 _all_quick.append((_bbtn, _prompt))
 
