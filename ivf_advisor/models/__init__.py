@@ -47,6 +47,11 @@ class PatientProfile(BaseModel):
     preferences: Optional[str] = None
     region: Optional[str] = None  # e.g. "UK", "US", "Australia" — used in Phase 2
     confirmed: bool = False  # True once the agent has reflected details back to the patient
+    patient_id: Optional[str] = None
+    patient_name: Optional[str] = None
+    patient_email: Optional[str] = None
+    cycle_id: Optional[str] = None
+    last_updated: Optional[datetime] = None
 
 
 class Session(BaseModel):
@@ -54,7 +59,7 @@ class Session(BaseModel):
 
     session_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    state: ConversationState = ConversationState.ONBOARDING
+    state: ConversationState = ConversationState.MAIN_LOOP
     profile: Optional[PatientProfile] = None
     disclaimer_acknowledged: bool = True
     topics_discussed: list[str] = Field(default_factory=list)
@@ -66,6 +71,7 @@ class Session(BaseModel):
     patient_email: Optional[str] = None
     cycle_id: Optional[str] = None
     onboarding_step: int = 0  # tracks which onboarding question we're on
+    profile_opted_in: bool = False  # True once patient explicitly opts in to profile saving
 
 
 # ---------------------------------------------------------------------------
@@ -158,3 +164,73 @@ class SessionLogEntry(BaseModel):
     turn_count: int
     topics_covered: list[str]
     tool_invocations: list[str]
+
+
+# ---------------------------------------------------------------------------
+# New tool output models (Phase 2)
+# ---------------------------------------------------------------------------
+
+
+class SuccessRateOutput(BaseModel):
+    """Structured output from success_rate_tool."""
+
+    age_band: str
+    base_rate_low: float
+    base_rate_high: float
+    adjusted_rate_low: Optional[float] = None
+    adjusted_rate_high: Optional[float] = None
+    adjustment_explanation: Optional[str] = None
+    cumulative_note: Optional[str] = None
+    data_source: str
+    disclaimer: str
+
+
+class LabResultOutput(BaseModel):
+    """Structured output from lab_result_tool."""
+
+    amh_classification: Optional[str] = None
+    amh_explanation: Optional[str] = None
+    fsh_classification: Optional[str] = None
+    fsh_explanation: Optional[str] = None
+    afc_classification: Optional[str] = None
+    afc_explanation: Optional[str] = None
+    combined_interpretation: Optional[str] = None
+    age_context: Optional[str] = None
+    disclaimer: str
+
+
+class TimelineEvent(BaseModel):
+    """A single event in an IVF treatment timeline."""
+
+    date: str
+    day_number: int
+    event_name: str
+    description: str
+
+
+class TimelineOutput(BaseModel):
+    """Structured output from timeline_tool."""
+
+    events: list[TimelineEvent]
+    protocol: str
+    transfer_type: str
+    clinic_adjustment_note: str
+
+
+class RedFlagOutput(BaseModel):
+    """Structured output from red_flag_tool."""
+
+    flags_found: list[str]
+    risk_level: str
+    explanation: str
+    legitimate_clinic_note: str
+
+
+class EmotionalSupportOutput(BaseModel):
+    """Structured output from emotional_support_tool."""
+
+    distress_level: str
+    empathy_response: str
+    coping_strategies: list[str]
+    support_resources: dict[str, list[str]]
+    crisis_mode: bool

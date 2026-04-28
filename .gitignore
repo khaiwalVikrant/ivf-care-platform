@@ -15,6 +15,7 @@ build/
 # Virtual environments
 .venv/
 venv/
+.venv311/
 env/
 
 # Testing
@@ -27,6 +28,7 @@ coverage.xml
 # IDEs
 .vscode/
 .idea/
+*.code-workspace
 
 # Local DB files
 *.db
@@ -37,3 +39,4 @@ coverage.xml
 
 # Kiro
 .kiro/
+

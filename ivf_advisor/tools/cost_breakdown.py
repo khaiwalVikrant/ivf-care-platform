@@ -102,24 +102,45 @@ _INDIA_ADDON_COMPONENTS: list[CostComponent] = [
 ]
 
 _INDIA_CITY_RANGES = {
-    "mumbai":    {"low": 120000, "high": 350000},
-    "delhi":     {"low": 100000, "high": 300000},
-    "bangalore": {"low": 100000, "high": 280000},
-    "bengaluru": {"low": 100000, "high": 280000},
-    "chennai":   {"low": 90000,  "high": 250000},
-    "hyderabad": {"low": 90000,  "high": 250000},
-    "pune":      {"low": 90000,  "high": 250000},
-    "kolkata":   {"low": 80000,  "high": 220000},
-    "default":   {"low": 80000,  "high": 300000},
+    "mumbai":     {"low": 120000, "high": 350000},
+    "delhi":      {"low": 100000, "high": 300000},
+    "bangalore":  {"low": 100000, "high": 280000},
+    "bengaluru":  {"low": 100000, "high": 280000},
+    "chennai":    {"low": 90000,  "high": 250000},
+    "hyderabad":  {"low": 90000,  "high": 250000},
+    "pune":       {"low": 90000,  "high": 250000},
+    "kolkata":    {"low": 80000,  "high": 220000},
+    "ahmedabad":  {"low": 80000,  "high": 220000},
+    "jaipur":     {"low": 75000,  "high": 200000},
+    "chandigarh": {"low": 80000,  "high": 210000},
+    "kochi":      {"low": 85000,  "high": 230000},
+    "default":    {"low": 80000,  "high": 300000},
 }
 
 _INDIA_MULTI_CYCLE_NOTE = (
     "IVF costs in India are significantly lower than in Western countries, making India "
     "a destination for medical tourism. However, costs are cumulative — most patients "
     "require 2–3 cycles. Budget for multiple cycles rather than assuming one will suffice. "
-    "Government hospitals (e.g. AIIMS, NIMHANS) offer subsidised IVF for eligible patients. "
-    "Some states have government schemes — check with your state health department."
+    "Government hospitals such as AIIMS (All India Institute of Medical Sciences) offer "
+    "heavily subsidised IVF for eligible patients — costs can be 50–80% lower than private "
+    "clinics. Several state governments also run health schemes that partially or fully cover "
+    "IVF: for example, the Pradhan Mantri Jan Arogya Yojana (PM-JAY / Ayushman Bharat) and "
+    "state-specific schemes in Rajasthan, Maharashtra, and Tamil Nadu. Check with your state "
+    "health department or district hospital for current eligibility criteria and covered "
+    "procedures before committing to a private clinic."
 )
+
+_HINDI_LABELS: dict[str, str] = {
+    "Initial Consultation":                    "प्रारंभिक परामर्श / Initial Consultation",
+    "Monitoring Scans":                        "निगरानी स्कैन / Monitoring Scans",
+    "Medications":                             "दवाइयाँ / Medications",
+    "Laboratory Fees":                         "प्रयोगशाला शुल्क / Laboratory Fees",
+    "Egg Retrieval Procedure":                 "अंडा संग्रह प्रक्रिया / Egg Retrieval Procedure",
+    "Embryo Transfer":                         "भ्रूण स्थानांतरण / Embryo Transfer",
+    "ICSI (Intracytoplasmic Sperm Injection)": "आईसीएसआई / ICSI (Intracytoplasmic Sperm Injection)",
+    "Preimplantation Genetic Testing (PGT-A)": "पीजीटी-ए / Preimplantation Genetic Testing (PGT-A)",
+    "Embryo Freezing and Storage":             "भ्रूण फ्रीजिंग / Embryo Freezing and Storage",
+}
 
 _INDIA_CLINIC_QUESTIONS: list[str] = [
     "What is included in your IVF package price — does it cover medications?",
@@ -278,6 +299,7 @@ def cost_breakdown_tool(
     region: str | None = None,
     include_addons: bool = False,
     profile_context: str | None = None,
+    include_hindi_labels: bool = False,
 ) -> CostBreakdownOutput:
     """Returns a structured IVF cost breakdown covering all cost components.
 
@@ -286,6 +308,8 @@ def cost_breakdown_tool(
                 (e.g. 'Mumbai', 'Delhi') to get INR cost ranges.
         include_addons: Whether to include optional add-on treatment costs.
         profile_context: Optional JSON string of patient profile (reserved for future use).
+        include_hindi_labels: When True and the region is Indian, prefix each
+                              CostComponent.name with its Hindi equivalent.
 
     Returns:
         CostBreakdownOutput with per-component cost ranges in the appropriate currency.
@@ -294,6 +318,13 @@ def cost_breakdown_tool(
         components: list[CostComponent] = list(_INDIA_CORE_COMPONENTS)
         if include_addons:
             components += list(_INDIA_ADDON_COMPONENTS)
+
+        if include_hindi_labels:
+            labelled: list[CostComponent] = []
+            for comp in components:
+                hindi_name = _HINDI_LABELS.get(comp.name, comp.name)
+                labelled.append(comp.model_copy(update={"name": hindi_name}))
+            components = labelled
 
         city_key = region.lower().strip() if region else "default"
         city_range = _INDIA_CITY_RANGES.get(city_key, _INDIA_CITY_RANGES["default"])

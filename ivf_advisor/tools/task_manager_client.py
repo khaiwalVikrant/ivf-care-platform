@@ -59,9 +59,9 @@ def create_task_tool(
 
 def schedule_reminder_tool(
     patient_id: str,
-    linked_record_id: str,
-    linked_record_type: str,
     scheduled_at: str,
+    linked_record_id: str = "general",
+    linked_record_type: str = "general",
     criticality: str = "normal",
 ) -> dict:
     """Schedule a reminder for a patient.
@@ -71,9 +71,9 @@ def schedule_reminder_tool(
 
     Args:
         patient_id: The patient's identifier.
-        linked_record_id: ID of the record this reminder is linked to.
-        linked_record_type: Type of record e.g. 'medication', 'appointment', 'nurse_visit'.
         scheduled_at: ISO 8601 datetime string e.g. '2026-04-03T21:00:00'.
+        linked_record_id: ID of the record this reminder is linked to (optional, defaults to 'general').
+        linked_record_type: Type of record e.g. 'medication', 'appointment', 'nurse_visit' (optional).
         criticality: 'normal' or 'critical'. Use 'critical' for trigger shots and
                      time-sensitive medications.
 
@@ -86,9 +86,9 @@ def schedule_reminder_tool(
                 f"{_BASE_URL}/reminders",
                 headers=_headers(),
                 json={
-                    "patient_id": patient_id,
-                    "linked_record_id": linked_record_id,
-                    "linked_record_type": linked_record_type,
+                    "patient_id": patient_id or "anonymous",
+                    "linked_record_id": linked_record_id or "general",
+                    "linked_record_type": linked_record_type or "general",
                     "scheduled_at": scheduled_at,
                     "criticality": criticality,
                 },

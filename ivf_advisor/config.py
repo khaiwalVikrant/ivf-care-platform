@@ -42,6 +42,8 @@ VERTEX_SEARCH_DATASTORE_ID: str = _optional("VERTEX_SEARCH_DATASTORE_ID")
 
 GOOGLE_CLOUD_REGION: str = _optional("GOOGLE_CLOUD_REGION", "us-central1")
 REDIS_URL: str = _optional("REDIS_URL", "redis://localhost:6379/0")
+VERTEX_SEARCH_DATASTORE_TYPE: str = _optional("VERTEX_SEARCH_DATASTORE_TYPE", "engine")
+ALLOYDB_CONNECTION_STRING: str = _optional("ALLOYDB_CONNECTION_STRING")
 
 # ---------------------------------------------------------------------------
 # Agent constants
