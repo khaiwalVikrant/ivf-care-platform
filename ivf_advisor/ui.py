@@ -1334,8 +1334,10 @@ def download_report(history: list[dict], session_id: str):
     import re
     patient_name = "Patient"
 
-    # Scan full conversation for name mentions
+    # Only scan USER messages (not assistant) to avoid false matches
     for msg in history:
+        if msg.get("role") != "user":
+            continue
         content = msg.get("content", "")
         if not content:
             continue
@@ -1344,15 +1346,19 @@ def download_report(history: list[dict], session_id: str):
         patterns = [
             r"name\s*:\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
             r"my name is\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
-            r"i'?m\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
             r"i am\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
             r"call me\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
         ]
         for pattern in patterns:
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
-                patient_name = match.group(1).strip().title()
-                break
+                candidate = match.group(1).strip().title()
+                # Sanity check: max 4 words, no common non-name words
+                words = candidate.split()
+                skip_words = {"The", "Your", "This", "That", "Please", "Thank", "Sorry", "Hello", "Hi"}
+                if 1 <= len(words) <= 4 and words[0] not in skip_words:
+                    patient_name = candidate
+                    break
         if patient_name != "Patient":
             break
 
@@ -1374,18 +1380,28 @@ def download_report(history: list[dict], session_id: str):
         )
 
         if result.success and result.report_url:
-            response = (
-                f"✅ **Your IVF Plan PDF is ready, {patient_name}!**\n\n"
-                f"📄 **[Click here to download your report]({result.report_url})**\n\n"
-                f"Your personalized plan includes:\n"
-                f"- 👤 Profile Summary\n"
-                f"- 🧬 Lab Results Interpretation\n"
-                f"- 📅 Treatment Timeline\n"
-                f"- 💰 Cost Breakdown\n"
-                f"- 🥗 Wellness Guide\n"
-                f"- 💉 Injection Guide\n\n"
-                f"_Save this link or download the PDF to share with your partner or doctor._"
-            )
+            url = result.report_url
+            # If it's a base64 data URI, show direct link text instead
+            if url.startswith("data:"):
+                response = (
+                    f"✅ **Your IVF Plan PDF is ready, {patient_name}!**\n\n"
+                    f"⚠️ The PDF was generated but Cloud Storage upload failed. "
+                    f"Please try again or contact support.\n\n"
+                    f"Your plan covers: Profile · Lab Results · Timeline · Costs · Wellness · Injection Guide"
+                )
+            else:
+                response = (
+                    f"✅ **Your IVF Plan PDF is ready, {patient_name}!**\n\n"
+                    f"🔗 Download link: {url}\n\n"
+                    f"Your personalized plan includes:\n"
+                    f"- 👤 Profile Summary\n"
+                    f"- 🧬 Lab Results Interpretation\n"
+                    f"- 📅 Treatment Timeline\n"
+                    f"- 💰 Cost Breakdown\n"
+                    f"- 🥗 Wellness Guide\n"
+                    f"- 💉 Injection Guide\n\n"
+                    f"_Copy the link above to download and share with your partner or doctor._"
+                )
         else:
             response = f"❌ Could not generate PDF: {result.error_message}"
     except Exception as e:
