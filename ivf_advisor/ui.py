@@ -35,7 +35,7 @@ def _state_badge(state: ConversationState) -> str:
 
 
 WELCOME_MESSAGE = (
-    "🌸 **Welcome to IVF Care Platform!**\n\n"
+    "**Welcome to IVF Care Platform!**\n\n"
     "I'm your compassionate AI companion for the IVF journey. I can help you:\n\n"
     "- 🧬 Interpret your lab results (AMH, FSH, AFC)\n"
     "- 📅 Build a personalised treatment timeline\n"
@@ -100,7 +100,7 @@ footer, .footer { display: none !important; }
     min-width: 200px;
 }
 .sidebar-logo {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: #7c3aed;
     letter-spacing: -0.3px;
@@ -319,7 +319,7 @@ footer, .footer { display: none !important; }
 }
 .chat-header-wrap { padding: 16px 24px 8px 24px; }
 .chat-header-title {
-    font-size: 1.25rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #7c3aed;
     margin: 0 0 2px 0;
@@ -495,17 +495,17 @@ footer, .footer { display: none !important; }
 
 /* ── Compact top disclaimer banner ── */
 .disclaimer-top-banner {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border-bottom: 1px solid #fcd34d;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border-bottom: 1px solid #e9d5ff;
     padding: 8px 20px;
     text-align: center;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 8px rgba(252, 211, 77, 0.15);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
 }
 .disclaimer-top-banner p {
-    color: #92400e !important;
+    color: #6b21a8 !important;
     font-size: 0.75rem !important;
     margin: 0 !important;
     line-height: 1.4 !important;
@@ -513,7 +513,7 @@ footer, .footer { display: none !important; }
 }
 .disclaimer-top-banner strong {
     font-weight: 700 !important;
-    color: #78350f !important;
+    color: #581c87 !important;
 }
 
 /* ── Example chips row ── */
@@ -1550,7 +1550,7 @@ with gr.Blocks(
             # Header
             gr.HTML("""
             <div>
-                <p class="chat-header-title">🌸 Your IVF Care Companion</p>
+                <p class="chat-header-title">Your IVF Care Companion</p>
                 <p class="chat-header-sub">Compassionate, evidence-based support — every step of your journey</p>
             </div>
             """)
