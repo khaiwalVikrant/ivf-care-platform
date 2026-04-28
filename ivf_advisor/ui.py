@@ -344,10 +344,10 @@ footer, .footer { display: none !important; }
 .right-sidebar {
     background: #ffffff !important;
     border-left: 1px solid #e5e7eb !important;
-    padding: 16px 14px 16px 14px !important;
+    padding: 12px 10px 12px 10px !important;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     overflow-y: auto;
     overflow-x: hidden;
     position: sticky;
@@ -356,22 +356,25 @@ footer, .footer { display: none !important; }
     max-height: 100vh;
     min-width: 200px;
     scrollbar-width: thin;
-    scrollbar-color: #a78bfa #f5f3ff;
+    scrollbar-color: #7c3aed #f5f3ff;
 }
 .right-sidebar::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
 }
 .right-sidebar::-webkit-scrollbar-track {
     background: #f5f3ff;
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
 }
 .right-sidebar::-webkit-scrollbar-thumb {
-    background: #a78bfa;
-    border-radius: 4px;
+    background: linear-gradient(180deg, #7c3aed 0%, #db2777 100%);
+    border-radius: 6px;
     border: 2px solid #f5f3ff;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.3);
 }
 .right-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #7c3aed;
+    background: linear-gradient(180deg, #6d28d9 0%, #be185d 100%);
+    box-shadow: 0 3px 12px rgba(124,58,237,0.5);
 }
 /* Prevent any child from overflowing horizontally */
 .right-sidebar > * {
@@ -379,17 +382,29 @@ footer, .footer { display: none !important; }
     min-width: 0 !important;
     box-sizing: border-box !important;
 }
-/* Add a subtle gradient at bottom to indicate more content */
+/* Add a prominent gradient at bottom to indicate more content */
 .right-sidebar::after {
-    content: '';
+    content: '⬇️ Scroll for more ⬇️';
     position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 30px;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+    height: 50px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.98));
     pointer-events: none;
     z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-size: 0.70rem;
+    font-weight: 700;
+    color: #7c3aed;
+    animation: scroll-pulse 2s ease-in-out infinite;
+}
+@keyframes scroll-pulse {
+    0%, 100% { opacity: 0.6; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-3px); }
 }
 
 /* ── Chatbot bubbles ── */
@@ -528,16 +543,16 @@ footer, .footer { display: none !important; }
 .journey-panel {
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px 12px;
+    border-radius: 8px;
+    padding: 8px 10px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.05);
 }
 .journey-panel h4 {
     color: #7c3aed;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    margin: 0 0 8px 0;
-    padding-bottom: 6px;
+    margin: 0 0 6px 0;
+    padding-bottom: 4px;
     border-bottom: 1px solid #e5e7eb;
 }
 .journey-steps {
@@ -549,9 +564,9 @@ footer, .footer { display: none !important; }
 .journey-steps::before {
     content: '';
     position: absolute;
-    left: 11px;
-    top: 16px;
-    bottom: 16px;
+    left: 9px;
+    top: 14px;
+    bottom: 14px;
     width: 2px;
     background: linear-gradient(to bottom, #e5e7eb 0%, #e5e7eb 100%);
     z-index: 0;
@@ -559,19 +574,19 @@ footer, .footer { display: none !important; }
 .journey-step {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    padding: 4px 0;
+    gap: 6px;
+    padding: 2px 0;
     position: relative;
     z-index: 1;
 }
 .journey-dot {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.70rem;
+    font-size: 0.65rem;
     font-weight: 700;
     flex-shrink: 0;
     border: 2px solid #e5e7eb;
@@ -590,9 +605,9 @@ footer, .footer { display: none !important; }
     color: #7c3aed;
     box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
-.journey-step-info { padding-top: 2px; }
+.journey-step-info { padding-top: 1px; }
 .journey-step-label {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: #374151;
     line-height: 1.2;
@@ -600,44 +615,44 @@ footer, .footer { display: none !important; }
 .journey-step-label.active { color: #7c3aed; }
 .journey-step-label.done { color: #6b7280; }
 .journey-step-sub {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     color: #9ca3af;
-    margin-top: 1px;
+    margin-top: 0px;
 }
 
 /* ── Documents & Support panel ── */
 .docs-panel {
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px 12px;
+    border-radius: 8px;
+    padding: 8px 10px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.05);
 }
 .docs-panel h4 {
     color: #7c3aed;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    margin: 0 0 8px 0;
-    padding-bottom: 6px;
+    margin: 0 0 6px 0;
+    padding-bottom: 4px;
     border-bottom: 1px solid #e5e7eb;
 }
 .docs-section-label {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     font-weight: 700;
     color: #9ca3af;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin: 8px 0 4px 0;
+    margin: 6px 0 3px 0;
 }
 .doc-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 5px 6px;
-    border-radius: 6px;
+    gap: 5px;
+    padding: 4px 5px;
+    border-radius: 5px;
     text-decoration: none;
     color: #374151;
-    font-size: 0.74rem;
+    font-size: 0.70rem;
     font-weight: 500;
     transition: background 0.15s, color 0.15s;
     margin-bottom: 2px;
@@ -647,13 +662,13 @@ footer, .footer { display: none !important; }
     color: #7c3aed;
 }
 .doc-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.80rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
 }
 .doc-icon.purple { background: #f5f3ff; }
@@ -663,10 +678,10 @@ footer, .footer { display: none !important; }
 .support-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 16px;
-    font-size: 0.70rem;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 14px;
+    font-size: 0.66rem;
     font-weight: 500;
     text-decoration: none;
     margin: 2px 2px 0 0;
@@ -682,38 +697,38 @@ footer, .footer { display: none !important; }
 .sources-panel {
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 10px 12px;
+    border-radius: 8px;
+    padding: 8px 10px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.05);
 }
 .sources-panel h4 {
     color: #7c3aed;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    margin: 0 0 8px 0;
-    padding-bottom: 6px;
+    margin: 0 0 6px 0;
+    padding-bottom: 4px;
     border-bottom: 1px solid #e5e7eb;
 }
 .source-item {
     background: #f5f3ff;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 7px 10px;
-    margin-bottom: 5px;
-    font-size: 0.76rem;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
     color: #374151;
-    line-height: 1.4;
+    line-height: 1.3;
 }
-.sources-list { display: flex; flex-direction: column; gap: 4px; }
+.sources-list { display: flex; flex-direction: column; gap: 3px; }
 
 /* ── Bento cards ── */
 .bento-card-wrap {
     position: relative !important;
     background: #ffffff !important;
     border: 1px solid #e5e7eb !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     padding: 0 !important;
-    margin-bottom: 6px !important;
+    margin-bottom: 5px !important;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s !important;
     box-shadow: 0 2px 8px rgba(124,58,237,0.05) !important;
     overflow: hidden !important;
@@ -728,15 +743,15 @@ footer, .footer { display: none !important; }
     transform: translateY(-2px) !important;
 }
 .bento-card-visual {
-    padding: 10px 12px;
+    padding: 8px 10px;
     pointer-events: none;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
-.bento-card-icon { font-size: 1.2rem; display: block; }
-.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.80rem; display: block; }
-.bento-card-desc { color: #6b7280; font-size: 0.72rem; line-height: 1.4; display: block; }
+.bento-card-icon { font-size: 1.1rem; display: block; }
+.bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.76rem; display: block; }
+.bento-card-desc { color: #6b7280; font-size: 0.68rem; line-height: 1.3; display: block; }
 
 /* Transparent full-cover button overlay */
 .bento-card-overlay-btn {
@@ -1069,6 +1084,179 @@ footer, .footer { display: none !important; }
     .example-chip button {
         font-size: 0.65rem !important;
         padding: 2px 6px !important;
+    }
+}
+
+/* Screens with limited vertical height (Mac mini, small monitors) */
+@media (max-height: 900px) {
+    .right-sidebar {
+        padding: 8px 8px 8px 8px !important;
+        gap: 6px !important;
+    }
+    .journey-panel {
+        padding: 6px 8px !important;
+    }
+    .journey-panel h4 {
+        font-size: 0.74rem !important;
+        margin: 0 0 4px 0 !important;
+        padding-bottom: 3px !important;
+    }
+    .journey-step {
+        padding: 1px 0 !important;
+        gap: 5px !important;
+    }
+    .journey-dot {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.62rem !important;
+    }
+    .journey-steps::before {
+        left: 8px !important;
+        top: 12px !important;
+        bottom: 12px !important;
+    }
+    .journey-step-label {
+        font-size: 0.68rem !important;
+    }
+    .journey-step-sub {
+        font-size: 0.60rem !important;
+    }
+    .sources-panel {
+        padding: 6px 8px !important;
+    }
+    .sources-panel h4 {
+        font-size: 0.74rem !important;
+        margin: 0 0 4px 0 !important;
+        padding-bottom: 3px !important;
+    }
+    .source-item {
+        padding: 5px 7px !important;
+        font-size: 0.68rem !important;
+        margin-bottom: 3px !important;
+    }
+    .bento-card-wrap {
+        margin-bottom: 4px !important;
+    }
+    .bento-card-visual {
+        padding: 6px 8px !important;
+    }
+    .bento-card-icon {
+        font-size: 1rem !important;
+    }
+    .bento-card-title {
+        font-size: 0.72rem !important;
+    }
+    .bento-card-desc {
+        font-size: 0.64rem !important;
+        line-height: 1.2 !important;
+    }
+    .docs-panel {
+        padding: 6px 8px !important;
+    }
+    .docs-panel h4 {
+        font-size: 0.74rem !important;
+        margin: 0 0 4px 0 !important;
+        padding-bottom: 3px !important;
+    }
+    .docs-section-label {
+        font-size: 0.60rem !important;
+        margin: 4px 0 2px 0 !important;
+    }
+    .doc-item {
+        padding: 3px 4px !important;
+        font-size: 0.66rem !important;
+        gap: 4px !important;
+    }
+    .doc-icon {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.70rem !important;
+    }
+    .support-pill {
+        padding: 2px 5px !important;
+        font-size: 0.62rem !important;
+        margin: 1px 1px 0 0 !important;
+    }
+    .sidebar-section-title {
+        font-size: 0.64rem !important;
+        margin: 4px 0 3px 0 !important;
+    }
+}
+
+/* Extra compact for very short screens (768px height or less) */
+@media (max-height: 768px) {
+    .right-sidebar {
+        padding: 6px 6px 6px 6px !important;
+        gap: 4px !important;
+    }
+    .journey-panel,
+    .sources-panel,
+    .docs-panel {
+        padding: 5px 6px !important;
+        border-radius: 6px !important;
+    }
+    .journey-panel h4,
+    .sources-panel h4,
+    .docs-panel h4 {
+        font-size: 0.70rem !important;
+        margin: 0 0 3px 0 !important;
+        padding-bottom: 2px !important;
+    }
+    .journey-step {
+        padding: 0 !important;
+    }
+    .journey-dot {
+        width: 16px !important;
+        height: 16px !important;
+        font-size: 0.58rem !important;
+    }
+    .journey-steps::before {
+        left: 7px !important;
+        top: 10px !important;
+        bottom: 10px !important;
+    }
+    .journey-step-label {
+        font-size: 0.64rem !important;
+        line-height: 1.1 !important;
+    }
+    .journey-step-sub {
+        display: none !important;
+    }
+    .bento-card-wrap {
+        margin-bottom: 3px !important;
+    }
+    .bento-card-visual {
+        padding: 5px 6px !important;
+        gap: 1px !important;
+    }
+    .bento-card-icon {
+        font-size: 0.95rem !important;
+    }
+    .bento-card-title {
+        font-size: 0.68rem !important;
+    }
+    .bento-card-desc {
+        font-size: 0.60rem !important;
+        line-height: 1.15 !important;
+    }
+    .doc-item {
+        padding: 2px 3px !important;
+        font-size: 0.62rem !important;
+        margin-bottom: 1px !important;
+    }
+    .doc-icon {
+        width: 16px !important;
+        height: 16px !important;
+        font-size: 0.65rem !important;
+    }
+    .support-pill {
+        padding: 1px 4px !important;
+        font-size: 0.58rem !important;
+    }
+    .source-item {
+        padding: 4px 6px !important;
+        font-size: 0.64rem !important;
+        margin-bottom: 2px !important;
     }
 }
 """
@@ -1483,9 +1671,8 @@ with gr.Blocks(
             gr.HTML('</div>')
 
             # Bento feature cards — renamed to "Tools & Capabilities"
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:8px">🛠️ Tools &amp; Capabilities</div>')
-            gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0">Specialist tools — click a card to explore</p>')
-            gr.HTML('<p style="font-size:0.70rem;color:#7c3aed;margin:0 0 8px 0;font-weight:600">↓ Scroll down for more tools ↓</p>')
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:4px">🛠️ Tools &amp; Capabilities</div>')
+            gr.HTML('<p style="font-size:0.70rem;color:#7c3aed;margin:0 0 6px 0;font-weight:700;text-align:center;background:#fef3c7;padding:4px 8px;border-radius:6px;border:1px solid #fcd34d">⬇️ SCROLL DOWN FOR MORE ⬇️</p>')
 
             _bento_defs = [
                 ("📈", "Success Predictor",  "Personalised success rates by age & diagnosis",
