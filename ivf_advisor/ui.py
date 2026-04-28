@@ -425,7 +425,7 @@ footer, .footer { display: none !important; }
     background: #ffffff;
     border-radius: 16px;
     border: 1.5px solid #e5e7eb;
-    padding: 8px 10px 8px 14px;
+    padding: 4px 6px 4px 10px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.06);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -436,18 +436,19 @@ footer, .footer { display: none !important; }
 /* Remove Gradio's own border/bg on the row inside the group */
 .input-area > .gap,
 .input-area .gr-row {
-    gap: 8px !important;
-    align-items: flex-end !important;
+    gap: 6px !important;
+    align-items: center !important;
 }
 .input-area textarea {
     border-radius: 10px !important;
     border: none !important;
-    padding: 10px 4px !important;
+    padding: 6px 4px !important;
     font-size: 0.93rem !important;
     background: transparent !important;
     resize: none !important;
     color: #1A1A2E !important;
     box-shadow: none !important;
+    line-height: 1.4 !important;
 }
 .input-area textarea:focus {
     border-color: transparent !important;
@@ -1405,8 +1406,8 @@ def set_example(text: str) -> str:
 
 def _make_quick_handler(prompt: str):
     """Return a streaming handler that fires a quick-action prompt."""
-    def _handler(history: list[dict], session_id: str):
-        yield from chat(prompt, history, session_id)
+    def _handler(history: list[dict], session_id: str, language: str = "English"):
+        yield from chat(prompt, history, session_id, language)
     return _handler
 
 
@@ -1783,7 +1784,7 @@ with gr.Blocks(
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
-            inputs=[chatbot, session_id_state],
+            inputs=[chatbot, session_id_state, language_selector],
             outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
         )
 
