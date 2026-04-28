@@ -382,30 +382,6 @@ footer, .footer { display: none !important; }
     min-width: 0 !important;
     box-sizing: border-box !important;
 }
-/* Add a prominent gradient at bottom to indicate more content */
-.right-sidebar::after {
-    content: '⬇️ Scroll for more ⬇️';
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.98));
-    pointer-events: none;
-    z-index: 10;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 8px;
-    font-size: 0.70rem;
-    font-weight: 700;
-    color: #7c3aed;
-    animation: scroll-pulse 2s ease-in-out infinite;
-}
-@keyframes scroll-pulse {
-    0%, 100% { opacity: 0.6; transform: translateY(0); }
-    50% { opacity: 1; transform: translateY(-3px); }
-}
 
 /* ── Chatbot bubbles ── */
 .chat-wrap {
@@ -416,8 +392,8 @@ footer, .footer { display: none !important; }
     overflow: hidden !important;
     flex-grow: 1 !important;
     overflow-y: auto !important;
-    min-height: 400px !important;
-    max-height: calc(100vh - 350px) !important;
+    height: calc(100vh - 280px) !important;
+    min-height: 450px !important;
 }
 /* User bubble */
 .chat-wrap .message.user > div,
@@ -477,8 +453,8 @@ footer, .footer { display: none !important; }
 /* ── Send button ── */
 .send-btn {
     display: flex !important;
-    align-items: flex-end !important;
-    padding-bottom: 2px !important;
+    align-items: center !important;
+    justify-content: center !important;
     min-width: unset !important;
 }
 .send-btn button {
@@ -797,30 +773,34 @@ footer, .footer { display: none !important; }
 
 /* ── Audio recorder — separate row, compact ── */
 .audio-row {
-    margin-top: 8px !important;
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
 }
 .audio-recorder {
-    max-height: 60px !important;
+    max-height: 50px !important;
+    margin: 0 !important;
 }
 .audio-recorder label {
-    font-size: 0.75rem !important;
-    color: #7c3aed !important;
-    font-weight: 600 !important;
-    margin-bottom: 4px !important;
+    font-size: 0.72rem !important;
+    color: #9ca3af !important;
+    font-weight: 500 !important;
+    margin-bottom: 3px !important;
 }
 .audio-recorder .wrap {
     border: 1px solid #e5e7eb !important;
-    border-radius: 10px !important;
-    padding: 6px 10px !important;
-    background: #f9fafb !important;
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+    background: #fafafa !important;
+    min-height: 36px !important;
 }
 .audio-recorder button {
-    font-size: 0.75rem !important;
-    padding: 4px 12px !important;
-    border-radius: 8px !important;
+    font-size: 0.72rem !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
     background: #7c3aed !important;
     color: white !important;
     border: none !important;
+    min-height: 28px !important;
 }
 .audio-recorder button:hover {
     background: #6d28d9 !important;
