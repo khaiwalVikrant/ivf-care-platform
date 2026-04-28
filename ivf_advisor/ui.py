@@ -38,13 +38,13 @@ def _state_badge(state: ConversationState) -> str:
 WELCOME_MESSAGE = (
     "**Welcome to IVF Care Platform!**\n\n"
     "I'm your compassionate AI companion for the IVF journey. I can help you:\n\n"
-    "- 🧬 Interpret your lab results (AMH, FSH, AFC)\n"
+    "- 🧬 Interpret lab results — AMH, FSH, AFC, sperm analysis\n"
     "- 📅 Build a personalised treatment timeline\n"
     "- 💊 Guide you through injections and medications\n"
     "- 💰 Break down IVF costs in your city\n"
     "- 🔬 Answer clinical questions with evidence\n"
     "- ❤️ Provide emotional support when you need it\n\n"
-    "Use the quick action chips above, or just tell me what you need."
+    "I support all patients — women, men, and couples. Just tell me what you need."
 )
 
 # ── Quick action chips ─────────────────────────────────────────────────────
