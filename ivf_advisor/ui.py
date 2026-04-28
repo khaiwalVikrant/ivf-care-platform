@@ -799,7 +799,18 @@ footer, .footer { display: none !important; }
     padding: 0 !important;
     min-width: 44px !important;
     max-width: 44px !important;
+    width: 44px !important;
     flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+}
+.audio-compact *:not(.record-button-container):not(.record-button-container button):not(.record-button-container button::before) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    pointer-events: none !important;
 }
 .audio-compact > *,
 .audio-compact .wrap,
@@ -811,25 +822,7 @@ footer, .footer { display: none !important; }
     background: transparent !important;
     min-width: 44px !important;
     max-width: 44px !important;
-}
-/* Hide EVERYTHING except the record button */
-.audio-compact label,
-.audio-compact .label-wrap,
-.audio-compact .waveform-container,
-.audio-compact .waveform,
-.audio-compact .device-name,
-.audio-compact [class*="device"],
-.audio-compact [class*="Device"],
-.audio-compact audio,
-.audio-compact .upload-button,
-.audio-compact .download-button,
-.audio-compact .clear-button {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
+    width: 44px !important;
 }
 .audio-compact .record-button-container {
     display: flex !important;
@@ -839,6 +832,8 @@ footer, .footer { display: none !important; }
     margin: 0 !important;
     width: 44px !important;
     height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
 }
 .audio-compact .record-button-container button {
     border-radius: 12px !important;
@@ -851,12 +846,15 @@ footer, .footer { display: none !important; }
     height: 44px !important;
     min-width: 44px !important;
     min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
     box-shadow: 0 2px 8px rgba(124,58,237,0.1) !important;
     transition: all 0.15s !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
+    overflow: hidden !important;
 }
 .audio-compact .record-button-container button:hover {
     background: #f5f3ff !important;
@@ -874,14 +872,17 @@ footer, .footer { display: none !important; }
     background-position: center !important;
     display: block !important;
     position: absolute !important;
+    z-index: 10 !important;
 }
-/* Hide ALL text inside button */
+/* Hide ALL text and elements inside button */
 .audio-compact .record-button-container button span,
 .audio-compact .record-button-container button *:not(::before) {
     display: none !important;
     visibility: hidden !important;
     font-size: 0 !important;
     opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 /* Constrain height and hide overflow */
 .audio-compact,
@@ -889,6 +890,7 @@ footer, .footer { display: none !important; }
 .audio-compact .wrap {
     max-height: 44px !important;
     overflow: hidden !important;
+    width: 44px !important;
 }
 
 
@@ -1656,7 +1658,7 @@ with gr.Blocks(
             # Chatbot
             chatbot = gr.Chatbot(
                 label="",
-                height=420,
+                height=550,
                 type="messages",
                 value=[],
                 avatar_images=(
@@ -1695,19 +1697,6 @@ with gr.Blocks(
                         elem_classes=["send-btn"],
                     )
 
-            # Example chips — custom styled buttons replacing gr.Examples
-            _example_prompts = [
-                ("🧬 Lab results", "What are the success rates for women over 38?"),
-                ("💊 Injections", "How do I self-administer Gonal-F injections?"),
-                ("💰 Delhi costs", "What does IVF cost in Delhi?"),
-                ("❤️ Feeling anxious", "I'm feeling anxious about my upcoming egg retrieval"),
-            ]
-            _example_btns = []
-            with gr.Row(elem_classes=["custom-chips-row"]):
-                for _chip_label, _chip_prompt in _example_prompts:
-                    _eb = gr.Button(_chip_label, size="sm", elem_classes=["example-chip"])
-                    _example_btns.append((_eb, _chip_prompt))
-
             # Save Profile — appears after first turn, contextual to conversation
             save_profile_btn = gr.Button(
                 "💾 Remember me for future visits",
@@ -1719,7 +1708,7 @@ with gr.Blocks(
             
             # Download Report — appears after first turn
             download_report_btn = gr.Button(
-                "� Download My IVF Plan (PDF)",
+                "📥 Download My IVF Plan (PDF)",
                 variant="primary",
                 size="sm",
                 visible=False,
@@ -1820,10 +1809,6 @@ with gr.Blocks(
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
-
-    # Wire example chips — fill input box on click
-    for _eb, _ep in _example_btns:
-        _eb.click(fn=set_example, inputs=gr.State(_ep), outputs=msg_input)
 
 
 port = int(os.environ.get("PORT", 7860))
