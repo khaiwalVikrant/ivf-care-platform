@@ -485,6 +485,43 @@ footer, .footer { display: none !important; }
 }
 .send-btn button:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
 
+/* ── Image upload button ── */
+.image-upload-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: unset !important;
+    flex-shrink: 0 !important;
+}
+.image-upload-btn button {
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-weight: 600 !important;
+    font-size: 1.3rem !important;
+    border: 1.5px solid #e5e7eb !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.1) !important;
+    transition: all 0.15s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.image-upload-btn button:hover {
+    background: #f5f3ff !important;
+    border-color: #7c3aed !important;
+    transform: translateY(-1px) !important;
+}
+.image-upload-btn img {
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 8px !important;
+}
+
 /* ── Disclaimer banner ── */
 .disclaimer-banner {
     background: #fffbeb;
@@ -1249,10 +1286,11 @@ def chat(
     history: list[dict],
     session_id: str,
     language: str = "English",
+    image_path: str = None,
 ):
-    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, download_btn_update, agent_status, sources_html, journey_bar)."""
-    if not user_message.strip():
-        yield history, session_id, "", gr.update(), gr.update(), gr.update(visible=False), gr.update(), gr.update()
+    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, download_btn_update, agent_status, sources_html, journey_bar, image_clear)."""
+    if not user_message.strip() and not image_path:
+        yield history, session_id, "", gr.update(), gr.update(), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
         return
 
     orch = _get_orchestrator()
@@ -1262,15 +1300,36 @@ def chat(
         session_id = session.session_id
         history = [_msg("assistant", WELCOME_MESSAGE)]
 
-    message_to_send = user_message
+    # Handle image upload
+    if image_path:
+        # Prepend image analysis instruction
+        image_prompt = (
+            "📸 **Medical Report Image Uploaded**\n\n"
+            "Please analyze this medical report image carefully. Look for:\n"
+            "- Lab values: AMH, FSH, AFC, E2, LH, Progesterone, Testosterone\n"
+            "- Sperm analysis: Count, Motility, Morphology, Volume\n"
+            "- Any other fertility-related test results\n\n"
+            "Interpret each value in plain language and explain if they're in normal range."
+        )
+        
+        if user_message.strip():
+            message_to_send = f"{image_prompt}\n\nPatient's question: {user_message}\n\n[Image file: {image_path}]"
+        else:
+            message_to_send = f"{image_prompt}\n\n[Image file: {image_path}]"
+        
+        display_message = f"📸 Uploaded medical report\n\n{user_message}" if user_message else "📸 Uploaded medical report"
+    else:
+        message_to_send = user_message
+        display_message = user_message
+
     if language == "Hindi":
-        message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{user_message}"
+        message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{message_to_send}"
 
     new_history = list(history) + [
-        _msg("user", user_message),
+        _msg("user", display_message),
         _msg("assistant", "🤔 Thinking..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update(), gr.update(value=None)
 
     response = ""
     last_sources_html = _build_sources_html([])  # default empty
@@ -1295,7 +1354,7 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html, gr.update(value=None)
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
@@ -1305,12 +1364,12 @@ def chat(
                 stage = _detect_journey_stage(response)
                 last_journey_html = _build_journey_html(stage)
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
-                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html, gr.update(value=None)
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def save_profile(history: list[dict], session_id: str):
@@ -1327,7 +1386,7 @@ def save_profile(history: list[dict], session_id: str):
             "Your data is stored securely and only used to personalise your experience."
         )),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def download_report(history: list[dict], session_id: str):
@@ -1367,7 +1426,7 @@ def download_report(history: list[dict], session_id: str):
         _msg("user", "📥 Download My IVF Plan (PDF)"),
         _msg("assistant", f"⏳ Generating your personalized IVF plan PDF for {patient_name}..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update(), gr.update(value=None)
 
     try:
         result = generate_report_tool(
@@ -1409,7 +1468,7 @@ def download_report(history: list[dict], session_id: str):
         response = f"❌ PDF generation failed: {str(e)}"
 
     new_history[-1] = _msg("assistant", response)
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
@@ -1434,7 +1493,7 @@ def set_example(text: str) -> str:
 def _make_quick_handler(prompt: str):
     """Return a streaming handler that fires a quick-action prompt."""
     def _handler(history: list[dict], session_id: str, language: str = "English"):
-        yield from chat(prompt, history, session_id, language)
+        yield from chat(prompt, history, session_id, language, None)
     return _handler
 
 
@@ -1673,6 +1732,18 @@ with gr.Blocks(
                         lines=1,
                         max_lines=4,
                     )
+                    image_input = gr.Image(
+                        type="filepath",
+                        label="",
+                        show_label=False,
+                        sources=["upload", "clipboard"],
+                        scale=0,
+                        elem_classes=["image-upload-btn"],
+                        visible=True,
+                        interactive=True,
+                        height=44,
+                        width=44,
+                    )
                     send_btn = gr.Button(
                         "➤",
                         scale=0,
@@ -1764,14 +1835,14 @@ with gr.Blocks(
     # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input)
 
     # Audio button: show audio recorder when clicked
@@ -1787,8 +1858,8 @@ with gr.Blocks(
         outputs=[msg_input],
     ).then(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input).then(
         fn=lambda: gr.update(visible=False),
         outputs=[audio_input],
@@ -1799,20 +1870,20 @@ with gr.Blocks(
     save_profile_btn.click(
         fn=save_profile,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     )
     
     download_report_btn.click(
         fn=download_report,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     )
 
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
             inputs=[chatbot, session_id_state, language_selector],
-            outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+            outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])

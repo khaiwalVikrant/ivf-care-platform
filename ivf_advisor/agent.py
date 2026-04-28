@@ -39,6 +39,7 @@ from ivf_advisor.tools.emotional_support import emotional_support_tool
 from ivf_advisor.tools.wellness_guide import wellness_guide_tool
 from ivf_advisor.tools.injection_guide import injection_guide_tool
 from ivf_advisor.tools.report_generator import generate_report_tool
+from ivf_advisor.tools.image_analyzer import analyze_medical_report_image_tool
 
 SYSTEM_INSTRUCTION = f"""
 You are the IVF Care Advisor — a knowledgeable, compassionate, and evidence-based
@@ -161,6 +162,8 @@ NEW SPECIALIST TOOLS:
   to do or avoid during treatment. This applies to both female and male patients.
 - Use injection_guide_tool when patients ask about injections, medications, self-administration,
   or missed doses.
+- Use analyze_medical_report_image_tool when a patient uploads an image of a medical report,
+  lab results, or prescription. This tool uses OCR to extract text and interpret the values.
 
 LANGUAGE:
 - If the patient writes in Hindi (Devanagari script) or explicitly requests Hindi responses,
@@ -245,5 +248,6 @@ def create_agent() -> Agent:
             wellness_guide_tool,
             injection_guide_tool,
             generate_report_tool,
+            analyze_medical_report_image_tool,
         ],
     )
