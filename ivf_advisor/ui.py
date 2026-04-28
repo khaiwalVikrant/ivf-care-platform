@@ -514,6 +514,29 @@ footer, .footer { display: none !important; }
     line-height: 1.5 !important;
 }
 
+/* ── Compact top disclaimer banner ── */
+.disclaimer-top-banner {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-bottom: 1px solid #fcd34d;
+    padding: 8px 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(252, 211, 77, 0.15);
+}
+.disclaimer-top-banner p {
+    color: #92400e !important;
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+    font-weight: 500 !important;
+}
+.disclaimer-top-banner strong {
+    font-weight: 700 !important;
+    color: #78350f !important;
+}
+
 /* ── Example chips row ── */
 .custom-chips-row {
     display: flex;
@@ -540,12 +563,16 @@ footer, .footer { display: none !important; }
 }
 
 /* ── Journey progress bar ── */
-.journey-panel {
+.journey-panel,
+.sources-panel,
+.docs-panel {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 8px 10px;
     box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 .journey-panel h4 {
     color: #7c3aed;
@@ -621,13 +648,6 @@ footer, .footer { display: none !important; }
 }
 
 /* ── Documents & Support panel ── */
-.docs-panel {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 8px 10px;
-    box-shadow: 0 2px 8px rgba(124,58,237,0.05);
-}
 .docs-panel h4 {
     color: #7c3aed;
     font-size: 0.78rem;
@@ -681,7 +701,7 @@ footer, .footer { display: none !important; }
     gap: 3px;
     padding: 2px 6px;
     border-radius: 14px;
-    font-size: 0.66rem;
+    font-size: 0.70rem;
     font-weight: 500;
     text-decoration: none;
     margin: 2px 2px 0 0;
@@ -694,13 +714,6 @@ footer, .footer { display: none !important; }
 .support-pill.global { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
 
 /* ── Sources panel ── */
-.sources-panel {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 8px 10px;
-    box-shadow: 0 2px 8px rgba(124,58,237,0.05);
-}
 .sources-panel h4 {
     color: #7c3aed;
     font-size: 0.78rem;
@@ -751,7 +764,7 @@ footer, .footer { display: none !important; }
 }
 .bento-card-icon { font-size: 1.1rem; display: block; }
 .bento-card-title { font-weight: 700; color: #7c3aed; font-size: 0.76rem; display: block; }
-.bento-card-desc { color: #6b7280; font-size: 0.68rem; line-height: 1.3; display: block; }
+.bento-card-desc { color: #6b7280; font-size: 0.72rem; line-height: 1.3; display: block; }
 
 /* Transparent full-cover button overlay */
 .bento-card-overlay-btn {
@@ -786,27 +799,37 @@ footer, .footer { display: none !important; }
     padding: 0 !important;
     min-width: 44px !important;
     max-width: 44px !important;
+    flex-shrink: 0 !important;
 }
-.audio-compact > .wrap,
+.audio-compact > *,
+.audio-compact .wrap,
 .audio-compact .component-wrapper,
 .audio-compact .block {
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
     background: transparent !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
 }
-/* Hide everything except the record button */
+/* Hide EVERYTHING except the record button */
 .audio-compact label,
+.audio-compact .label-wrap,
 .audio-compact .waveform-container,
 .audio-compact .waveform,
 .audio-compact .device-name,
 .audio-compact [class*="device"],
 .audio-compact [class*="Device"],
-.audio-compact .record-button-container ~ *,
 .audio-compact audio,
 .audio-compact .upload-button,
-.audio-compact .download-button {
+.audio-compact .download-button,
+.audio-compact .clear-button {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
 }
 .audio-compact .record-button-container {
     display: flex !important;
@@ -814,6 +837,8 @@ footer, .footer { display: none !important; }
     justify-content: center !important;
     padding: 0 !important;
     margin: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
 }
 .audio-compact .record-button-container button {
     border-radius: 12px !important;
@@ -848,14 +873,20 @@ footer, .footer { display: none !important; }
     background-repeat: no-repeat !important;
     background-position: center !important;
     display: block !important;
+    position: absolute !important;
 }
-/* Hide the default button text */
-.audio-compact .record-button-container button span {
+/* Hide ALL text inside button */
+.audio-compact .record-button-container button span,
+.audio-compact .record-button-container button *:not(::before) {
     display: none !important;
+    visibility: hidden !important;
+    font-size: 0 !important;
+    opacity: 0 !important;
 }
-/* Constrain height */
+/* Constrain height and hide overflow */
 .audio-compact,
-.audio-compact > div {
+.audio-compact > div,
+.audio-compact .wrap {
     max-height: 44px !important;
     overflow: hidden !important;
 }
@@ -1531,6 +1562,18 @@ with gr.Blocks(
 
     session_id_state = gr.State("")
 
+    # ══════════════════════════════════════════════════════════════════════
+    # TOP DISCLAIMER BANNER — Professional, always visible
+    # ══════════════════════════════════════════════════════════════════════
+    gr.HTML("""
+    <div class="disclaimer-top-banner">
+        <p>
+            ⚠️ <strong>Medical Disclaimer:</strong> This platform provides educational information only. 
+            It is not a substitute for professional medical advice. Always consult your fertility specialist.
+        </p>
+    </div>
+    """)
+
     with gr.Row(equal_height=False):
 
         # ══════════════════════════════════════════════════════════════════
@@ -1552,8 +1595,8 @@ with gr.Blocks(
             )
 
             # Quick Access — Start a Conversation
-            gr.HTML('<div class="sidebar-section-title">💬 Start a Conversation</div>')
-            gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0">Tap to send a question instantly</p>')
+            gr.HTML('<div class="sidebar-section-title" style="padding-left:0;margin-left:0">💬 Start a Conversation</div>')
+            gr.HTML('<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 8px 0;padding-left:0">Tap to send a question instantly</p>')
 
             _quick_sidebar: list[tuple[gr.Button, str]] = []
             _sidebar_quick_defs = [
@@ -1572,7 +1615,7 @@ with gr.Blocks(
             # Support Communities removed — covered by Documents & Support in right sidebar
 
             # Evidence & Sources panel — moved from right sidebar to save space
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:14px">📚 Evidence &amp; Sources</div>')
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:14px;padding-left:0;margin-left:0">📚 Evidence &amp; Sources</div>')
             gr.HTML('<div class="sources-panel" style="margin-top:6px">')
             sources_box = gr.HTML(
                 value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
@@ -1580,7 +1623,7 @@ with gr.Blocks(
             gr.HTML('</div>')
 
             # Current Activity — bottom, subtle, for context only
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px">⚡ Agent Activity</div>')
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px;padding-left:0;margin-left:0">⚡ Agent Activity</div>')
             agent_status = gr.Markdown(
                 value="Ready to help you",
                 visible=True,
@@ -1665,18 +1708,6 @@ with gr.Blocks(
                     _eb = gr.Button(_chip_label, size="sm", elem_classes=["example-chip"])
                     _example_btns.append((_eb, _chip_prompt))
 
-            # Medical Disclaimer — moved to footer position for better visibility
-            gr.HTML("""
-            <div class="disclaimer-banner">
-                <p>
-                    ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
-                    information about IVF and fertility treatments. It is not a substitute for professional
-                    medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
-                    qualified fertility specialist with any questions you may have.
-                </p>
-            </div>
-            """)
-
             # Save Profile — appears after first turn, contextual to conversation
             save_profile_btn = gr.Button(
                 "💾 Remember me for future visits",
@@ -1688,7 +1719,7 @@ with gr.Blocks(
             
             # Download Report — appears after first turn
             download_report_btn = gr.Button(
-                "📄 Download My IVF Plan (PDF)",
+                "� Download My IVF Plan (PDF)",
                 variant="primary",
                 size="sm",
                 visible=False,
@@ -1706,7 +1737,7 @@ with gr.Blocks(
             gr.HTML('</div>')
 
             # Bento feature cards — renamed to "Tools & Capabilities"
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:4px">�️ Tools &amp; Capabilities</div>')
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:12px;padding-left:0;margin-left:0">🛠️ Tools &amp; Capabilities</div>')
 
             _bento_defs = [
                 ("📈", "Success Predictor",  "Personalised success rates by age & diagnosis",
