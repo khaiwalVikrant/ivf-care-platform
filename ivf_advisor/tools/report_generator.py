@@ -269,7 +269,7 @@ def upload_to_cloud_storage(pdf_bytes: bytes, filename: str) -> Optional[str]:
 
 
 def generate_report_tool(
-    patient_name: str,
+    patient_name: Optional[str] = None,
     patient_id: Optional[str] = None,
     cycle_id: Optional[str] = None,
     include_profile: bool = True,
@@ -278,6 +278,12 @@ def generate_report_tool(
     include_costs: bool = False,
     include_wellness: bool = False,
     include_injection_guide: bool = False,
+    profile_data: Optional[str] = None,
+    lab_results_data: Optional[str] = None,
+    timeline_data: Optional[str] = None,
+    costs_data: Optional[str] = None,
+    wellness_data: Optional[str] = None,
+    injection_data: Optional[str] = None,
 ) -> ReportOutput:
     """Generate a personalized IVF plan PDF report for the patient.
     
@@ -285,8 +291,11 @@ def generate_report_tool(
     print, and share with their partner or doctor. The report includes selected
     sections based on what information has been discussed in the conversation.
     
+    IMPORTANT: When including a section, you MUST provide the actual data discussed
+    in the conversation. Do not just set the flag to True without providing the content.
+    
     Args:
-        patient_name: The patient's full name
+        patient_name: The patient's full name (defaults to "Patient" if not provided)
         patient_id: Optional patient ID
         cycle_id: Optional cycle ID
         include_profile: Include patient profile summary
@@ -295,120 +304,68 @@ def generate_report_tool(
         include_costs: Include cost breakdown
         include_wellness: Include wellness and lifestyle guide
         include_injection_guide: Include injection administration guide
+        profile_data: Actual profile information discussed (age, diagnosis, history, etc.)
+        lab_results_data: Actual lab results and interpretations discussed (AMH, FSH, AFC, sperm analysis, etc.)
+        timeline_data: Actual timeline dates and events discussed
+        costs_data: Actual cost breakdown discussed with specific amounts
+        wellness_data: Actual wellness recommendations discussed
+        injection_data: Actual injection instructions discussed
         
     Returns:
         ReportOutput with success status and download URL
     """
     try:
+        # Use default values if parameters are None or empty
+        final_patient_name = patient_name if patient_name and patient_name.strip() else "Patient"
+        
         # Build report data
         report_data = ReportData(
-            patient_name=patient_name,
+            patient_name=final_patient_name,
             patient_id=patient_id,
             cycle_id=cycle_id,
         )
         
-        # Add sections based on flags
-        if include_profile:
+        # Add sections based on flags and actual data
+        if include_profile and profile_data:
             report_data.sections.append(ReportSection(
                 title="Your Profile Summary",
                 icon="👤",
-                content=(
-                    "This section contains your personal information and medical history "
-                    "as discussed during our conversation. This helps tailor the guidance "
-                    "in this plan to your specific situation."
-                )
+                content=profile_data
             ))
         
-        if include_lab_results:
+        if include_lab_results and lab_results_data:
             report_data.sections.append(ReportSection(
                 title="Lab Results Interpretation",
                 icon="🧬",
-                content=(
-                    "Your hormone levels and ovarian reserve markers have been interpreted "
-                    "in plain language. Remember that these results should be reviewed with "
-                    "your fertility specialist in the context of your full clinical picture.\n\n"
-                    "Key markers discussed:\n"
-                    "• AMH (Anti-Müllerian Hormone) - indicates ovarian reserve\n"
-                    "• FSH (Follicle Stimulating Hormone) - indicates ovarian function\n"
-                    "• AFC (Antral Follicle Count) - predicts response to stimulation"
-                )
+                content=lab_results_data
             ))
         
-        if include_timeline:
+        if include_timeline and timeline_data:
             report_data.sections.append(ReportSection(
                 title="Your Treatment Timeline",
                 icon="📅",
-                content=(
-                    "A week-by-week schedule of your IVF cycle, including key appointments "
-                    "and procedures. Note that actual dates will be adjusted by your clinic "
-                    "based on your response to medications.\n\n"
-                    "Typical IVF timeline phases:\n"
-                    "• Baseline scan and stimulation start\n"
-                    "• Monitoring scans (days 5, 8, 10)\n"
-                    "• Trigger injection\n"
-                    "• Egg retrieval\n"
-                    "• Fertilization and embryo development\n"
-                    "• Embryo transfer\n"
-                    "• Pregnancy test (2 weeks after transfer)"
-                )
+                content=timeline_data
             ))
         
-        if include_costs:
+        if include_costs and costs_data:
             report_data.sections.append(ReportSection(
                 title="Cost Breakdown",
                 icon="💰",
-                content=(
-                    "An itemized breakdown of typical IVF costs in your region. Costs can "
-                    "vary significantly between clinics, so use this as a planning guide "
-                    "and request detailed quotes from your chosen clinic.\n\n"
-                    "Main cost components:\n"
-                    "• Initial consultation and testing\n"
-                    "• Medications (stimulation drugs)\n"
-                    "• Monitoring scans and blood tests\n"
-                    "• Egg retrieval procedure\n"
-                    "• Embryology (fertilization and culture)\n"
-                    "• Embryo transfer\n"
-                    "• Optional add-ons (ICSI, PGT-A, freezing)"
-                )
+                content=costs_data
             ))
         
-        if include_wellness:
+        if include_wellness and wellness_data:
             report_data.sections.append(ReportSection(
                 title="Wellness & Lifestyle Guide",
                 icon="🥗",
-                content=(
-                    "Evidence-based guidance on diet, exercise, sleep, and stress management "
-                    "during your IVF treatment. These recommendations are tailored to each "
-                    "stage of your cycle.\n\n"
-                    "Key wellness areas:\n"
-                    "• Nutrition: High-protein diet, hydration, supplements (folic acid, vitamin D)\n"
-                    "• Exercise: Light to moderate activity, avoid strenuous workouts during stimulation\n"
-                    "• Sleep: Aim for 7-8 hours, maintain consistent schedule\n"
-                    "• Stress management: Mindfulness, support groups, counseling if needed\n"
-                    "• Substances to avoid: Alcohol, smoking, excessive caffeine (limit to 200mg/day)"
-                )
+                content=wellness_data
             ))
         
-        if include_injection_guide:
+        if include_injection_guide and injection_data:
             report_data.sections.append(ReportSection(
                 title="Injection Administration Guide",
                 icon="💉",
-                content=(
-                    "Step-by-step guidance for self-administering subcutaneous and intramuscular "
-                    "injections. Always follow your clinic's specific instructions and verify "
-                    "technique with your nurse.\n\n"
-                    "Subcutaneous injection steps:\n"
-                    "• Wash hands thoroughly\n"
-                    "• Select injection site (abdomen 2 inches from navel, or outer thigh)\n"
-                    "• Clean site with alcohol swab\n"
-                    "• Pinch skin and insert needle at 45-90 degree angle\n"
-                    "• Inject slowly and steadily\n"
-                    "• Remove needle and apply gentle pressure\n"
-                    "• Rotate injection sites to prevent bruising\n\n"
-                    "Missed dose protocol:\n"
-                    "• <4 hours late: Take as soon as you remember\n"
-                    "• >4 hours late: Call your clinic immediately"
-                )
+                content=injection_data
             ))
         
         # Generate PDF

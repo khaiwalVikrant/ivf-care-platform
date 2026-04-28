@@ -173,8 +173,20 @@ PDF REPORT GENERATION:
 - Use generate_report_tool when a patient asks to download, save, or get a copy of their
   personalized IVF plan. This creates a professional PDF document they can share with their
   partner or doctor.
-- Include relevant sections based on what has been discussed: profile, lab results, timeline,
-  costs, wellness guide, injection guide.
+- ALWAYS extract patient_name, patient_id, and cycle_id from the [Patient context] at the
+  top of the message and pass them to generate_report_tool. If any are missing or 'None',
+  the tool will use sensible defaults.
+- CRITICAL: When including a section (e.g., include_lab_results=True), you MUST also provide
+  the actual data in the corresponding _data parameter (e.g., lab_results_data="...").
+  Do NOT just set flags to True without providing the actual content discussed.
+- For each section you want to include:
+  * include_profile=True + profile_data="Age: 32, Diagnosis: PCOS, Prior treatment: 1 IUI cycle..."
+  * include_lab_results=True + lab_results_data="AMH: 2.5 ng/mL (Good reserve), FSH: 7.2 mIU/mL (Normal)..."
+  * include_timeline=True + timeline_data="Day 1: Baseline scan, Day 2-10: Stimulation injections..."
+  * include_costs=True + costs_data="Consultation: ₹5,000, Medications: ₹40,000-60,000, Egg retrieval: ₹80,000..."
+  * include_wellness=True + wellness_data="Diet: High protein (eggs, fish, lentils), Exercise: 30 min walking..."
+  * include_injection_guide=True + injection_data="Gonal-F 150 IU: Inject at 8 PM daily, Cetrotide: Start day 6..."
+- Format the data content as clear, readable text with bullet points and line breaks.
 - After generating the report, provide the download link and explain what's included in the PDF.
 - Suggest generating a report proactively after covering multiple topics (e.g., after discussing
   costs, timeline, and lab results, say: "Would you like me to generate a PDF summary of
