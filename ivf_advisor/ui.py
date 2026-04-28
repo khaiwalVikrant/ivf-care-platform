@@ -416,6 +416,8 @@ footer, .footer { display: none !important; }
     overflow: hidden !important;
     flex-grow: 1 !important;
     overflow-y: auto !important;
+    min-height: 400px !important;
+    max-height: calc(100vh - 350px) !important;
 }
 /* User bubble */
 .chat-wrap .message.user > div,
@@ -793,104 +795,35 @@ footer, .footer { display: none !important; }
     background: transparent !important;
 }
 
-/* ── Audio recorder — compact icon button next to send ── */
-.audio-compact {
-    margin: 0 !important;
-    padding: 0 !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    width: 44px !important;
-    flex-shrink: 0 !important;
-    flex-grow: 0 !important;
+/* ── Audio recorder — separate row, compact ── */
+.audio-row {
+    margin-top: 8px !important;
 }
-.audio-compact *:not(.record-button-container):not(.record-button-container button):not(.record-button-container button::before) {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    position: absolute !important;
-    pointer-events: none !important;
+.audio-recorder {
+    max-height: 60px !important;
 }
-.audio-compact > *,
-.audio-compact .wrap,
-.audio-compact .component-wrapper,
-.audio-compact .block {
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    width: 44px !important;
-}
-.audio-compact .record-button-container {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-}
-.audio-compact .record-button-container button {
-    border-radius: 12px !important;
-    background: #ffffff !important;
-    border: 1.5px solid #e5e7eb !important;
+.audio-recorder label {
+    font-size: 0.75rem !important;
     color: #7c3aed !important;
-    font-size: 0 !important;
-    padding: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    max-width: 44px !important;
-    max-height: 44px !important;
-    box-shadow: 0 2px 8px rgba(124,58,237,0.1) !important;
-    transition: all 0.15s !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    position: relative !important;
-    overflow: hidden !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
 }
-.audio-compact .record-button-container button:hover {
-    background: #f5f3ff !important;
-    border-color: #7c3aed !important;
-    box-shadow: 0 2px 12px rgba(124,58,237,0.2) !important;
+.audio-recorder .wrap {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    padding: 6px 10px !important;
+    background: #f9fafb !important;
 }
-/* SVG microphone icon */
-.audio-compact .record-button-container button::before {
-    content: '' !important;
-    width: 20px !important;
-    height: 20px !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z'%3E%3C/path%3E%3Cpath d='M19 10v2a7 7 0 0 1-14 0v-2'%3E%3C/path%3E%3Cline x1='12' x2='12' y1='19' y2='22'%3E%3C/line%3E%3C/svg%3E") !important;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    display: block !important;
-    position: absolute !important;
-    z-index: 10 !important;
+.audio-recorder button {
+    font-size: 0.75rem !important;
+    padding: 4px 12px !important;
+    border-radius: 8px !important;
+    background: #7c3aed !important;
+    color: white !important;
+    border: none !important;
 }
-/* Hide ALL text and elements inside button */
-.audio-compact .record-button-container button span,
-.audio-compact .record-button-container button *:not(::before) {
-    display: none !important;
-    visibility: hidden !important;
-    font-size: 0 !important;
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-}
-/* Constrain height and hide overflow */
-.audio-compact,
-.audio-compact > div,
-.audio-compact .wrap {
-    max-height: 44px !important;
-    overflow: hidden !important;
-    width: 44px !important;
+.audio-recorder button:hover {
+    background: #6d28d9 !important;
 }
 
 
@@ -1658,7 +1591,6 @@ with gr.Blocks(
             # Chatbot
             chatbot = gr.Chatbot(
                 label="",
-                height=550,
                 type="messages",
                 value=[],
                 avatar_images=(
@@ -1676,19 +1608,10 @@ with gr.Blocks(
                     msg_input = gr.Textbox(
                         placeholder="Ask me anything about IVF, or request an action…",
                         label="",
-                        scale=8,
+                        scale=10,
                         show_label=False,
                         lines=1,
                         max_lines=4,
-                    )
-                    audio_input = gr.Audio(
-                        sources=["microphone"],
-                        type="filepath",
-                        label="",
-                        show_label=False,
-                        scale=0,
-                        elem_classes=["audio-compact"],
-                        waveform_options={"show_controls": False},
                     )
                     send_btn = gr.Button(
                         "➤",
@@ -1696,6 +1619,16 @@ with gr.Blocks(
                         variant="primary",
                         elem_classes=["send-btn"],
                     )
+            
+            # Audio recorder - separate row below input
+            with gr.Row(elem_classes=["audio-row"]):
+                audio_input = gr.Audio(
+                    sources=["microphone"],
+                    type="filepath",
+                    label="🎤 Voice Input (Optional)",
+                    show_label=True,
+                    elem_classes=["audio-recorder"],
+                )
 
             # Save Profile — appears after first turn, contextual to conversation
             save_profile_btn = gr.Button(
