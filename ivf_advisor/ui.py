@@ -392,8 +392,9 @@ footer, .footer { display: none !important; }
     overflow: hidden !important;
     flex-grow: 1 !important;
     overflow-y: auto !important;
-    height: calc(100vh - 280px) !important;
-    min-height: 450px !important;
+    height: calc(100vh - 320px) !important;
+    min-height: 400px !important;
+    max-height: calc(100vh - 320px) !important;
 }
 /* User bubble */
 .chat-wrap .message.user > div,
