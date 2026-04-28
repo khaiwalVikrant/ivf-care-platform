@@ -13,6 +13,7 @@ from ivf_advisor.models import ConversationState
 from ivf_advisor.agent import create_agent
 from ivf_advisor.orchestrator import ConversationOrchestrator
 from ivf_advisor.tools.speech_to_text import transcribe_audio
+from ivf_advisor.tools.report_generator import generate_report_tool
 
 _orchestrator = ConversationOrchestrator(agent=create_agent())
 
@@ -1328,12 +1329,59 @@ def save_profile(history: list[dict], session_id: str):
 
 
 def download_report(history: list[dict], session_id: str):
-    """Trigger PDF report generation via chat."""
-    yield from chat(
-        "Please generate a personalized IVF plan PDF report for me with all the information we've discussed",
-        history,
-        session_id
-    )
+    """Directly generate PDF report without going through the agent."""
+    # Extract patient name from conversation history
+    patient_name = "Patient"
+    for msg in history:
+        if msg.get("role") == "user":
+            content = msg.get("content", "")
+            # Look for name mentions
+            for phrase in ["my name is ", "i am ", "i'm "]:
+                if phrase in content.lower():
+                    parts = content.lower().split(phrase)
+                    if len(parts) > 1:
+                        name = parts[1].split()[0].strip(".,!?").title()
+                        if len(name) > 1:
+                            patient_name = name
+                            break
+
+    new_history = list(history) + [
+        _msg("user", "📥 Download My IVF Plan (PDF)"),
+        _msg("assistant", "⏳ Generating your personalized IVF plan PDF..."),
+    ]
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update()
+
+    try:
+        result = generate_report_tool(
+            patient_name=patient_name,
+            include_profile=True,
+            include_lab_results=True,
+            include_timeline=True,
+            include_costs=True,
+            include_wellness=True,
+            include_injection_guide=True,
+        )
+
+        if result.success and result.report_url:
+            response = (
+                f"✅ **Your IVF Plan PDF is ready!**\n\n"
+                f"📄 **[Click here to download your report]({result.report_url})**\n\n"
+                f"Your personalized plan includes:\n"
+                f"- 👤 Profile Summary\n"
+                f"- 🧬 Lab Results Interpretation\n"
+                f"- 📅 Treatment Timeline\n"
+                f"- 💰 Cost Breakdown\n"
+                f"- 🥗 Wellness Guide\n"
+                f"- 💉 Injection Guide\n\n"
+                f"_Save this link or download the PDF to share with your partner or doctor._"
+            )
+        else:
+            response = f"❌ Could not generate PDF: {result.error_message}"
+    except Exception as e:
+        response = f"❌ PDF generation failed: {str(e)}"
+
+    new_history[-1] = _msg("assistant", response)
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
 
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
