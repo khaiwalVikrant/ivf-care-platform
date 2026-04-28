@@ -8,6 +8,50 @@
 
 ---
 
+## ✨ Key Features
+
+### 🤖 Conversational AI Advisor
+- **Multi-language support** - English & Hindi (Devanagari script)
+- **Evidence-based responses** - Grounded in ESHRE/ASRM/NICE/ICMR guidelines via Vertex AI Search
+- **Persistent sessions** - Firestore/AlloyDB-backed session storage survives Cloud Run restarts
+- **Optional profile saving** - Save patient profile (age, diagnosis, history) for personalized guidance
+
+### 🛠️ Specialized Tools (14 Total)
+1. **Lab Result Interpreter** - Plain-language AMH/FSH/AFC analysis
+2. **Treatment Timeline Generator** - Week-by-week IVF schedule with protocol support
+3. **Success Rate Calculator** - Personalized estimates by age/diagnosis (SART/HFEA/ICMR data)
+4. **Cost Breakdown** - City-level INR pricing for 11+ Indian cities + international
+5. **Clinic Red Flag Checker** - Detect misleading claims & unrealistic promises
+6. **Injection Training Guide** - Step-by-step subcutaneous/IM injection instructions
+7. **Wellness Guide** - Stage-specific diet/exercise/lifestyle recommendations
+8. **Emotional Support** - Empathy-first responses with crisis helpline resources
+9. **Evidence Search** - Clinical guideline lookup via Vertex AI Search
+10. **Appointment Booking** - Multi-agent coordination with calendar integration
+11. **Nurse Visit Scheduling** - Home visit coordination with email/calendar
+12. **Medication Reminders** - Critical timing alerts (trigger shots)
+13. **Journey Stage Tracking** - Visual progress through IVF cycle phases
+14. **PDF Report Generation** - Downloadable personalized IVF treatment plan
+
+### 💰 Cost Protection
+- **City-specific pricing** - Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Pune, Kolkata, Ahmedabad, Jaipur, Chandigarh, Kochi
+- **Overcharge detection** - Benchmark clinic quotes against market rates
+- **Insurance claim support** - Structured cost summaries for reimbursement
+
+### 🏥 Multi-Agent Coordination
+- **9 specialized sub-agents** - Appointment, Nurse, Reminder, Medication, Cost Guard, Calendar, Pathology, Notes, Task Manager
+- **Workflow orchestration** - Atomic operations with rollback on failure
+- **Email + Calendar integration** - Automated .ics invites for all appointments
+
+### 🎨 Professional UI
+- **Purple-pink gradient theme** - Compassionate, patient-friendly design
+- **Responsive layout** - Mobile, tablet, desktop optimized
+- **Real-time agent activity** - Visual feedback on which agent is working
+- **Journey progress bar** - 5-stage IVF cycle visualization
+- **Quick action buttons** - One-click access to common tasks
+- **Medical disclaimer banner** - Industry-standard compliance
+
+---
+
 ## 🎯 Problem Statement
 
 IVF patients face:
@@ -28,39 +72,55 @@ flowchart TD
     Start([Start]) --> Chat[[Chat with AI Advisor]]
     Chat --> Q1{What does<br/>patient need?}
 
-    %% 2. The Agent Layer
+    %% 2. The Agent Layer - Expanded with new tools
     Q1 -->|Clinical| Evidence[Evidence Search]
+    Q1 -->|Lab Results| LabTool[Lab Result Interpreter]
+    Q1 -->|Timeline| TimelineTool[Timeline Generator]
+    Q1 -->|Success Rates| SuccessTool[Success Rate Calculator]
     Q1 -->|Booking| Appt[Appointment Agent]
     Q1 -->|Nursing| Nurse[Nurse Agent]
     Q1 -->|Medicine| Remind[Reminder Agent]
     Q1 -->|Costs| Cost[Cost Agent]
+    Q1 -->|Clinic Check| RedFlag[Red Flag Checker]
+    Q1 -->|Wellness| Wellness[Wellness Guide]
+    Q1 -->|Injections| Injection[Injection Guide]
+    Q1 -->|Emotional| Support[Emotional Support]
+    Q1 -->|PDF Report| PDF[Report Generator]
     Q1 -->|Schedule| Schedule[View Schedule]
 
     %% 3. Data & Storage
-    Evidence & Appt & Nurse & Remind & Cost & Schedule --> AlloyDB[(AlloyDB)]
+    Evidence & LabTool & TimelineTool & SuccessTool & Appt & Nurse & Remind & Cost & RedFlag & Wellness & Injection & Support & PDF & Schedule --> AlloyDB[(AlloyDB)]
     AlloyDB --> Response[/Grounded Response/]
 
     %% 4. Communications
     Appt --> Email1[Appt Email]
     Nurse --> Email2[Nurse Email]
     Remind --> Email3[Remind Email]
-    Email1 & Email2 & Email3 --> Calendar[Google Calendar]
+    PDF --> Email4[PDF Download]
+    Email1 & Email2 & Email3 & Email4 --> Calendar[Google Calendar]
 
-    %% 5. Universal Theme Classes (No RGBA)
-    %% We use bright hex codes with 'fill:none' so they work on any background
+    %% 5. Session Persistence
+    Chat --> SessionStore{Session Store}
+    SessionStore -->|Firestore| Firestore[(Firestore)]
+    SessionStore -->|AlloyDB| AlloyDB
+
+    %% 6. Universal Theme Classes
     classDef blue stroke:#0091ea,stroke-width:3px,fill:none;
     classDef yellow stroke:#ffd600,stroke-width:3px,fill:none;
     classDef purple stroke:#aa00ff,stroke-width:3px,fill:none;
     classDef teal stroke:#00bfa5,stroke-width:3px,fill:none;
     classDef green stroke:#00c853,stroke-width:3px,fill:none;
     classDef db stroke:#0288d1,stroke-width:4px,fill:none;
+    classDef orange stroke:#ff6d00,stroke-width:3px,fill:none;
 
     class Chat blue;
     class Q1 yellow;
     class Evidence,Appt,Nurse,Remind,Cost purple;
+    class LabTool,TimelineTool,SuccessTool,RedFlag,Wellness,Injection,Support,PDF orange;
     class Schedule teal;
     class Response green;
-    class AlloyDB db;
+    class AlloyDB,Firestore db;
+    class SessionStore yellow;
 ```
 ---
 
@@ -347,17 +407,108 @@ flowchart LR
 
 | Layer | Technology |
 |---|---|
-| Agent Framework | Google ADK |
-| LLM | Gemini 2.5 Flash Lite (Vertex AI) |
-| Chat UI | Gradio |
-| REST API | FastAPI |
-| Database | AlloyDB PostgreSQL |
-| Vector Search | AlloyDB pgvector + text-embedding-004 |
-| Evidence Search | Vertex AI Search |
-| Deployment | Cloud Run (GCP) |
-| CI/CD | Cloud Build |
-| Secrets | Secret Manager |
-| Email + Calendar | Gmail SMTP + .ics attachments |
+| **Agent Framework** | Google ADK (Agent Development Kit) |
+| **LLM** | Gemini 2.0 Flash Lite (Vertex AI) |
+| **Chat UI** | Gradio 5.x |
+| **REST API** | FastAPI |
+| **Primary Database** | AlloyDB for PostgreSQL |
+| **Session Storage** | Firestore (default) / AlloyDB (optional) |
+| **Vector Search** | AlloyDB pgvector + Vertex AI text-embedding-004 |
+| **Evidence Search** | Vertex AI Search (Discovery Engine) |
+| **PDF Generation** | ReportLab 4.0+ |
+| **File Storage** | Google Cloud Storage |
+| **Speech-to-Text** | Google Cloud Speech-to-Text API |
+| **Email** | Gmail SMTP |
+| **Calendar** | Google Calendar API + .ics attachments |
+| **Deployment** | Cloud Run (GCP) - 2 services |
+| **CI/CD** | Cloud Build (parallel pipelines) |
+| **Secrets Management** | Secret Manager |
+| **Languages** | English, Hindi (Devanagari script) |
+| **Python Version** | 3.11+ |
+
+---
+
+## � Project Structure
+
+```
+ivf-care-platform/
+├── ivf_advisor/                      # Conversational IVF advisor (Cloud Run service 1)
+│   ├── agent.py                      # ADK agent with 17 tools registered
+│   ├── orchestrator.py               # Session management + state machine
+│   ├── ui.py                         # Gradio chat UI (responsive, multi-language)
+│   ├── session.py                    # Session models + Firestore/AlloyDB stores
+│   ├── config.py                     # Environment configuration
+│   ├── patch_gradio.py               # Gradio customizations
+│   ├── Dockerfile                    # Container image for IVF Advisor
+│   ├── cloudbuild.yaml               # Cloud Build config
+│   └── tools/                        # 17 specialized tools
+│       ├── cost_breakdown.py         # City-level INR pricing (11+ Indian cities)
+│       ├── email_notifications.py    # Email sending utility
+│       ├── emotional_support.py      # Empathy-first responses + crisis helplines
+│       ├── evidence_search.py        # Vertex AI Search integration
+│       ├── google_calendar.py        # Calendar event creation
+│       ├── injection_guide.py        # Step-by-step injection instructions
+│       ├── journey_guide.py          # IVF cycle stage guidance
+│       ├── lab_result.py             # AMH/FSH/AFC interpreter
+│       ├── red_flag.py               # Clinic claim checker
+│       ├── report_generator.py       # PDF report generation (ReportLab)
+│       ├── scope_guard.py            # Query scope validation
+│       ├── speech_to_text.py         # Audio transcription
+│       ├── success_rate.py           # Personalized success rate calculator
+│       ├── task_manager_client.py    # Task Manager API client
+│       ├── timeline.py               # Treatment timeline generator
+│       └── wellness_guide.py         # Stage-specific lifestyle guidance
+│
+├── task_manager/                     # Multi-agent coordination (Cloud Run service 2)
+│   ├── main.py                       # FastAPI application entry point
+│   ├── orchestrator.py               # Workflow engine with rollback
+│   ├── config.py                     # Environment configuration
+│   ├── Dockerfile.task_manager       # Container image for Task Manager
+│   ├── agents/                       # 9 specialized sub-agents
+│   │   ├── appointment_agent.py      # Appointment booking
+│   │   ├── calendar_agent.py         # Calendar integration
+│   │   ├── cost_guard_agent.py       # Cost tracking + overcharge detection
+│   │   ├── medication_agent.py       # Medication tracking
+│   │   ├── notes_agent.py            # Clinical notes
+│   │   ├── nurse_agent.py            # Nurse visit scheduling
+│   │   ├── pathology_agent.py        # Lab test ordering
+│   │   ├── reminder_agent.py         # Critical timing reminders
+│   │   └── task_manager_agent.py     # Task coordination
+│   ├── api/                          # REST API
+│   │   └── app.py                    # 20+ FastAPI endpoints
+│   ├── db/                           # Database layer
+│   │   ├── database.py               # AlloyDB connection + ORM
+│   │   ├── seed_data.py              # Sample data seeding
+│   │   └── vector_search.py          # pgvector semantic search
+│   └── tools/                        # MCP adapter
+│       └── mcp_adapter.py            # Model Context Protocol adapter
+│
+├── tests/                            # Test suite
+│   ├── unit/                         # 86+ unit tests
+│   │   ├── test_appointment_agent.py
+│   │   ├── test_calendar_agent.py
+│   │   ├── test_cost_guard_agent.py
+│   │   ├── test_medication_agent.py
+│   │   ├── test_notes_agent.py
+│   │   ├── test_nurse_agent.py
+│   │   ├── test_pathology_agent.py
+│   │   ├── test_reminder_agent.py
+│   │   ├── test_task_agent.py
+│   │   └── test_task_manager_client.py
+│   └── property/                     # Property-based tests
+│       └── test_database_properties.py
+│
+├── models/                           # Shared data models
+│   └── __init__.py
+│
+├── .env.example                      # Environment variables template
+├── pyproject.toml                    # Python dependencies + project metadata
+├── cloudbuild.yaml                   # Parallel CI/CD pipeline (both services)
+├── cloudbuild-base.yaml              # Base image build
+├── Dockerfile.base                   # Base image with common dependencies
+├── README.md                         # This file
+└── LICENSE                           # MIT License
+```
 
 ---
 
@@ -383,30 +534,6 @@ python -m task_manager.main
 
 # Run tests
 pytest tests/ -v
-```
-
----
-
-## 📁 Project Structure
-
-```
-ivf-care-platform/
-├── ivf_advisor/              # Conversational IVF advisor
-│   ├── agent.py              # ADK agent + all tools
-│   ├── orchestrator.py       # Session management
-│   ├── ui.py                 # Gradio chat UI
-│   └── tools/                # 7 tools including task_manager_client
-├── task_manager/             # Multi-agent coordination platform
-│   ├── agents/               # 9 specialized sub-agents
-│   ├── api/app.py            # 20+ REST endpoints
-│   ├── db/                   # AlloyDB facade + vector search
-│   └── orchestrator.py       # Workflow engine with rollback
-├── tests/
-│   ├── unit/                 # 86 unit tests
-│   └── property/             # Hypothesis property-based tests
-├── Dockerfile.task_manager
-├── ivf_advisor/Dockerfile
-└── cloudbuild.yaml           # Parallel CI/CD pipeline
 ```
 
 ---
