@@ -780,46 +780,81 @@ footer, .footer { display: none !important; }
     background: transparent !important;
 }
 
-/* ── Audio recorder — compact, minimal ── */
+/* ── Audio recorder — compact icon button next to send ── */
 .audio-compact {
     margin: 0 !important;
+    padding: 0 !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
 }
 .audio-compact > .wrap,
-.audio-compact .component-wrapper {
+.audio-compact .component-wrapper,
+.audio-compact .block {
     padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
 }
-/* Hide the waveform/device name row, keep only the mic button */
+/* Hide everything except the record button */
+.audio-compact label,
 .audio-compact .waveform-container,
 .audio-compact .waveform,
 .audio-compact .device-name,
+.audio-compact [class*="device"],
+.audio-compact [class*="Device"],
 .audio-compact .record-button-container ~ *,
-.audio-compact audio {
+.audio-compact audio,
+.audio-compact .upload-button,
+.audio-compact .download-button {
     display: none !important;
 }
 .audio-compact .record-button-container {
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    justify-content: center !important;
     padding: 0 !important;
+    margin: 0 !important;
 }
 .audio-compact .record-button-container button {
-    border-radius: 20px !important;
-    background: #f5f3ff !important;
-    border: 1.5px solid #c4b5fd !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #e5e7eb !important;
     color: #7c3aed !important;
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    padding: 5px 12px !important;
-    height: auto !important;
-    min-height: 32px !important;
-    width: auto !important;
-    min-width: unset !important;
+    font-size: 0 !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.1) !important;
+    transition: all 0.15s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
 }
 .audio-compact .record-button-container button:hover {
-    background: #ede9fe !important;
+    background: #f5f3ff !important;
     border-color: #7c3aed !important;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.2) !important;
 }
-/* Fallback: constrain the whole audio widget height */
+/* SVG microphone icon */
+.audio-compact .record-button-container button::before {
+    content: '' !important;
+    width: 20px !important;
+    height: 20px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z'%3E%3C/path%3E%3Cpath d='M19 10v2a7 7 0 0 1-14 0v-2'%3E%3C/path%3E%3Cline x1='12' x2='12' y1='19' y2='22'%3E%3C/line%3E%3C/svg%3E") !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    display: block !important;
+}
+/* Hide the default button text */
+.audio-compact .record-button-container button span {
+    display: none !important;
+}
+/* Constrain height */
+.audio-compact,
 .audio-compact > div {
     max-height: 44px !important;
     overflow: hidden !important;
@@ -1536,6 +1571,14 @@ with gr.Blocks(
 
             # Support Communities removed — covered by Documents & Support in right sidebar
 
+            # Evidence & Sources panel — moved from right sidebar to save space
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:14px">📚 Evidence &amp; Sources</div>')
+            gr.HTML('<div class="sources-panel" style="margin-top:6px">')
+            sources_box = gr.HTML(
+                value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
+            )
+            gr.HTML('</div>')
+
             # Current Activity — bottom, subtle, for context only
             gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px">⚡ Agent Activity</div>')
             agent_status = gr.Markdown(
@@ -1593,21 +1636,20 @@ with gr.Blocks(
                         lines=1,
                         max_lines=4,
                     )
+                    audio_input = gr.Audio(
+                        sources=["microphone"],
+                        type="filepath",
+                        label="",
+                        show_label=False,
+                        scale=0,
+                        elem_classes=["audio-compact"],
+                        waveform_options={"show_controls": False},
+                    )
                     send_btn = gr.Button(
                         "➤",
                         scale=0,
                         variant="primary",
                         elem_classes=["send-btn"],
-                    )
-                with gr.Row():
-                    audio_input = gr.Audio(
-                        sources=["microphone"],
-                        type="filepath",
-                        label="🎤 Speak (Hindi or English)",
-                        show_label=True,
-                        scale=1,
-                        elem_classes=["audio-compact"],
-                        waveform_options={"show_controls": False},
                     )
 
             # Example chips — custom styled buttons replacing gr.Examples
@@ -1622,6 +1664,18 @@ with gr.Blocks(
                 for _chip_label, _chip_prompt in _example_prompts:
                     _eb = gr.Button(_chip_label, size="sm", elem_classes=["example-chip"])
                     _example_btns.append((_eb, _chip_prompt))
+
+            # Medical Disclaimer — moved to footer position for better visibility
+            gr.HTML("""
+            <div class="disclaimer-banner">
+                <p>
+                    ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
+                    information about IVF and fertility treatments. It is not a substitute for professional
+                    medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
+                    qualified fertility specialist with any questions you may have.
+                </p>
+            </div>
+            """)
 
             # Save Profile — appears after first turn, contextual to conversation
             save_profile_btn = gr.Button(
@@ -1641,18 +1695,6 @@ with gr.Blocks(
                 elem_classes=["download-report-btn"],
             )
 
-            # Disclaimer
-            gr.HTML("""
-            <div class="disclaimer-banner">
-                <p>
-                    ⚠️ <strong>Medical Disclaimer:</strong> This platform provides general educational
-                    information about IVF and fertility treatments. It is not a substitute for professional
-                    medical advice, diagnosis, or treatment. Always seek the guidance of your doctor or
-                    qualified fertility specialist with any questions you may have.
-                </p>
-            </div>
-            """)
-
         # ══════════════════════════════════════════════════════════════════
         # COLUMN 3 — Right Bento Sidebar
         # ══════════════════════════════════════════════════════════════════
@@ -1663,16 +1705,8 @@ with gr.Blocks(
             journey_bar = gr.HTML(value=_build_journey_html(1))
             gr.HTML('</div>')
 
-            # Evidence & Sources panel
-            gr.HTML('<div class="sources-panel"><h4>📚 Evidence &amp; Sources</h4>')
-            sources_box = gr.HTML(
-                value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
-            )
-            gr.HTML('</div>')
-
             # Bento feature cards — renamed to "Tools & Capabilities"
-            gr.HTML('<div class="sidebar-section-title" style="margin-top:4px">🛠️ Tools &amp; Capabilities</div>')
-            gr.HTML('<p style="font-size:0.70rem;color:#7c3aed;margin:0 0 6px 0;font-weight:700;text-align:center;background:#fef3c7;padding:4px 8px;border-radius:6px;border:1px solid #fcd34d">⬇️ SCROLL DOWN FOR MORE ⬇️</p>')
+            gr.HTML('<div class="sidebar-section-title" style="margin-top:4px">�️ Tools &amp; Capabilities</div>')
 
             _bento_defs = [
                 ("📈", "Success Predictor",  "Personalised success rates by age & diagnosis",
