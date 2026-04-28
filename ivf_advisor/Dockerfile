@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir "google-adk==1.27.5" "google-cloud-firestore>=2.16.0" "psycopg2-binary>=2.9.0" "google-cloud-speech>=2.0.0" && \
+    pip install --no-cache-dir "google-adk==1.27.5" "google-cloud-firestore>=2.16.0" "psycopg2-binary>=2.9.0" "google-cloud-speech>=2.0.0" "reportlab>=4.0.0" "google-cloud-storage>=2.10.0" && \
     pip install --no-cache-dir --force-reinstall "gradio==5.7.1" "python-dotenv" "httpx>=0.24.1" "google-api-python-client>=2.0" "google-auth>=2.0" && \
     find /usr/local/lib/python3.11/site-packages/google -maxdepth 1 -name "__init__.py" -delete 2>/dev/null || true
 

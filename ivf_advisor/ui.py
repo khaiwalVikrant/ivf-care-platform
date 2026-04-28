@@ -1331,24 +1331,34 @@ def save_profile(history: list[dict], session_id: str):
 
 def download_report(history: list[dict], session_id: str):
     """Directly generate PDF report without going through the agent."""
-    # Extract patient name from conversation history
+    import re
     patient_name = "Patient"
+
+    # Scan full conversation for name mentions
     for msg in history:
-        if msg.get("role") == "user":
-            content = msg.get("content", "")
-            # Look for name mentions
-            for phrase in ["my name is ", "i am ", "i'm "]:
-                if phrase in content.lower():
-                    parts = content.lower().split(phrase)
-                    if len(parts) > 1:
-                        name = parts[1].split()[0].strip(".,!?").title()
-                        if len(name) > 1:
-                            patient_name = name
-                            break
+        content = msg.get("content", "")
+        if not content:
+            continue
+
+        # Match patterns case-insensitively, then title-case the result
+        patterns = [
+            r"name\s*:\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
+            r"my name is\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
+            r"i'?m\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
+            r"i am\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
+            r"call me\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                patient_name = match.group(1).strip().title()
+                break
+        if patient_name != "Patient":
+            break
 
     new_history = list(history) + [
         _msg("user", "📥 Download My IVF Plan (PDF)"),
-        _msg("assistant", "⏳ Generating your personalized IVF plan PDF..."),
+        _msg("assistant", f"⏳ Generating your personalized IVF plan PDF for {patient_name}..."),
     ]
     yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update()
 
@@ -1365,7 +1375,7 @@ def download_report(history: list[dict], session_id: str):
 
         if result.success and result.report_url:
             response = (
-                f"✅ **Your IVF Plan PDF is ready!**\n\n"
+                f"✅ **Your IVF Plan PDF is ready, {patient_name}!**\n\n"
                 f"📄 **[Click here to download your report]({result.report_url})**\n\n"
                 f"Your personalized plan includes:\n"
                 f"- 👤 Profile Summary\n"
@@ -1472,26 +1482,30 @@ def _build_journey_html(active_stage: int = 1) -> str:
 
 
 _DOCS_HTML = """
-<div class="docs-section-label">📄 Patient Guides</div>
-<a class="doc-item" href="https://www.eshre.eu/Guidelines-and-Legal/Guidelines/Ovarian-stimulation-in-IVF" target="_blank">
-    <span class="doc-icon purple">📋</span>ESHRE Stimulation Guide
+<div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;box-shadow:0 2px 8px rgba(124,58,237,0.05);margin-top:8px">
+<h4 style="color:#7c3aed;font-size:0.78rem;font-weight:700;margin:0 0 8px 0;padding-bottom:4px;border-bottom:1px solid #e5e7eb">📁 Documents &amp; Support</h4>
+
+<div style="font-size:0.64rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 4px 0">📄 Patient Guides</div>
+<a href="https://www.eshre.eu/Guidelines-and-Legal/Guidelines/Ovarian-stimulation-in-IVF" target="_blank" style="display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:5px;text-decoration:none;color:#374151;font-size:0.72rem;font-weight:500;margin-bottom:3px">
+    <span style="width:20px;height:20px;border-radius:4px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0">📋</span>ESHRE Stimulation Guide
 </a>
-<a class="doc-item" href="https://www.hfea.gov.uk/treatments/explore-all-treatments/in-vitro-fertilisation-ivf/" target="_blank">
-    <span class="doc-icon blue">📘</span>HFEA IVF Patient Guide
+<a href="https://www.hfea.gov.uk/treatments/explore-all-treatments/in-vitro-fertilisation-ivf/" target="_blank" style="display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:5px;text-decoration:none;color:#374151;font-size:0.72rem;font-weight:500;margin-bottom:3px">
+    <span style="width:20px;height:20px;border-radius:4px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0">📘</span>HFEA IVF Patient Guide
 </a>
-<a class="doc-item" href="https://www.icmr.gov.in/cder/dir/ART%20GUIDELINES-%20FINAL.pdf" target="_blank">
-    <span class="doc-icon green">📗</span>ICMR ART Guidelines (India)
+<a href="https://www.icmr.gov.in/cder/dir/ART%20GUIDELINES-%20FINAL.pdf" target="_blank" style="display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:5px;text-decoration:none;color:#374151;font-size:0.72rem;font-weight:500;margin-bottom:3px">
+    <span style="width:20px;height:20px;border-radius:4px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0">📗</span>ICMR ART Guidelines (India)
 </a>
-<a class="doc-item" href="https://www.asrm.org/topics/topics-index/in-vitro-fertilization-ivf/" target="_blank">
-    <span class="doc-icon pink">📙</span>ASRM IVF Patient Resources
+<a href="https://www.asrm.org/topics/topics-index/in-vitro-fertilization-ivf/" target="_blank" style="display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:5px;text-decoration:none;color:#374151;font-size:0.72rem;font-weight:500;margin-bottom:3px">
+    <span style="width:20px;height:20px;border-radius:4px;background:#fdf2f8;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0">📙</span>ASRM IVF Patient Resources
 </a>
 
-<div class="docs-section-label" style="margin-top:12px">🤝 Support Groups</div>
-<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-    <a class="support-pill india" href="https://www.ivfbabble.com/india" target="_blank">🇮🇳 IVF Babble India</a>
-    <a class="support-pill uk" href="https://fertilitynetworkuk.org" target="_blank">🇬🇧 Fertility Network UK</a>
-    <a class="support-pill global" href="https://resolve.org" target="_blank">🌍 RESOLVE (US)</a>
-    <a class="support-pill global" href="https://www.ifmh.org" target="_blank">🌍 IFMH Global</a>
+<div style="font-size:0.64rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 4px 0">🤝 Support Groups</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px">
+    <a href="https://www.ivfbabble.com/india" target="_blank" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:0.70rem;font-weight:500;text-decoration:none;background:#fdf2f8;color:#db2777;border:1px solid #fbcfe8">🇮🇳 IVF Babble India</a>
+    <a href="https://fertilitynetworkuk.org" target="_blank" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:0.70rem;font-weight:500;text-decoration:none;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe">🇬🇧 Fertility Network UK</a>
+    <a href="https://resolve.org" target="_blank" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:0.70rem;font-weight:500;text-decoration:none;background:#f0fdf4;color:#059669;border:1px solid #bbf7d0">🌍 RESOLVE (US)</a>
+    <a href="https://www.ifmh.org" target="_blank" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:0.70rem;font-weight:500;text-decoration:none;background:#f0fdf4;color:#059669;border:1px solid #bbf7d0">🌍 IFMH Global</a>
+</div>
 </div>
 """
 
@@ -1728,7 +1742,7 @@ with gr.Blocks(
                 _all_quick.append((_bbtn, _prompt))
 
             # ── Documents & Support Group ─────────────────────────────────
-            gr.HTML(f'<div class="docs-panel"><h4>📁 Documents &amp; Support</h4>{_DOCS_HTML}</div>')
+            gr.HTML(_DOCS_HTML)
 
     # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
