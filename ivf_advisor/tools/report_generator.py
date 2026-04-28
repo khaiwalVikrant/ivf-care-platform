@@ -246,18 +246,24 @@ def upload_to_cloud_storage(pdf_bytes: bytes, filename: str) -> Optional[str]:
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
         bucket_name = os.getenv("REPORT_BUCKET_NAME", f"{project_id}-ivf-reports")
 
+        import logging
+        logging.info(f"Uploading PDF to bucket: {bucket_name}, file: {filename}")
+
         client = storage.Client(project=project_id)
         bucket = client.bucket(bucket_name)
 
         blob = bucket.blob(f"reports/{filename}")
         blob.upload_from_string(pdf_bytes, content_type="application/pdf")
-        blob.make_public()
+        # Bucket is already public via allUsers:objectViewer IAM policy
+        # No need to call make_public() which requires getIamPolicy permission
+        public_url = f"https://storage.googleapis.com/{bucket_name}/reports/{filename}"
 
-        return blob.public_url
+        logging.info(f"PDF uploaded successfully: {public_url}")
+        return public_url
 
     except Exception as e:
         import logging
-        logging.error(f"Failed to upload PDF to Cloud Storage: {e}")
+        logging.error(f"Cloud Storage upload failed: {type(e).__name__}: {e}")
         return None
 
 
