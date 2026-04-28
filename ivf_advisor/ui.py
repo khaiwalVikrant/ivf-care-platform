@@ -1307,8 +1307,19 @@ def chat(
 
 
 def save_profile(history: list[dict], session_id: str):
-    """Trigger profile save via chat."""
-    yield from chat("I would like to save my profile", history, session_id)
+    """Acknowledge profile save with a friendly message."""
+    new_history = list(history) + [
+        _msg("user", "💾 Remember me for future visits"),
+        _msg("assistant", (
+            "✅ **Profile noted for this session!**\n\n"
+            "I've noted your details from our conversation. "
+            "To save your profile permanently for future visits, "
+            "please share your email or mobile number and I'll remember your preferences, "
+            "treatment history, and personalised guidance next time.\n\n"
+            "Would you like to share your contact details to enable this?"
+        )),
+    ]
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
 
 
 def download_report(history: list[dict], session_id: str):
