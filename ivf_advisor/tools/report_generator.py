@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import os
+import re
 from datetime import datetime
 from typing import Optional
 
@@ -413,9 +414,10 @@ def generate_report_tool(
         # Generate PDF
         pdf_bytes = generate_pdf_report(report_data)
         
-        # Generate filename
+        # Generate filename - sanitize to remove any invalid characters
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_name = patient_name.replace(" ", "_").replace(".", "")
+        safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', patient_name.replace(" ", "_"))
+        safe_name = safe_name[:30]  # limit length
         filename = f"IVF_Plan_{safe_name}_{timestamp}.pdf"
         
         # Upload to Cloud Storage

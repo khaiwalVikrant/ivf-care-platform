@@ -1318,12 +1318,13 @@ def save_profile(history: list[dict], session_id: str):
     new_history = list(history) + [
         _msg("user", "💾 Remember me for future visits"),
         _msg("assistant", (
-            "✅ **Profile noted for this session!**\n\n"
-            "I've noted your details from our conversation. "
-            "To save your profile permanently for future visits, "
-            "please share your email or mobile number and I'll remember your preferences, "
-            "treatment history, and personalised guidance next time.\n\n"
-            "Would you like to share your contact details to enable this?"
+            "✅ **I'd love to remember you!**\n\n"
+            "Please share your details and I'll save your profile for future visits:\n\n"
+            "- **Name:** (e.g. Neha Sharma)\n"
+            "- **Mobile:** (e.g. 9716000000)\n"
+            "- **Email:** (e.g. name@email.com)\n\n"
+            "Just reply with your details in any format and I'll save them. "
+            "Your data is stored securely and only used to personalise your experience."
         )),
     ]
     yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
@@ -1353,10 +1354,10 @@ def download_report(history: list[dict], session_id: str):
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
                 candidate = match.group(1).strip().title()
-                # Sanity check: max 4 words, no common non-name words
+                # Sanity check: max 4 words, no common non-name words, no newlines
                 words = candidate.split()
-                skip_words = {"The", "Your", "This", "That", "Please", "Thank", "Sorry", "Hello", "Hi"}
-                if 1 <= len(words) <= 4 and words[0] not in skip_words:
+                skip_words = {"The", "Your", "This", "That", "Please", "Thank", "Sorry", "Hello", "Hi", "Email", "Mobile"}
+                if 1 <= len(words) <= 4 and words[0] not in skip_words and '\n' not in candidate:
                     patient_name = candidate
                     break
         if patient_name != "Patient":
