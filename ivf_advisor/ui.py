@@ -1489,7 +1489,6 @@ _DOCS_HTML = """
 <div class="docs-section-label" style="margin-top:12px">🤝 Support Groups</div>
 <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
     <a class="support-pill india" href="https://www.ivfbabble.com/india" target="_blank">🇮🇳 IVF Babble India</a>
-    <a class="support-pill india" href="https://www.practo.com/ivf" target="_blank">🇮🇳 Practo Forum</a>
     <a class="support-pill uk" href="https://fertilitynetworkuk.org" target="_blank">🇬🇧 Fertility Network UK</a>
     <a class="support-pill global" href="https://resolve.org" target="_blank">🌍 RESOLVE (US)</a>
     <a class="support-pill global" href="https://www.ifmh.org" target="_blank">🌍 IFMH Global</a>
@@ -1582,11 +1581,10 @@ with gr.Blocks(
 
             # Evidence & Sources panel — moved from right sidebar to save space
             gr.HTML('<div class="sidebar-section-title" style="margin-top:14px;padding-left:0;margin-left:0">📚 Evidence &amp; Sources</div>')
-            gr.HTML('<div class="sources-panel" style="margin-top:6px">')
-            sources_box = gr.HTML(
-                value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
-            )
-            gr.HTML('</div>')
+            with gr.Group(elem_classes=["sources-panel"]):
+                sources_box = gr.HTML(
+                    value='<p style="color:#6b7280;font-size:0.82rem;margin:0">Sources will appear here after evidence search responses.</p>',
+                )
 
             # Current Activity — bottom, subtle, for context only
             gr.HTML('<div class="sidebar-section-title" style="margin-top:auto;padding-top:16px;padding-left:0;margin-left:0">⚡ Agent Activity</div>')
@@ -1692,9 +1690,9 @@ with gr.Blocks(
         with gr.Column(scale=1, elem_classes=["right-sidebar"]):
 
             # ── Patient Journey Progress Bar ──────────────────────────────
-            gr.HTML('<div class="journey-panel"><h4>🗺️ Your IVF Journey</h4>')
-            journey_bar = gr.HTML(value=_build_journey_html(1))
-            gr.HTML('</div>')
+            with gr.Group(elem_classes=["journey-panel"]):
+                gr.HTML('<h4>🗺️ Your IVF Journey</h4>')
+                journey_bar = gr.HTML(value=_build_journey_html(1))
 
             # Bento feature cards — renamed to "Tools & Capabilities"
             gr.HTML('<div class="sidebar-section-title" style="margin-top:12px;padding-left:0;margin-left:0">🛠️ Tools &amp; Capabilities</div>')
@@ -1730,9 +1728,7 @@ with gr.Blocks(
                 _all_quick.append((_bbtn, _prompt))
 
             # ── Documents & Support Group ─────────────────────────────────
-            gr.HTML('<div class="docs-panel"><h4>📁 Documents &amp; Support</h4>')
-            gr.HTML(_DOCS_HTML)
-            gr.HTML('</div>')
+            gr.HTML(f'<div class="docs-panel"><h4>📁 Documents &amp; Support</h4>{_DOCS_HTML}</div>')
 
     # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
