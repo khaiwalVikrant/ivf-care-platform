@@ -43,8 +43,7 @@ WELCOME_MESSAGE = (
     "- 💰 Break down IVF costs in your city\n"
     "- 🔬 Answer clinical questions with evidence\n"
     "- ❤️ Provide emotional support when you need it\n\n"
-    "Use the quick action chips above, or just tell me what you need.\n\n"
-    "_Note: I provide educational information only — always consult your fertility specialist._"
+    "Use the quick action chips above, or just tell me what you need."
 )
 
 # ── Quick action chips ─────────────────────────────────────────────────────

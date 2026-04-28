@@ -38,17 +38,24 @@
 - **Insurance claim support** - Structured cost summaries for reimbursement
 
 ### 🏥 Multi-Agent Coordination
-- **9 specialized sub-agents** - Appointment, Nurse, Reminder, Medication, Cost Guard, Calendar, Pathology, Notes, Task Manager
-- **Workflow orchestration** - Atomic operations with rollback on failure
-- **Email + Calendar integration** - Automated .ics invites for all appointments
+- **9 specialized sub-agents** - Appointment, Calendar, Cost Guard, Medication, Notes, Nurse, Pathology, Reminder, Task Manager
+- **Workflow orchestration** - Atomic operations with automatic rollback on failure
+- **Email + Calendar integration** - Automated .ics invites for appointments, nurse visits, reminders
+- **Task Manager API** - 20+ REST endpoints for external integrations
+- **AlloyDB backend** - PostgreSQL with pgvector for semantic search
+- **Real-time coordination** - Trigger shots, nurse visits, medication timing
 
 ### 🎨 Professional UI
-- **Purple-pink gradient theme** - Compassionate, patient-friendly design
-- **Responsive layout** - Mobile, tablet, desktop optimized
-- **Real-time agent activity** - Visual feedback on which agent is working
-- **Journey progress bar** - 5-stage IVF cycle visualization
-- **Quick action buttons** - One-click access to common tasks
-- **Medical disclaimer banner** - Industry-standard compliance
+- **Purple-pink gradient theme** - Compassionate, patient-friendly design matching IVF care context
+- **Responsive layout** - Optimized for mobile (320px+), tablet (768px+), desktop (1366px+)
+- **Real-time agent activity** - Visual feedback showing which agent is processing (with pulse animation)
+- **Journey progress bar** - 5-stage IVF cycle visualization (Baseline → Stimulation → Retrieval → Transfer → Result)
+- **Quick action buttons** - 6 one-click shortcuts in left sidebar for common tasks
+- **Medical disclaimer banner** - Industry-standard compliance (soft purple, always visible)
+- **Multi-language support** - Language selector for English/Hindi with instant switching
+- **Voice input** - Speech-to-text for hands-free interaction
+- **PDF download** - One-click personalized IVF plan generation
+- **Session persistence** - Conversations survive Cloud Run restarts via Firestore
 
 ---
 
