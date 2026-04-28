@@ -87,7 +87,7 @@ footer, .footer { display: none !important; }
 
 /* ── Left sidebar ── */
 .left-sidebar {
-    background: #f9fafb !important;
+    background: #ffffff !important;
     border-right: 1px solid #e5e7eb !important;
     padding: 16px 14px !important;
     display: flex;
@@ -111,7 +111,7 @@ footer, .footer { display: none !important; }
 .sidebar-section-title {
     font-size: 0.7rem;
     font-weight: 700;
-    color: #9ca3af;
+    color: #7c3aed;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin: 14px 0 6px 0;
@@ -771,39 +771,25 @@ footer, .footer { display: none !important; }
     background: transparent !important;
 }
 
-/* ── Audio recorder — separate row, compact ── */
-.audio-row {
+/* ── Audio trigger button ── */
+.audio-trigger-btn {
     margin-top: 6px !important;
-    margin-bottom: 0 !important;
+    width: 100% !important;
 }
-.audio-recorder {
-    max-height: 50px !important;
-    margin: 0 !important;
-}
-.audio-recorder label {
-    font-size: 0.72rem !important;
-    color: #9ca3af !important;
-    font-weight: 500 !important;
-    margin-bottom: 3px !important;
-}
-.audio-recorder .wrap {
+.audio-trigger-btn button {
+    width: 100% !important;
+    border-radius: 10px !important;
     border: 1px solid #e5e7eb !important;
-    border-radius: 8px !important;
-    padding: 4px 8px !important;
-    background: #fafafa !important;
-    min-height: 36px !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    transition: all 0.15s !important;
 }
-.audio-recorder button {
-    font-size: 0.72rem !important;
-    padding: 3px 10px !important;
-    border-radius: 6px !important;
-    background: #7c3aed !important;
-    color: white !important;
-    border: none !important;
-    min-height: 28px !important;
-}
-.audio-recorder button:hover {
-    background: #6d28d9 !important;
+.audio-trigger-btn button:hover {
+    background: #f5f3ff !important;
+    border-color: #7c3aed !important;
 }
 
 
@@ -1600,15 +1586,22 @@ with gr.Blocks(
                         elem_classes=["send-btn"],
                     )
             
-            # Audio recorder - separate row below input
-            with gr.Row(elem_classes=["audio-row"]):
-                audio_input = gr.Audio(
-                    sources=["microphone"],
-                    type="filepath",
-                    label="🎤 Voice Input (Optional)",
-                    show_label=True,
-                    elem_classes=["audio-recorder"],
-                )
+            # Audio recorder - hidden, only for functionality
+            audio_input = gr.Audio(
+                sources=["microphone"],
+                type="filepath",
+                label="",
+                show_label=False,
+                visible=False,
+            )
+            
+            # Audio button - visible trigger
+            audio_btn = gr.Button(
+                "🎤 Voice Input",
+                variant="secondary",
+                size="sm",
+                elem_classes=["audio-trigger-btn"],
+            )
 
             # Save Profile — appears after first turn, contextual to conversation
             save_profile_btn = gr.Button(
@@ -1689,6 +1682,12 @@ with gr.Blocks(
         outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
     ).then(lambda: "", outputs=msg_input)
 
+    # Audio button: show audio recorder when clicked
+    audio_btn.click(
+        fn=lambda: gr.update(visible=True),
+        outputs=[audio_input],
+    )
+    
     # Audio: transcribe when recording stops, fill text box then auto-send
     audio_input.stop_recording(
         fn=handle_audio,
@@ -1698,7 +1697,10 @@ with gr.Blocks(
         fn=chat,
         inputs=[msg_input, chatbot, session_id_state, language_selector],
         outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
-    ).then(lambda: "", outputs=msg_input)
+    ).then(lambda: "", outputs=msg_input).then(
+        fn=lambda: gr.update(visible=False),
+        outputs=[audio_input],
+    )
 
     new_btn.click(fn=new_session, outputs=[chatbot, session_id_state, state_display])
 
