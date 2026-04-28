@@ -82,6 +82,8 @@ footer, .footer { display: none !important; }
     flex-direction: row;
     width: 100%;
     gap: 0;
+    min-height: 100vh;
+    align-items: stretch;
 }
 
 /* ── Left sidebar ── */
@@ -95,8 +97,11 @@ footer, .footer { display: none !important; }
     overflow-y: auto;
     position: sticky;
     top: 0;
+    height: 100vh;
+    min-height: 100vh;
     max-height: 100vh;
     min-width: 200px;
+    align-self: stretch;
 }
 .sidebar-logo {
     font-size: 1.3rem;
