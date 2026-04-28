@@ -239,40 +239,22 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
 
 
 def upload_to_cloud_storage(pdf_bytes: bytes, filename: str) -> Optional[str]:
-    """Upload PDF to Google Cloud Storage and return public URL.
-    
-    Args:
-        pdf_bytes: The PDF file bytes
-        filename: The filename to use in storage
-        
-    Returns:
-        Public URL of the uploaded file, or None on failure
-    """
+    """Upload PDF to Google Cloud Storage and return public URL."""
     try:
         from google.cloud import storage
-        
+
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
         bucket_name = os.getenv("REPORT_BUCKET_NAME", f"{project_id}-ivf-reports")
-        
+
         client = storage.Client(project=project_id)
-        
-        # Get or create bucket
-        try:
-            bucket = client.get_bucket(bucket_name)
-        except Exception:
-            # Bucket doesn't exist, create it
-            bucket = client.create_bucket(bucket_name, location="us-central1")
-            # Make bucket publicly readable
-            bucket.make_public(recursive=True, future=True)
-        
-        # Upload file
-        blob = bucket.blob(filename)
-        blob.upload_from_string(pdf_bytes, content_type='application/pdf')
-        
-        # Make blob publicly accessible
+        bucket = client.bucket(bucket_name)
+
+        blob = bucket.blob(f"reports/{filename}")
+        blob.upload_from_string(pdf_bytes, content_type="application/pdf")
         blob.make_public()
-        
+
         return blob.public_url
+
     except Exception as e:
         import logging
         logging.error(f"Failed to upload PDF to Cloud Storage: {e}")
