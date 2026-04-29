@@ -1401,11 +1401,11 @@ def save_profile(history: list[dict], session_id: str):
 
 
 def download_report(history: list[dict], session_id: str):
-    """Directly generate PDF report without going through the agent."""
+    """Generate PDF report by extracting data from conversation history."""
     import re
     patient_name = "Patient"
-
-    # Only scan USER messages (not assistant) to avoid false matches
+    
+    # Extract patient name from conversation
     for msg in history:
         if msg.get("role") != "user":
             continue
@@ -1413,7 +1413,6 @@ def download_report(history: list[dict], session_id: str):
         if not content:
             continue
 
-        # Match patterns case-insensitively, then title-case the result
         patterns = [
             r"name\s*:\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
             r"my name is\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
@@ -1424,7 +1423,6 @@ def download_report(history: list[dict], session_id: str):
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
                 candidate = match.group(1).strip().title()
-                # Sanity check: max 4 words, no common non-name words, no newlines
                 words = candidate.split()
                 skip_words = {"The", "Your", "This", "That", "Please", "Thank", "Sorry", "Hello", "Hi", "Email", "Mobile"}
                 if 1 <= len(words) <= 4 and words[0] not in skip_words and '\n' not in candidate:
@@ -1432,6 +1430,14 @@ def download_report(history: list[dict], session_id: str):
                     break
         if patient_name != "Patient":
             break
+
+    # Extract conversation data for each section
+    profile_data = _extract_profile_data(history)
+    lab_results_data = _extract_lab_results_data(history)
+    timeline_data = _extract_timeline_data(history)
+    costs_data = _extract_costs_data(history)
+    wellness_data = _extract_wellness_data(history)
+    injection_data = _extract_injection_data(history)
 
     new_history = list(history) + [
         _msg("user", "📥 Download My IVF Plan (PDF)"),
@@ -1442,12 +1448,18 @@ def download_report(history: list[dict], session_id: str):
     try:
         result = generate_report_tool(
             patient_name=patient_name,
-            include_profile=True,
-            include_lab_results=True,
-            include_timeline=True,
-            include_costs=True,
-            include_wellness=True,
-            include_injection_guide=True,
+            include_profile=bool(profile_data),
+            include_lab_results=bool(lab_results_data),
+            include_timeline=bool(timeline_data),
+            include_costs=bool(costs_data),
+            include_wellness=bool(wellness_data),
+            include_injection_guide=bool(injection_data),
+            profile_data=profile_data,
+            lab_results_data=lab_results_data,
+            timeline_data=timeline_data,
+            costs_data=costs_data,
+            wellness_data=wellness_data,
+            injection_data=injection_data,
         )
 
         if result.success and result.report_url:
@@ -1506,6 +1518,191 @@ def _make_quick_handler(prompt: str):
     def _handler(history: list[dict], session_id: str, language: str = "English"):
         yield from chat(prompt, history, session_id, language, None)
     return _handler
+
+
+def _extract_citations(text: str) -> list[str]:
+    """Extract citation lines from evidence search responses."""
+    citations = []
+    lines = text.split("\n")
+    for line in lines:
+        line = line.strip()
+        # Look for lines that look like citations (numbered, bulleted, or contain URLs/guideline names)
+        if any(kw in line.lower() for kw in ["eshre", "asrm", "nice", "hfea", "icmr", "sart", "pubmed", "doi", "guideline", "journal"]):
+            if len(line) > 10:
+                citations.append(line.lstrip("•-*123456789. "))
+    return citations[:5]  # max 5 citations
+
+
+def _extract_profile_data(history: list[dict]) -> str:
+    """Extract profile information from conversation history."""
+    profile_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "").lower()
+        
+        # Look for age mentions
+        import re
+        age_match = re.search(r'age[:\s]+(\d{2})', content)
+        if age_match and not any("age" in p for p in profile_parts):
+            profile_parts.append(f"Age: {age_match.group(1)}")
+        
+        # Look for diagnosis mentions
+        diagnoses = ["pcos", "endometriosis", "unexplained infertility", "diminished ovarian reserve", 
+                    "male factor", "low amh", "poor responder"]
+        for diag in diagnoses:
+            if diag in content and not any(diag in p.lower() for p in profile_parts):
+                profile_parts.append(f"Diagnosis: {diag.title()}")
+                break
+    
+    return "\n".join(profile_parts) if profile_parts else None
+
+
+def _extract_lab_results_data(history: list[dict]) -> str:
+    """Extract lab results from conversation history."""
+    lab_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for lab value mentions
+        import re
+        
+        # AMH
+        if "amh" in content_lower:
+            amh_match = re.search(r'amh[:\s]+([0-9.]+)\s*(?:ng/ml)?', content_lower)
+            if amh_match:
+                lab_parts.append(f"AMH: {amh_match.group(1)} ng/mL")
+        
+        # FSH
+        if "fsh" in content_lower:
+            fsh_match = re.search(r'fsh[:\s]+([0-9.]+)\s*(?:miu/ml)?', content_lower)
+            if fsh_match:
+                lab_parts.append(f"FSH: {fsh_match.group(1)} mIU/mL")
+        
+        # AFC
+        if "afc" in content_lower or "follicle count" in content_lower:
+            afc_match = re.search(r'afc[:\s]+(\d+)', content_lower)
+            if afc_match:
+                lab_parts.append(f"AFC: {afc_match.group(1)} follicles")
+        
+        # If we found values, also extract the interpretation
+        if lab_parts and len(content) > 100:
+            # Extract a relevant snippet about interpretation
+            lines = content.split('\n')
+            for line in lines:
+                if any(kw in line.lower() for kw in ["reserve", "normal", "range", "indicates", "suggests"]):
+                    lab_parts.append(f"\n{line.strip()}")
+                    break
+            break
+    
+    return "\n".join(lab_parts) if lab_parts else None
+
+
+def _extract_timeline_data(history: list[dict]) -> str:
+    """Extract timeline information from conversation history."""
+    timeline_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for timeline/schedule mentions
+        if any(kw in content_lower for kw in ["timeline", "schedule", "day ", "week ", "baseline", "stimulation", "retrieval", "transfer"]):
+            # Extract lines that look like timeline events
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["day ", "week ", "•", "-", "baseline", "stimulation", "monitoring", "trigger", "retrieval", "transfer"]):
+                    if len(line.strip()) > 10:
+                        timeline_parts.append(line.strip())
+            
+            if timeline_parts:
+                break
+    
+    return "\n".join(timeline_parts[:15]) if timeline_parts else None  # Limit to 15 lines
+
+
+def _extract_costs_data(history: list[dict]) -> str:
+    """Extract cost information from conversation history."""
+    cost_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for cost mentions
+        if any(kw in content_lower for kw in ["cost", "price", "₹", "rupees", "inr", "expense"]):
+            lines = content.split('\n')
+            for line in lines:
+                # Look for lines with currency symbols or cost-related keywords
+                if any(symbol in line for symbol in ["₹", "Rs", "INR"]) or \
+                   any(kw in line.lower() for kw in ["cost:", "price:", "fee:", "total:", "consultation", "medication", "retrieval", "transfer"]):
+                    if len(line.strip()) > 10:
+                        cost_parts.append(line.strip())
+            
+            if cost_parts:
+                break
+    
+    return "\n".join(cost_parts[:20]) if cost_parts else None
+
+
+def _extract_wellness_data(history: list[dict]) -> str:
+    """Extract wellness and lifestyle guidance from conversation history."""
+    wellness_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for wellness mentions
+        if any(kw in content_lower for kw in ["diet", "nutrition", "exercise", "lifestyle", "wellness", "eat", "avoid", "sleep", "stress"]):
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["diet", "eat", "food", "protein", "exercise", "sleep", "avoid", "stress", "•", "-"]):
+                    if len(line.strip()) > 15:
+                        wellness_parts.append(line.strip())
+            
+            if wellness_parts:
+                break
+    
+    return "\n".join(wellness_parts[:20]) if wellness_parts else None
+
+
+def _extract_injection_data(history: list[dict]) -> str:
+    """Extract injection guidance from conversation history."""
+    injection_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for injection mentions
+        if any(kw in content_lower for kw in ["injection", "inject", "needle", "syringe", "subcutaneous", "gonal", "menopur", "cetrotide"]):
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["inject", "needle", "dose", "medication", "gonal", "menopur", "step", "•", "-"]):
+                    if len(line.strip()) > 15:
+                        injection_parts.append(line.strip())
+            
+            if injection_parts:
+                break
+    
+    return "\n".join(injection_parts[:20]) if injection_parts else None
 
 
 def _extract_citations(text: str) -> list[str]:
