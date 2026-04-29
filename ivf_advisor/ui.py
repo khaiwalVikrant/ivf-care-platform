@@ -52,7 +52,7 @@ QUICK_CHIPS: list[tuple[str, str]] = [
     ("🧬 Lab results",       "I want to understand my AMH/FSH results"),
     ("📅 Timeline",          "Can you create a treatment timeline starting next Monday?"),
     ("💊 Injections",        "How do I self-administer subcutaneous injections?"),
-    ("💰 Mumbai costs",      "What does IVF cost in Mumbai?"),
+    ("💰 Cost estimate",     "What does IVF cost?"),
     ("📊 Success rates",     "What are the success rates for someone my age?"),
     ("🥗 Wellness",          "What should I eat during stimulation?"),
     ("🚩 Check clinic",      "My clinic says they have 80% success rate for women over 40"),
@@ -1967,7 +1967,7 @@ with gr.Blocks(
             _sidebar_quick_defs = [
                 ("🧬 Lab Results",   "I want to understand my AMH/FSH results"),
                 ("📅 My Timeline",   "Can you create a treatment timeline starting next Monday?"),
-                ("💰 Cost Estimate", "What does IVF cost in Mumbai?"),
+                ("💰 Cost Estimate", "What does IVF cost?"),
                 ("📊 Success Rates", "What are the success rates for someone my age?"),
                 ("💊 Injections",    "How do I self-administer subcutaneous injections?"),
                 ("❤️ Support",       "I'm feeling overwhelmed and anxious about IVF"),
