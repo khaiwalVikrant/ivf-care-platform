@@ -1397,6 +1397,9 @@ def chat(
 
     if language == "Hindi":
         message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{message_to_send}"
+    else:
+        # Explicitly instruct to respond in English only
+        message_to_send = f"Please respond in English only.\n\n{message_to_send}"
 
     new_history = list(history) + [
         _msg("user", display_message),

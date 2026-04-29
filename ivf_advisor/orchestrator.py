@@ -319,6 +319,9 @@ class ConversationOrchestrator:
                 f"cycle_id='{session.cycle_id or 'C-DEFAULT'}', "
                 f"patient_name='{session.patient_name or 'Patient'}', "
                 f"patient_email='{session.patient_email or ''}']\n\n"
+                f"IMPORTANT: These IDs are automatically provided. NEVER ask the patient for "
+                f"patient_id or cycle_id - they don't know these internal identifiers. "
+                f"Use the IDs above for all tool calls that require them.\n\n"
             )
 
         content = types.Content(
@@ -390,6 +393,9 @@ class ConversationOrchestrator:
                 f"cycle_id='{session.cycle_id or 'C-DEFAULT'}', "
                 f"patient_name='{session.patient_name or 'Patient'}', "
                 f"patient_email='{session.patient_email or ''}']\n\n"
+                f"IMPORTANT: These IDs are automatically provided. NEVER ask the patient for "
+                f"patient_id or cycle_id - they don't know these internal identifiers. "
+                f"Use the IDs above for all tool calls that require them.\n\n"
             )
 
         content = types.Content(

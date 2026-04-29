@@ -21,7 +21,8 @@ def transcribe_audio(audio_path: str, language_code: str = "en-IN") -> Optional[
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED,
         language_code=language_code,
-        alternative_language_codes=["hi-IN", "en-US"] if language_code == "en-IN" else ["en-IN"],
+        # Removed alternative_language_codes to prevent language mixing
+        # Only transcribe in the explicitly selected language
         enable_automatic_punctuation=True,
         audio_channel_count=1,
     )
@@ -59,7 +60,7 @@ def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "en-IN") -> 
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=16000,
             language_code=language_code,
-            alternative_language_codes=["hi-IN", "en-US"] if language_code == "en-IN" else ["en-IN"],
+            # Removed alternative_language_codes to prevent language mixing
             enable_automatic_punctuation=True,
             model="latest_long",
         )
