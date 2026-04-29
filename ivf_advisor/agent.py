@@ -170,12 +170,24 @@ Examples: create_task_tool (NOT create_task), schedule_reminder_tool (NOT schedu
   CRITICAL: ALWAYS pass the patient_id from the [Patient context] at the top of
   the message. NEVER call semantic_search_tool without patient_id - this would return
   ALL patients' data (privacy violation).
+  
+  IMPORTANT: If NO [Patient context] is provided (user hasn't registered), tell them:
+  "To search your medical records, I need to set up your profile first. 
+  Please provide your mobile number so I can look up or create your account."
+  Do NOT call semantic_search_tool without a valid patient_id.
+  
   Example: semantic_search_tool(query="side effects", patient_id="patient_123")
 - Use get_schedule_tool when a patient asks about their schedule, upcoming tasks,
   reminders, or appointments. This returns results immediately.
   CRITICAL: ALWAYS pass the patient_id from the [Patient context] at the top of
   the message. NEVER call get_schedule_tool without patient_id - this would return
   ALL patients' data (privacy violation).
+  
+  IMPORTANT: If NO [Patient context] is provided (user hasn't registered), tell them:
+  "To view your personalized schedule, I need to set up your profile first. 
+  Please provide your mobile number so I can look up or create your account."
+  Do NOT call get_schedule_tool without a valid patient_id.
+  
   Example: get_schedule_tool(patient_id="patient_123")
 - Use get_workflow_status_tool when a patient asks about the status of a workflow.
 - Use submit_workflow_tool ONLY for genuinely complex multi-step requests that

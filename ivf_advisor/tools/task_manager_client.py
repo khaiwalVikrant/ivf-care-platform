@@ -255,13 +255,12 @@ def get_schedule_tool(patient_id: str) -> dict:
     
     try:
         with _client() as client:
-            # Fetch tasks filtered by patient_id
-            tasks_resp = client.get(
-                f"{_BASE_URL}/tasks",
-                headers=_headers(),
-                params={"patient_id": patient_id},
-            )
-            tasks = tasks_resp.json() if tasks_resp.status_code == 200 else []
+            # NOTE: Tasks endpoint does not support patient_id filtering in the backend.
+            # Tasks are system-wide, not patient-specific. Excluding from patient schedule.
+            # If patient-specific tasks are needed, the backend must be updated to:
+            # 1. Add patient_id column to tasks table
+            # 2. Update API to accept and filter by patient_id
+            tasks = []
 
             # NOTE: Events endpoint does not support patient_id filtering in the backend.
             # Events are system-wide, not patient-specific. Excluding from patient schedule.
@@ -296,8 +295,8 @@ def get_schedule_tool(patient_id: str) -> dict:
             "reminders": reminders,
             "appointments": appointments,
             "summary": (
-                f"Found {len(tasks)} tasks, {len(reminders)} reminders, "
-                f"and {len(appointments)} appointments."
+                f"Found {len(reminders)} reminders and {len(appointments)} appointments. "
+                f"(Tasks and events are not patient-specific in the current system.)"
             )
         }
     except Exception as exc:
