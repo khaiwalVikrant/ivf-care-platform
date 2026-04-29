@@ -79,6 +79,184 @@
 - **PDF download** - One-click personalized IVF plan generation with actual conversation data
 - **Session persistence** - Conversations survive Cloud Run restarts via Firestore
 
+### UI Layout & Mockup
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#f5f3ff',
+    'primaryTextColor': '#7c3aed',
+    'primaryBorderColor': '#7c3aed',
+    'lineColor': '#e5e7eb',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#fdf2f8'
+  }
+}}%%
+
+graph TB
+    subgraph UI["🖥️ IVF Care Platform - Three-Column Command Center Layout"]
+        
+        subgraph LeftSidebar["📌 Left Sidebar (200px)<br/>━━━━━━━━━━━━━━━━━━━━"]
+            LOGO["🌸 <b>IVF Care Platform</b><br/><i>Your AI Companion</i>"]
+            NEWCONV["<b>➕ New Conversation</b><br/>(Dashed border button)"]
+            
+            LANG["<b>🌍 Language Selector</b><br/>○ English  ● हिंदी"]
+            
+            QUICKTITLE["<b>⚡ QUICK ACTIONS</b>"]
+            Q1["🧬 Lab Results<br/><i>Interpret AMH/FSH</i>"]
+            Q2["📅 Timeline<br/><i>Treatment schedule</i>"]
+            Q3["💊 Injections<br/><i>Self-admin guide</i>"]
+            Q4["💰 Mumbai Costs<br/><i>City pricing</i>"]
+            Q5["📊 Success Rates<br/><i>Age-based stats</i>"]
+            Q6["🥗 Wellness<br/><i>Diet & lifestyle</i>"]
+            
+            STATUS["<b>📊 Session Status</b><br/>🟢 Active Session"]
+            AGENT["<b>🤖 Agent Activity</b><br/>💭 Analyzing lab results...<br/>(Pulse animation)"]
+        end
+        
+        subgraph CenterColumn["💬 Center Column (Flex Grow)<br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
+            HEADER["<b>IVF Care Advisor</b><br/><i>Evidence-based guidance for your fertility journey</i>"]
+            
+            DISCLAIMER["⚠️ <b>Medical Disclaimer:</b> This is informational guidance only.<br/>Always consult your fertility specialist for medical decisions."]
+            
+            CHATAREA["<b>💬 Chat Messages</b><br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/><br/><b>Bot:</b> Welcome! I can help you understand<br/>lab results, plan timelines, and coordinate care.<br/><br/><b>User:</b> I just got my AMH test results.<br/>Can you help me understand them?<br/><br/><b>Bot:</b> Of course! You can either:<br/>• Upload an image of your report 📸<br/>• Tell me the values directly<br/><br/><b>User:</b> [Uploaded: Blood_Test_Report.jpg]<br/><br/><b>Bot:</b> 🔍 Analyzing your report...<br/><br/>I can see your AMH is 2.8 ng/mL.<br/>This indicates <b>good ovarian reserve</b>.<br/><br/>Would you like me to:<br/>• Explain what this means for IVF success<br/>• Create a treatment timeline<br/>• Show cost estimates for your city"]
+            
+            CHIPS["<b>💡 Quick Prompts:</b><br/>🔘 Explain my results  🔘 Create timeline<br/>🔘 Show costs  🔘 Book appointment"]
+            
+            INPUTAREA["<b>📝 Input Area</b><br/>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br/>[Type your message here...]<br/>📸 Image  🎤 Voice  ➤ Send"]
+            
+            IMGACCORDION["<b>▼ 📸 Upload Medical Report (Optional)</b><br/>Drag & drop or click to upload JPG/PNG<br/><i>Supports: Lab reports, prescriptions, ultrasounds</i>"]
+            
+            CONTEXTUAL["<b>💾 Save Profile</b>  |  <b>📄 Download PDF Report</b><br/>(Contextual buttons - appear when relevant)"]
+        end
+        
+        subgraph RightSidebar["📊 Right Sidebar (200px)<br/>━━━━━━━━━━━━━━━━━━━━"]
+            JOURNEYTITLE["<b>🧬 JOURNEY PROGRESS</b>"]
+            
+            J1["● <b>Baseline</b><br/><i>Day 1-3</i>"]
+            J2["◉ <b>Stimulation</b><br/><i>Day 2-12 (Current)</i>"]
+            J3["○ <b>Trigger Shot</b><br/><i>Day 13</i>"]
+            J4["○ <b>Retrieval</b><br/><i>Day 15</i>"]
+            J5["○ <b>Transfer</b><br/><i>Day 18-20</i>"]
+            
+            DOCSTITLE["<b>📚 DOCUMENTS & SUPPORT</b>"]
+            
+            D1["📄 ESHRE Guidelines"]
+            D2["📄 ASRM Standards"]
+            D3["📄 NICE Protocols"]
+            D4["📄 ICMR Guidelines"]
+            
+            SUPPORTTITLE["<b>🆘 CRISIS SUPPORT</b>"]
+            
+            S1["🇮🇳 India: 9152987821"]
+            S2["🇬🇧 UK: 116 123"]
+            S3["🌍 Global: befrienders.org"]
+            
+            SOURCESTITLE["<b>🔬 EVIDENCE SOURCES</b>"]
+            
+            SRC1["📊 SART 2023 Data"]
+            SRC2["📊 HFEA Success Rates"]
+            SRC3["📊 ICMR Registry"]
+            
+            BENTOTITLE["<b>🎴 QUICK CARDS</b>"]
+            
+            B1["💰 Cost Calculator<br/><i>City-specific pricing</i>"]
+            B2["🚩 Red Flag Checker<br/><i>Clinic claims audit</i>"]
+            B3["📧 Email Reminders<br/><i>Never miss a dose</i>"]
+        end
+    end
+    
+    subgraph Responsive["📱 Responsive Breakpoints"]
+        DESKTOP["<b>🖥️ Desktop (1366px+)</b><br/>All 3 columns visible<br/>Full feature set"]
+        TABLET["<b>📱 Tablet (768-1100px)</b><br/>Left + Center columns<br/>Right sidebar hidden"]
+        MOBILE["<b>📱 Mobile (320-767px)</b><br/>Center column only<br/>Sidebars hidden<br/>Hamburger menu"]
+    end
+    
+    LeftSidebar -.-> DESKTOP
+    CenterColumn -.-> DESKTOP
+    RightSidebar -.-> DESKTOP
+    
+    LeftSidebar -.-> TABLET
+    CenterColumn -.-> TABLET
+    
+    CenterColumn -.-> MOBILE
+
+    classDef sidebar fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
+    classDef center fill:#ffffff,stroke:#e5e7eb,stroke-width:2px,color:#1f2937
+    classDef right fill:#fdf2f8,stroke:#db2777,stroke-width:2px,color:#831843
+    classDef responsive fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+    
+    class LeftSidebar,LOGO,NEWCONV,LANG,QUICKTITLE,Q1,Q2,Q3,Q4,Q5,Q6,STATUS,AGENT sidebar
+    class CenterColumn,HEADER,DISCLAIMER,CHATAREA,CHIPS,INPUTAREA,IMGACCORDION,CONTEXTUAL center
+    class RightSidebar,JOURNEYTITLE,J1,J2,J3,J4,J5,DOCSTITLE,D1,D2,D3,D4,SUPPORTTITLE,S1,S2,S3,SOURCESTITLE,SRC1,SRC2,SRC3,BENTOTITLE,B1,B2,B3 right
+    class DESKTOP,TABLET,MOBILE responsive
+```
+
+### Detailed UI Component Breakdown
+
+```mermaid
+graph TB
+    subgraph Components["🎨 UI Component Architecture"]
+        
+        subgraph Input["📥 Input Components"]
+            I1["Text Input<br/>Multi-line textarea<br/>Auto-resize"]
+            I2["Image Upload<br/>Drag & drop<br/>JPG/PNG support"]
+            I3["Voice Input<br/>Speech-to-Text<br/>Real-time transcription"]
+            I4["Send Button<br/>Purple gradient<br/>Disabled when empty"]
+        end
+        
+        subgraph Chat["💬 Chat Components"]
+            C1["User Bubble<br/>Purple gradient<br/>Right-aligned"]
+            C2["Bot Bubble<br/>White with border<br/>Left-aligned<br/>Markdown support"]
+            C3["Thinking Indicator<br/>Animated dots<br/>Tool name display"]
+            C4["Error Message<br/>Red border<br/>Retry button"]
+        end
+        
+        subgraph Navigation["🧭 Navigation Components"]
+            N1["Quick Action Buttons<br/>6 gradient cards<br/>Hover effects"]
+            N2["Language Selector<br/>EN/HI toggle<br/>Instant switch"]
+            N3["New Conversation<br/>Dashed border<br/>Confirmation dialog"]
+            N4["Session Badge<br/>Pill shape<br/>Status indicator"]
+        end
+        
+        subgraph Progress["📊 Progress Components"]
+            P1["Journey Steps<br/>5 stages<br/>Vertical timeline"]
+            P2["Stage Dots<br/>Done/Active/Pending<br/>Color-coded"]
+            P3["Progress Line<br/>Gradient fill<br/>Animated"]
+            P4["Stage Labels<br/>Bold title<br/>Subtitle dates"]
+        end
+        
+        subgraph Actions["⚡ Action Components"]
+            A1["Save Profile Button<br/>Green gradient<br/>Contextual display"]
+            A2["Download PDF Button<br/>Purple gradient<br/>Contextual display"]
+            A3["Example Chips<br/>Rounded pills<br/>Click to populate"]
+            A4["Bento Cards<br/>Hover lift effect<br/>Icon + description"]
+        end
+        
+        subgraph Feedback["📢 Feedback Components"]
+            F1["Agent Activity<br/>Pulse animation<br/>Tool name display"]
+            F2["Disclaimer Banner<br/>Sticky top<br/>Yellow background"]
+            F3["Toast Notifications<br/>Success/Error<br/>Auto-dismiss"]
+            F4["Loading Spinner<br/>Purple gradient<br/>Smooth rotation"]
+        end
+    end
+
+    classDef input fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    classDef chat fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+    classDef nav fill:#fef3c7,stroke:#eab308,stroke-width:2px
+    classDef progress fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    classDef action fill:#fce7f3,stroke:#db2777,stroke-width:2px
+    classDef feedback fill:#fff7ed,stroke:#f97316,stroke-width:2px
+    
+    class I1,I2,I3,I4 input
+    class C1,C2,C3,C4 chat
+    class N1,N2,N3,N4 nav
+    class P1,P2,P3,P4 progress
+    class A1,A2,A3,A4 action
+    class F1,F2,F3,F4 feedback
+```
+
 ---
 
 ## 🎯 Problem Statement
@@ -94,6 +272,368 @@ IVF patients face:
 ---
 
 ## 🏗️ System Architecture
+
+### 1. High-Level Tiered Architecture
+
+```mermaid
+graph TB
+    subgraph Interaction_Layer ["Layer 1: Interaction (Cloud Run)"]
+        UI[📱 Gradio 5.x Responsive UI<br/>Multi-language: EN/HI]
+        Voice[🎤 Speech-to-Text API]
+    end
+    
+    subgraph Intelligence_Layer ["Layer 2: Cognitive Hub (Google ADK)"]
+        Orch[🤖 Root Orchestrator]
+        LLM[🧠 Gemini 2.0 Flash Lite]
+        subgraph Experts ["9 Specialized Sub-Agents"]
+            A1[💊 Medication Agent]
+            A2[💰 CostGuard Agent]
+            A3[📅 Appointment Agent]
+            A4[🧪 Pathology Agent]
+            A5[📋 Task Agent]
+            A6[📝 Notes Agent]
+            A7[👩‍⚕️ Nurse Agent]
+            A8[⏰ Reminder Agent]
+            A9[📅 Calendar Agent]
+        end
+    end
+    
+    subgraph Foundation_Layer ["Layer 3: Secure Foundation (VPC Private Subnet)"]
+        Alloy[(🗄️ AlloyDB PostgreSQL<br/>pgvector + Columnar Engine)]
+        Sec[🔐 Secret Manager]
+        GCS[☁️ Cloud Storage: PDF Reports]
+    end
+    
+    subgraph Impact_Layer ["Layer 4: External Actions"]
+        Mail[📧 Gmail SMTP<br/>.ics Attachments]
+        Cal[📅 Google Calendar API]
+    end
+    
+    %% Flow
+    UI <--> Orch
+    Voice --> UI
+    Orch <--> LLM
+    Orch --> Experts
+    Experts <--> Alloy
+    Experts --> Mail & Cal
+    Sec -.->|Inject| UI & Orch
+    LLM --> GCS
+    
+    classDef gcp fill:#f8f9fa,stroke:#4285f4,stroke-width:2px;
+    class Interaction_Layer,Intelligence_Layer,Foundation_Layer,Impact_Layer gcp;
+```
+
+---
+
+## 🤖 Multi-Agent Coordination & Image OCR Flow
+
+> **Example:** Patient uploads medical bill → CostGuard Agent audits pricing → Email confirmation sent
+
+```mermaid
+sequenceDiagram
+    participant P as Patient
+    participant O as ADK Orchestrator
+    participant V as Vision API
+    participant C as CostGuard Agent
+    participant D as AlloyDB
+    participant E as External (Email/Cal)
+    
+    P->>O: Uploads Medical Bill/Report (Image)
+    O->>V: Perform OCR & Data Extraction
+    V-->>O: Extracted Values (Price/Lab Results)
+    
+    rect rgb(240, 240, 240)
+        Note over O,C: Agentic Decision
+        O->>C: Route to CostGuard for Benchmarking
+        C->>D: Query Market Rates (pgvector)
+        D-->>C: Benchmark Found
+        C->>C: Audit: Flag Overcharge (>15%)
+    end
+    
+    C-->>O: Audit Result + Summary
+    O->>D: Persist Record
+    O->>E: Send .ics Confirmation
+    O->>P: Return Empathetic Summary + PDF Link
+```
+
+---
+
+## 🛡️ Integrated Process Flow (Safety-First Journey)
+
+```mermaid
+graph TD
+    Start([User Request: Text/Voice/Image]) --> Guard{🛡️ Scope Guard}
+    Guard -- Out of Scope --> Educate[Provide Educational<br/>Disclaimer]
+    Guard -- In Scope --> Parse[ADK Orchestrator:<br/>Parse Intent]
+    
+    Parse --> Route{Intent Type?}
+    
+    subgraph Processing ["Clinical & Action Intelligence"]
+        Route -->|Clinical| Search[Vertex AI Search:<br/>Evidence Grounding]
+        Route -->|Action| Task[Task Manager API:<br/>FastAPI + asyncpg]
+        Route -->|Report| Vision[Cloud Vision API:<br/>Lab Interpretation]
+    end
+    
+    Search & Vision --> Format[Format Response<br/>w/ Clinical Citations]
+    Task --> Alloy[(AlloyDB:<br/>Atomic Commit)]
+    Alloy --> Notify[External Services:<br/>Email/Calendar]
+    Notify --> Format
+    Format --> End([Deliver AI Response])
+    
+    style Guard fill:#fee2e2,stroke:#dc2626
+    style Alloy fill:#dcfce7,stroke:#16a34a
+```
+
+---
+
+## 🗄️ Database Schema (AlloyDB with pgvector)
+
+```mermaid
+erDiagram
+    PATIENT ||--o{ IVF_CYCLE : manages
+    PATIENT ||--o{ APPOINTMENTS : books
+    IVF_CYCLE ||--o{ LAB_RESULTS : contains
+    IVF_CYCLE ||--o{ COST_RECORDS : tracks
+    
+    LAB_RESULTS {
+        string test_name
+        float value
+        vector embedding_004 "Semantic Search enabled"
+    }
+    
+    COST_RECORDS {
+        float amount
+        string category
+        boolean is_flagged "CostGuard Audited"
+    }
+    
+    PATIENT {
+        string mobile_number PK
+        string email
+        jsonb profile "Stored securely"
+    }
+    
+    IVF_CYCLE {
+        string id PK
+        string patient_id FK
+        enum current_stage
+        jsonb stage_history
+    }
+    
+    APPOINTMENTS {
+        string id PK
+        string patient_id FK
+        enum type
+        timestamp datetime
+    }
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Agent Framework** | Google ADK (Agent Development Kit) |
+| **LLM** | Gemini 2.0 Flash Lite (Vertex AI) |
+| **Chat UI** | Gradio 5.x |
+| **REST API** | FastAPI |
+| **Primary Database** | AlloyDB for PostgreSQL |
+| **Session Storage** | Firestore (default) / AlloyDB (optional) |
+| **Vector Search** | AlloyDB pgvector + Vertex AI text-embedding-004 |
+| **Evidence Search** | Vertex AI Search (Discovery Engine) |
+| **OCR & Image Analysis** | Google Cloud Vision API |
+| **PDF Generation** | ReportLab 4.0+ |
+| **File Storage** | Google Cloud Storage |
+| **Speech-to-Text** | Google Cloud Speech-to-Text API |
+| **Email** | Gmail SMTP |
+| **Calendar** | Google Calendar API + .ics attachments |
+| **Deployment** | Cloud Run (GCP) - 2 services |
+| **CI/CD** | Cloud Build (parallel pipelines) |
+| **Secrets Management** | Secret Manager |
+| **Languages** | English, Hindi (Devanagari script) |
+| **Python Version** | 3.11+ |
+
+---
+    SUBAGENTS --> GMAIL
+    
+    %% Layer 4 External
+    GCAL --> USERCAL
+    GMAIL --> USEREMAIL
+
+    classDef layer1 fill:#f0f9ff,stroke:#0369a1,stroke-width:3px,color:#0c4a6e
+    classDef layer2 fill:#f5f3ff,stroke:#7c3aed,stroke-width:3px,color:#5b21b6
+    classDef layer3 fill:#f0fdf4,stroke:#15803d,stroke-width:3px,color:#14532d
+    classDef layer4 fill:#fef3c7,stroke:#ca8a04,stroke-width:3px,color:#854d0e
+    
+    class UI,STT,VISION layer1
+    class ORCH,GEMINI,TOOLS,SEARCH,SUBAGENTS layer2
+    class ALLOY,FIRESTORE,GCS,SECRET layer3
+    class GCAL,GMAIL,USERCAL,USEREMAIL layer4
+```
+
+### Technology Stack by Layer
+
+| Layer | Component | Technology | Purpose |
+|-------|-----------|-----------|---------|
+| **🌐 Layer 1** | UI | Gradio 5.x | Responsive chat interface |
+| | Speech | Speech-to-Text API | Voice input transcription |
+| | Vision | Cloud Vision API | Medical report OCR |
+| **🧠 Layer 2** | Agent Framework | Google ADK | Agent orchestration |
+| | LLM | Gemini 2.0 Flash Lite | Natural language understanding |
+| | Tools | 29 custom tools | Clinical + coordination + communication |
+| | Evidence | Vertex AI Search | Research paper discovery |
+| | Sub-Agents | FastAPI | Multi-agent coordination |
+| **🔒 Layer 3** | Database | AlloyDB PostgreSQL | Primary data store + pgvector |
+| | Session Store | Firestore | Session persistence |
+| | File Storage | Cloud Storage | PDF reports + images |
+| | Secrets | Secret Manager | Zero-trust credential management |
+| **🌍 Layer 4** | Calendar | Google Calendar API | Event scheduling |
+| | Email | Gmail SMTP | Notifications + .ics attachments |
+| | User Services | External | Patient-facing integrations |
+
+---
+
+### Complete Interaction Flow
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#f8fafc',
+    'tertiaryColor': '#f1f5f9'
+  }
+}}%%
+
+graph TD
+    %% Interaction Entry Points
+    Start([👤 Patient Interaction]) --> InputType{Input Type?}
+    
+    InputType -->|Text| TextInput[💬 Text Message]
+    InputType -->|Voice| VoiceInput[🎤 Voice Input]
+    InputType -->|Image| ImageInput[📸 Medical Report Upload]
+    
+    VoiceInput -->|Speech-to-Text API| TextInput
+    ImageInput -->|Vision API OCR| ExtractedData[📄 Extracted Lab Values]
+    
+    %% Scope Guard & Validation
+    TextInput --> ScopeGuard{🛡️ Scope Guard<br/>Domain Check}
+    ExtractedData --> ScopeGuard
+    
+    ScopeGuard -->|Out of Scope| OutScope[❌ Polite Decline<br/>+ Referral Suggestion]
+    ScopeGuard -->|Emergency| Emergency[🚨 Emergency Response<br/>Seek Immediate Care]
+    ScopeGuard -->|In Scope| SessionCheck{Session<br/>Exists?}
+    
+    %% Session Management
+    SessionCheck -->|New| Onboarding[📋 Onboarding Flow<br/>Mobile → Lookup/Register<br/>Profile Opt-in]
+    SessionCheck -->|Existing| LoadSession[📂 Load Session<br/>Firestore/AlloyDB<br/>patient_id, cycle_id]
+    
+    Onboarding --> LoadSession
+    LoadSession --> InjectContext[💉 Inject Patient Context<br/>patient_id, cycle_id<br/>patient_name, email]
+    
+    %% ADK Agent Processing
+    InjectContext --> ADK[🤖 ADK Agent<br/>Gemini 2.0 Flash Lite<br/>Parse Intent]
+    
+    ADK --> RouteIntent{Route to<br/>Tool Category?}
+    
+    %% Clinical Tools (12)
+    RouteIntent -->|Clinical| ClinicalTools{Clinical<br/>Tool?}
+    ClinicalTools -->|Lab Results| T1[Lab Result<br/>Interpreter]
+    ClinicalTools -->|Image Analysis| T2[Image Analyzer<br/>Vision API]
+    ClinicalTools -->|Timeline| T3[Timeline<br/>Generator]
+    ClinicalTools -->|Success Rates| T4[Success Rate<br/>Calculator]
+    ClinicalTools -->|Costs| T5[Cost Breakdown<br/>11+ Cities]
+    ClinicalTools -->|Red Flags| T6[Red Flag<br/>Checker]
+    ClinicalTools -->|Injections| T7[Injection<br/>Guide]
+    ClinicalTools -->|Wellness| T8[Wellness<br/>Guide]
+    ClinicalTools -->|Emotional| T9[Emotional<br/>Support]
+    ClinicalTools -->|Evidence| T10[Evidence Search<br/>Vertex AI Search]
+    ClinicalTools -->|Journey| T11[Journey Stage<br/>Tracker]
+    ClinicalTools -->|PDF| T12[PDF Report<br/>Generator]
+    
+    %% Coordination Tools (10)
+    RouteIntent -->|Coordination| CoordTools{Coordination<br/>Tool?}
+    CoordTools -->|Task| T13[Create<br/>Task]
+    CoordTools -->|Reminder| T14[Schedule<br/>Reminder]
+    CoordTools -->|Appointment| T15[Book<br/>Appointment]
+    CoordTools -->|Nurse| T16[Book Nurse<br/>Visit]
+    CoordTools -->|Cost Summary| T17[Get Cost<br/>Summary]
+    CoordTools -->|Expense| T18[Track<br/>Expense]
+    CoordTools -->|Workflow| T19[Submit<br/>Workflow]
+    CoordTools -->|Schedule| T20[Get<br/>Schedule]
+    CoordTools -->|Status| T21[Get Workflow<br/>Status]
+    CoordTools -->|Search| T22[Semantic<br/>Search]
+    
+    %% Communication Tools (7)
+    RouteIntent -->|Communication| CommTools{Communication<br/>Tool?}
+    CommTools -->|Calendar| T23[Add to<br/>Calendar]
+    CommTools -->|Nurse+Cal| T24[Nurse Visit<br/>+ Calendar]
+    CommTools -->|Appt+Cal| T25[Appointment<br/>+ Calendar]
+    CommTools -->|Appt Email| T26[Send Appt<br/>Confirmation]
+    CommTools -->|Nurse Email| T27[Send Nurse<br/>Notification]
+    CommTools -->|Reminder Email| T28[Send Reminder<br/>Notification]
+    
+    %% Tool Execution & Data Flow
+    T1 & T2 & T3 & T4 & T5 & T6 & T7 & T8 & T9 & T11 --> Gemini[Gemini 2.0<br/>Flash Lite]
+    T10 --> VertexSearch[Vertex AI<br/>Search]
+    T12 --> GCS[Cloud Storage<br/>PDF Files]
+    
+    T13 & T14 & T15 & T16 & T17 & T18 & T19 & T20 & T21 --> TaskAPI[Task Manager<br/>API]
+    T22 --> PGVector[AlloyDB<br/>pgvector]
+    
+    T23 & T24 & T25 --> GCal[Google<br/>Calendar API]
+    T26 & T27 & T28 --> Gmail[Gmail<br/>SMTP]
+    
+    %% Data Persistence
+    TaskAPI --> AlloyDB[(AlloyDB<br/>PostgreSQL)]
+    Gemini --> Response[📝 Format Response<br/>+ Medical Disclaimer]
+    VertexSearch --> Response
+    GCS --> Response
+    PGVector --> Response
+    AlloyDB --> Response
+    
+    %% Communication Outputs
+    GCal --> CalInvite[📅 .ics Calendar<br/>Attachment]
+    Gmail --> EmailNotif[📧 Email<br/>Notification]
+    
+    CalInvite --> Response
+    EmailNotif --> Response
+    
+    %% Session Update & Output
+    Response --> UpdateSession[💾 Update Session<br/>Topics, Turn Count<br/>Save to Firestore/AlloyDB]
+    UpdateSession --> Output[💬 Display Response<br/>to Patient]
+    
+    Output --> End([✅ End])
+    OutScope --> End
+    Emergency --> End
+
+    %% Styling
+    classDef input fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    classDef guard fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+    classDef session fill:#fef3c7,stroke:#eab308,stroke-width:2px
+    classDef agent fill:#ede9fe,stroke:#7c3aed,stroke-width:2px
+    classDef clinical fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    classDef coord fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    classDef comm fill:#fce7f3,stroke:#db2777,stroke-width:2px
+    classDef data fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    classDef output fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+    
+    class Start,InputType,TextInput,VoiceInput,ImageInput,ExtractedData input
+    class ScopeGuard,OutScope,Emergency guard
+    class SessionCheck,Onboarding,LoadSession,InjectContext session
+    class ADK,RouteIntent agent
+    class ClinicalTools,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12 clinical
+    class CoordTools,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22 coord
+    class CommTools,T23,T24,T25,T26,T27,T28 comm
+    class Gemini,VertexSearch,GCS,TaskAPI,PGVector,AlloyDB,GCal,Gmail,CalInvite,EmailNotif data
+    class Response,UpdateSession,Output,End output
+```
+
+### Simplified High-Level Flow
 
 ```mermaid
 flowchart TD
