@@ -5,10 +5,33 @@ from __future__ import annotations
 from ivf_advisor.models import CostBreakdownOutput, CostComponent, CostVariability
 
 _INDIAN_CITIES = {
-    "mumbai", "delhi", "bangalore", "bengaluru", "chennai", "hyderabad",
+    "mumbai", "delhi", "new delhi", "bangalore", "bengaluru", "chennai", "hyderabad",
     "pune", "kolkata", "ahmedabad", "jaipur", "lucknow", "india", "indian",
     "chandigarh", "noida", "gurgaon", "gurugram", "surat", "kochi", "nagpur",
 }
+
+
+def _normalize_city_name(region: str | None) -> str | None:
+    """Normalize city names to match our database keys."""
+    if not region:
+        return None
+    
+    normalized = region.lower().strip()
+    
+    # Handle common variations
+    if "new delhi" in normalized or "newdelhi" in normalized:
+        return "delhi"
+    if "bengaluru" in normalized:
+        return "bangalore"
+    if "gurugram" in normalized:
+        return "gurgaon"
+    
+    # Extract city name if it contains "city" or other common suffixes
+    for city in _INDIAN_CITIES:
+        if city in normalized:
+            return city
+    
+    return normalized
 
 # ---------------------------------------------------------------------------
 # India-specific cost components (INR)
@@ -292,7 +315,8 @@ _CLINIC_QUESTIONS: list[str] = [
 def _is_india_region(region: str | None) -> bool:
     if not region:
         return False
-    return region.lower().strip() in _INDIAN_CITIES
+    normalized = _normalize_city_name(region)
+    return normalized in _INDIAN_CITIES if normalized else False
 
 
 def cost_breakdown_tool(
@@ -326,10 +350,15 @@ def cost_breakdown_tool(
                 labelled.append(comp.model_copy(update={"name": hindi_name}))
             components = labelled
 
-        city_key = region.lower().strip() if region else "default"
+        # Normalize city name for cost lookup
+        normalized_city = _normalize_city_name(region)
+        city_key = normalized_city if normalized_city else "default"
         city_range = _INDIA_CITY_RANGES.get(city_key, _INDIA_CITY_RANGES["default"])
+        
+        # Use original region name for display
+        display_city = region.title() if region else "India"
         city_note = (
-            f"In {region.title()}, a complete IVF cycle (excluding medications) typically "
+            f"In {display_city}, a complete IVF cycle (excluding medications) typically "
             f"costs between ₹{city_range['low']:,} and ₹{city_range['high']:,}. "
             f"Medications add approximately ₹30,000–₹80,000 on top."
         )
@@ -580,43 +609,3 @@ _CLINIC_QUESTIONS: list[str] = [
     "Are there any additional costs I should anticipate that are not covered in the quoted price?",
 ]
 
-# ---------------------------------------------------------------------------
-# Tool function
-# ---------------------------------------------------------------------------
-
-
-def cost_breakdown_tool(
-    region: str | None = None,
-    include_addons: bool = False,
-    profile_context: str | None = None,
-) -> CostBreakdownOutput:
-    """Returns a structured IVF cost breakdown covering all cost components.
-
-    Args:
-        region: Optional country/region code for localised cost ranges.
-                Region-aware logic is a Phase 2 feature; in Phase 1 this parameter
-                is accepted but does not alter the output (region=None / currency=None
-                on all components).
-        include_addons: Whether to include optional add-on treatment costs.
-                        When True, add-on components (ICSI, PGT-A, embryo freezing,
-                        ERA) are appended to the core components list.
-        profile_context: Optional JSON string of patient profile. Accepted for
-                         forward-compatibility; not used in Phase 1.
-
-    Returns:
-        CostBreakdownOutput with per-component cost ranges, fixed vs variable
-        classification, multi-cycle note, and clinic questions list.
-    """
-    components: list[CostComponent] = list(_CORE_COMPONENTS)
-
-    if include_addons:
-        components = components + list(_ADDON_COMPONENTS)
-
-    # Phase 1: region-aware logic is a stub — region and currency remain None
-    # Full region-aware implementation is delivered in Phase 2 (task 16).
-    return CostBreakdownOutput(
-        components=components,
-        multi_cycle_note=_MULTI_CYCLE_NOTE,
-        clinic_questions=list(_CLINIC_QUESTIONS),
-        region=None,
-    )
