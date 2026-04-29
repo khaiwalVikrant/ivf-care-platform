@@ -1300,24 +1300,35 @@ def chat(
         session_id = session.session_id
         history = [_msg("assistant", WELCOME_MESSAGE)]
 
-    # Handle image upload
+    # Handle image upload - call OCR tool directly
     if image_path:
-        # Prepend image analysis instruction
-        image_prompt = (
-            "📸 **Medical Report Image Uploaded**\n\n"
-            "Please analyze this medical report image carefully. Look for:\n"
-            "- Lab values: AMH, FSH, AFC, E2, LH, Progesterone, Testosterone\n"
-            "- Sperm analysis: Count, Motility, Morphology, Volume\n"
-            "- Any other fertility-related test results\n\n"
-            "Interpret each value in plain language and explain if they're in normal range."
-        )
+        from ivf_advisor.tools.image_analyzer import analyze_medical_report_image
         
-        if user_message.strip():
-            message_to_send = f"{image_prompt}\n\nPatient's question: {user_message}\n\n[Image file: {image_path}]"
+        # Analyze the image using OCR
+        ocr_result = analyze_medical_report_image(image_path)
+        
+        if ocr_result.success:
+            # Prepend OCR results to the message
+            image_analysis = (
+                f"📸 **Medical Report Image Analyzed**\n\n"
+                f"**Extracted Text:**\n{ocr_result.extracted_text[:500]}...\n\n"
+                f"{ocr_result.interpretation}\n\n"
+            )
+            
+            if user_message.strip():
+                message_to_send = f"{image_analysis}\nPatient's question: {user_message}"
+            else:
+                message_to_send = f"{image_analysis}\nPlease provide a detailed interpretation of these lab results and explain what they mean for my fertility treatment."
+            
+            display_message = f"📸 Uploaded medical report\n\n{user_message}" if user_message else "📸 Uploaded medical report"
         else:
-            message_to_send = f"{image_prompt}\n\n[Image file: {image_path}]"
-        
-        display_message = f"📸 Uploaded medical report\n\n{user_message}" if user_message else "📸 Uploaded medical report"
+            # OCR failed - still send to agent with error context
+            error_msg = f"⚠️ Could not extract text from image: {ocr_result.error_message}\n\n"
+            if user_message.strip():
+                message_to_send = f"{error_msg}{user_message}"
+            else:
+                message_to_send = f"{error_msg}Please help me understand my lab results."
+            display_message = f"📸 Uploaded medical report (OCR failed)\n\n{user_message}" if user_message else "📸 Uploaded medical report (OCR failed)"
     else:
         message_to_send = user_message
         display_message = user_message
