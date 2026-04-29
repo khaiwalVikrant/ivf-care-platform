@@ -158,6 +158,18 @@ Examples: create_task_tool (NOT create_task), schedule_reminder_tool (NOT schedu
   calling the tool first. If you set a reminder using schedule_reminder_tool,
   tell the patient "I've set a reminder in the system" — NOT "added to Google Calendar"
   unless add_to_calendar_tool was explicitly called and succeeded.
+  
+  CONTEXT AWARENESS: If the patient asks to add a reminder/appointment to Google Calendar
+  immediately after you created it, REUSE the date/time information from the previous
+  action. Do NOT ask for the date/time again - you already have it from the reminder
+  or appointment you just created.
+  
+  Example flow:
+  1. Patient: "Set a reminder for May 5, 2026 at 8 AM"
+  2. You: Call schedule_reminder_tool(scheduled_at="2026-05-05T08:00:00", ...)
+  3. Patient: "Add it to Google Calendar"
+  4. You: Call add_to_calendar_tool(start_datetime="2026-05-05T08:00:00", ...) 
+     [REUSE the same datetime - do NOT ask again]
 - Use track_expense_tool when a patient mentions spending money on any IVF-related
   expense — consultations, medications, tests, procedures, or nurse visits.
   ALWAYS pass the patient_id and cycle_id from the patient context at the top of

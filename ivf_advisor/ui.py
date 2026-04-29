@@ -1332,7 +1332,315 @@ footer, .footer { display: none !important; }
         margin-bottom: 2px !important;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE SUPPORT
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+    /* ── Base & Container ── */
+    body, .gradio-container {
+        background: #0f0f1a !important;
+        color: #e5e7eb !important;
+    }
+    
+    /* ── Sidebars ── */
+    .left-sidebar {
+        background: #1a1a2e !important;
+        border-right: 1px solid #2d2d44 !important;
+    }
+    
+    .right-sidebar {
+        background: #1a1a2e !important;
+        border-left: 1px solid #2d2d44 !important;
+        scrollbar-color: #7c3aed #1a1a2e;
+    }
+    .right-sidebar::-webkit-scrollbar-track {
+        background: #1a1a2e;
+        border: 1px solid #2d2d44;
+    }
+    
+    /* ── Quick Access Buttons ── */
+    .quick-btn button {
+        background: #2d2d44 !important;
+        color: #c4b5fd !important;
+        border: 1.5px solid #3d3d54 !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+    }
+    .quick-btn button:hover {
+        background: #3d3d54 !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 4px 14px rgba(124,58,237,0.4) !important;
+    }
+    
+    /* Per-button dark backgrounds */
+    #qbtn-0 button { background: linear-gradient(135deg, #2d2d44 0%, #3d3d54 100%) !important; color: #c4b5fd !important; }
+    #qbtn-0 button:hover { background: linear-gradient(135deg, #3d3d54 0%, #4d4d64 100%) !important; }
+    
+    #qbtn-1 button { background: linear-gradient(135deg, #1e2a3a 0%, #2d3d54 100%) !important; color: #93c5fd !important; }
+    #qbtn-1 button:hover { background: linear-gradient(135deg, #2d3d54 0%, #3d4d64 100%) !important; }
+    
+    #qbtn-2 button { background: linear-gradient(135deg, #1a2e1a 0%, #2d4d2d 100%) !important; color: #86efac !important; }
+    #qbtn-2 button:hover { background: linear-gradient(135deg, #2d4d2d 0%, #3d5d3d 100%) !important; }
+    
+    #qbtn-3 button { background: linear-gradient(135deg, #2e2a1a 0%, #4d4d2d 100%) !important; color: #fcd34d !important; }
+    #qbtn-3 button:hover { background: linear-gradient(135deg, #4d4d2d 0%, #5d5d3d 100%) !important; }
+    
+    #qbtn-4 button { background: linear-gradient(135deg, #2e1a2e 0%, #4d2d4d 100%) !important; color: #e879f9 !important; }
+    #qbtn-4 button:hover { background: linear-gradient(135deg, #4d2d4d 0%, #5d3d5d 100%) !important; }
+    
+    #qbtn-5 button { background: linear-gradient(135deg, #2e1a1a 0%, #4d2d2d 100%) !important; color: #fda4af !important; }
+    #qbtn-5 button:hover { background: linear-gradient(135deg, #4d2d2d 0%, #5d3d3d 100%) !important; }
+    
+    /* ── Language Selector ── */
+    .lang-selector {
+        background: #2d2d44;
+        border: 1px solid #3d3d54;
+    }
+    .lang-selector label { color: #c4b5fd !important; }
+    .lang-selector span { color: #9ca3af !important; }
+    
+    /* ── Agent Status ── */
+    .agent-status-wrap {
+        background: #1a1a2e;
+        border-left: 3px solid #3d3d54;
+        color: #6b7280;
+    }
+    .agent-status-wrap p { color: #6b7280 !important; }
+    .agent-active-pulse .agent-status-wrap,
+    .agent-status-wrap.agent-active-pulse {
+        background: #2d2d44;
+        border-left-color: #7c3aed;
+        color: #c4b5fd;
+    }
+    .agent-status-wrap.agent-active-pulse p { color: #c4b5fd !important; }
+    
+    /* ── Status Badge ── */
+    .status-badge textarea, .status-badge input {
+        background: #2d2d44 !important;
+        border: 1px solid #3d3d54 !important;
+        color: #c4b5fd !important;
+    }
+    
+    /* ── New Conversation Button ── */
+    .new-convo-btn button {
+        background: #2d2d44 !important;
+        border: 1.5px dashed #4d4d64 !important;
+        color: #c4b5fd !important;
+    }
+    .new-convo-btn button:hover {
+        background: #7c3aed !important;
+        color: #ffffff !important;
+        border-color: #7c3aed !important;
+    }
+    
+    /* ── Chat Area ── */
+    .chat-header-sub {
+        color: #9ca3af !important;
+    }
+    
+    .chat-wrap {
+        border: 1px solid #2d2d44 !important;
+        background: #1a1a2e !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    /* Bot bubble */
+    .chat-wrap .message.bot > div,
+    .chat-wrap [data-testid="bot"] .bubble-wrap {
+        background: #2d2d44 !important;
+        border: 1px solid #3d3d54 !important;
+        border-left: 3px solid #7c3aed !important;
+        color: #e5e7eb !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* ── Input Area ── */
+    .input-area-container {
+        background: #1a1a2e;
+        border-top: 1px solid #2d2d44;
+    }
+    
+    .input-area {
+        background: #2d2d44;
+        border: 1.5px solid #3d3d54;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .input-area:focus-within {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.2) !important;
+    }
+    .input-area textarea {
+        color: #e5e7eb !important;
+    }
+    
+    /* ── Image Upload Button ── */
+    .image-upload-btn button {
+        background: #2d2d44 !important;
+        color: #c4b5fd !important;
+        border: 1.5px solid #3d3d54 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+    .image-upload-btn button:hover {
+        background: #3d3d54 !important;
+        border-color: #7c3aed !important;
+    }
+    
+    /* ── Image Upload Area ── */
+    .image-upload-accordion {
+        border: 1px solid #2d2d44 !important;
+        background: #1a1a2e !important;
+    }
+    .image-upload-accordion summary {
+        background: #2d2d44 !important;
+        color: #c4b5fd !important;
+    }
+    .image-upload-accordion summary:hover {
+        background: #3d3d54 !important;
+    }
+    .image-upload-accordion[open] summary {
+        border-bottom: 1px solid #2d2d44 !important;
+    }
+    .image-upload-area button {
+        background: #2d2d44 !important;
+        border: 1.5px dashed #7c3aed !important;
+        color: #c4b5fd !important;
+    }
+    .image-upload-area button:hover {
+        background: #3d3d54 !important;
+    }
+    .image-upload-hint {
+        color: #9ca3af !important;
+        background: #2d2d44 !important;
+        border-left: 3px solid #7c3aed !important;
+    }
+    .image-upload-hint strong {
+        color: #c4b5fd !important;
+    }
+    
+    /* ── Disclaimer Banner ── */
+    .disclaimer-banner {
+        background: #2e2a1a;
+        border: 1px solid #4d4d2d;
+    }
+    .disclaimer-banner p {
+        color: #fcd34d !important;
+    }
+    
+    .disclaimer-top-banner {
+        background: linear-gradient(135deg, #2d2d44 0%, #3d3d54 100%);
+        border-bottom: 1px solid #4d4d64;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .disclaimer-top-banner p {
+        color: #c4b5fd !important;
+    }
+    .disclaimer-top-banner strong {
+        color: #e9d5ff !important;
+    }
+    
+    /* ── Example Chips ── */
+    .example-chip button {
+        border: 1px solid #3d3d54 !important;
+        background: #2d2d44 !important;
+        color: #9ca3af !important;
+    }
+    .example-chip button:hover {
+        border-color: #7c3aed !important;
+        color: #c4b5fd !important;
+        background: #3d3d54 !important;
+    }
+    
+    /* ── Journey Progress & Panels ── */
+    .journey-panel,
+    .sources-panel,
+    .docs-panel {
+        background: #1a1a2e;
+        border: 1px solid #2d2d44;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .journey-panel h4,
+    .sources-panel h4,
+    .docs-panel h4 {
+        color: #c4b5fd;
+        border-bottom: 1px solid #2d2d44;
+    }
+    
+    .journey-steps::before {
+        background: linear-gradient(to bottom, #2d2d44 0%, #2d2d44 100%);
+    }
+    
+    .journey-dot {
+        border: 2px solid #3d3d54;
+        background: #1a1a2e;
+        color: #6b7280;
+    }
+    .journey-dot.active {
+        background: #1a1a2e;
+        border-color: #7c3aed;
+        color: #c4b5fd;
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+    }
+    
+    .journey-step-label {
+        color: #9ca3af;
+    }
+    .journey-step-label.active { color: #c4b5fd; }
+    .journey-step-label.done { color: #6b7280; }
+    .journey-step-sub {
+        color: #6b7280;
+    }
+    
+    /* ── Documents Panel ── */
+    .docs-section-label {
+        color: #6b7280;
+    }
+    .doc-item {
+        color: #9ca3af;
+    }
+    .doc-item:hover {
+        background: #2d2d44;
+        color: #c4b5fd;
+    }
+    .doc-icon.purple { background: #2d2d44; }
+    .doc-icon.blue   { background: #1e2a3a; }
+    .doc-icon.green  { background: #1a2e1a; }
+    .doc-icon.pink   { background: #2e1a2e; }
+    
+    /* ── Sources Panel ── */
+    .source-item {
+        background: #2d2d44;
+        border: 1px solid #3d3d54;
+        color: #9ca3af;
+    }
+    
+    /* ── Bento Cards ── */
+    .bento-card-wrap {
+        background: #1a1a2e !important;
+        border: 1px solid #2d2d44 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+    .bento-card-wrap:hover {
+        background: #2d2d44 !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3) !important;
+    }
+    .bento-card-title { color: #c4b5fd; }
+    .bento-card-desc { color: #9ca3af; }
+    
+    /* ── Audio Trigger Button ── */
+    .audio-trigger-btn button {
+        border: 1px solid #3d3d54 !important;
+        background: #2d2d44 !important;
+        color: #c4b5fd !important;
+    }
+    .audio-trigger-btn button:hover {
+        background: #3d3d54 !important;
+        border-color: #7c3aed !important;
+    }
+}
 """
+
 
 
 # ── Business logic ─────────────────────────────────────────────────────────
