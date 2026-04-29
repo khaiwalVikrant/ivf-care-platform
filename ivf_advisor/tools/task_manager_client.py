@@ -232,45 +232,58 @@ def submit_workflow_tool(request: str) -> dict:
         return {"error": str(exc)}
 
 
-def get_schedule_tool(patient_id: str = "") -> dict:
+def get_schedule_tool(patient_id: str) -> dict:
     """Get all upcoming tasks, reminders and appointments for a patient.
 
     Use this when a patient asks 'what is my schedule', 'show my reminders',
     'what do I have coming up', or any question about their upcoming activities.
 
     Args:
-        patient_id: Optional patient identifier. Leave empty to get all records.
+        patient_id: Patient identifier (REQUIRED). Must be extracted from patient context.
 
     Returns:
-        Dictionary with tasks, events, and reminders lists.
+        Dictionary with tasks, events, and reminders lists filtered by patient_id.
     """
+    if not patient_id or patient_id == "":
+        return {
+            "error": "patient_id is required. Cannot retrieve schedule without patient identification.",
+            "tasks": [],
+            "events": [],
+            "reminders": [],
+            "appointments": [],
+        }
+    
     try:
         with _client() as client:
+            # Fetch tasks filtered by patient_id
             tasks_resp = client.get(
                 f"{_BASE_URL}/tasks",
                 headers=_headers(),
+                params={"patient_id": patient_id},
             )
             tasks = tasks_resp.json() if tasks_resp.status_code == 200 else []
 
+            # Fetch events filtered by patient_id
             events_resp = client.get(
                 f"{_BASE_URL}/events",
                 headers=_headers(),
+                params={"patient_id": patient_id},
             )
             events = events_resp.json() if events_resp.status_code == 200 else []
 
-            # Fetch reminders — query all reminders (no patient filter on GET /reminders yet)
+            # Fetch reminders filtered by patient_id
             reminders_resp = client.get(
                 f"{_BASE_URL}/reminders",
                 headers=_headers(),
-                params={"patient_id": patient_id} if patient_id else {},
+                params={"patient_id": patient_id},
             )
             reminders = reminders_resp.json() if reminders_resp.status_code == 200 else []
 
-            # Fetch appointments
+            # Fetch appointments filtered by patient_id
             appointments_resp = client.get(
                 f"{_BASE_URL}/appointments",
                 headers=_headers(),
-                params={"patient_id": patient_id} if patient_id else {},
+                params={"patient_id": patient_id},
             )
             appointments = appointments_resp.json() if appointments_resp.status_code == 200 else []
             # Filter to only future appointments
@@ -321,8 +334,8 @@ def get_workflow_status_tool(workflow_id: str) -> dict:
 
 def semantic_search_tool(
     query: str,
+    patient_id: str,
     search_type: str = "notes",
-    patient_id: str = "",
     limit: int = 5,
 ) -> dict:
     """Search patient records using semantic similarity (AlloyDB vector search).
@@ -338,19 +351,25 @@ def semantic_search_tool(
 
     Args:
         query: Natural language search query.
+        patient_id: Patient identifier (REQUIRED). Must be extracted from patient context.
         search_type: 'notes' to search notes, 'pathology' to search test results.
-        patient_id: Optional patient ID to filter results.
         limit: Maximum number of results (default 5).
 
     Returns:
         List of matching records ordered by semantic similarity.
     """
+    if not patient_id or patient_id == "":
+        return {
+            "error": "patient_id is required. Cannot search patient records without patient identification.",
+            "results": [],
+            "count": 0,
+        }
+    
     try:
         with _client() as client:
+            params = {"query": query, "limit": limit, "patient_id": patient_id}
+            
             if search_type == "pathology":
-                params = {"query": query, "limit": limit}
-                if patient_id:
-                    params["patient_id"] = patient_id
                 resp = client.get(
                     f"{_BASE_URL}/pathology/semantic-search",
                     headers=_headers(),
@@ -360,7 +379,7 @@ def semantic_search_tool(
                 resp = client.get(
                     f"{_BASE_URL}/notes/semantic-search",
                     headers=_headers(),
-                    params={"query": query, "limit": limit},
+                    params=params,
                 )
             resp.raise_for_status()
             results = resp.json()
