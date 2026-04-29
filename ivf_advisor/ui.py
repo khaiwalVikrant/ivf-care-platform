@@ -522,6 +522,53 @@ footer, .footer { display: none !important; }
     border-radius: 8px !important;
 }
 
+/* ── Image upload area ── */
+.image-upload-accordion {
+    margin-top: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+}
+.image-upload-accordion summary {
+    background: #f9fafb !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    color: #7c3aed !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+.image-upload-accordion summary:hover {
+    background: #f5f3ff !important;
+}
+.image-upload-accordion[open] summary {
+    border-bottom: 1px solid #e5e7eb !important;
+    border-radius: 10px 10px 0 0 !important;
+}
+.image-upload-area {
+    padding: 12px !important;
+}
+.image-upload-area button {
+    background: #f5f3ff !important;
+    border: 1.5px dashed #7c3aed !important;
+    border-radius: 8px !important;
+    color: #7c3aed !important;
+    font-size: 0.85rem !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s !important;
+}
+.image-upload-area button:hover {
+    background: #ede9fe !important;
+    border-color: #6d28d9 !important;
+}
+.image-upload-hint {
+    font-size: 0.75rem !important;
+    color: #6b7280 !important;
+    margin-top: 6px !important;
+    font-style: italic !important;
+}
+
 /* ── Disclaimer banner ── */
 .disclaimer-banner {
     background: #fffbeb;
@@ -1940,24 +1987,28 @@ with gr.Blocks(
                         lines=1,
                         max_lines=4,
                     )
-                    image_input = gr.Image(
-                        type="filepath",
-                        label="",
-                        show_label=False,
-                        sources=["upload", "clipboard"],
-                        scale=0,
-                        elem_classes=["image-upload-btn"],
-                        visible=True,
-                        interactive=True,
-                        height=44,
-                        width=44,
-                    )
                     send_btn = gr.Button(
                         "➤",
                         scale=0,
                         variant="primary",
                         elem_classes=["send-btn"],
                     )
+            
+            # Image upload - collapsible accordion
+            with gr.Accordion("📸 Upload Medical Report Image", open=False, elem_classes=["image-upload-accordion"]):
+                image_input = gr.Image(
+                    type="filepath",
+                    label="",
+                    show_label=False,
+                    sources=["upload", "clipboard"],
+                    interactive=True,
+                    visible=True,
+                    elem_classes=["image-upload-area"],
+                )
+                gr.Markdown(
+                    "_Upload a photo of your lab results (AMH, FSH, AFC, sperm analysis) for instant interpretation_",
+                    elem_classes=["image-upload-hint"]
+                )
             
             # Audio recorder - hidden, only for functionality
             audio_input = gr.Audio(
