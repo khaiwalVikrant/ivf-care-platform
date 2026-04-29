@@ -16,21 +16,22 @@
 - **Persistent sessions** - Firestore/AlloyDB-backed session storage survives Cloud Run restarts
 - **Optional profile saving** - Save patient profile (age, diagnosis, history) for personalized guidance
 
-### 🛠️ Specialized Tools (14 Total)
+### 🛠️ Specialized Tools (15 Total)
 1. **Lab Result Interpreter** - Plain-language AMH/FSH/AFC analysis
-2. **Treatment Timeline Generator** - Week-by-week IVF schedule with protocol support
-3. **Success Rate Calculator** - Personalized estimates by age/diagnosis (SART/HFEA/ICMR data)
-4. **Cost Breakdown** - City-level INR pricing for 11+ Indian cities + international
-5. **Clinic Red Flag Checker** - Detect misleading claims & unrealistic promises
-6. **Injection Training Guide** - Step-by-step subcutaneous/IM injection instructions
-7. **Wellness Guide** - Stage-specific diet/exercise/lifestyle recommendations
-8. **Emotional Support** - Empathy-first responses with crisis helpline resources
-9. **Evidence Search** - Clinical guideline lookup via Vertex AI Search
-10. **Appointment Booking** - Multi-agent coordination with calendar integration
-11. **Nurse Visit Scheduling** - Home visit coordination with email/calendar
-12. **Medication Reminders** - Critical timing alerts (trigger shots)
-13. **Journey Stage Tracking** - Visual progress through IVF cycle phases
-14. **PDF Report Generation** - Downloadable personalized IVF treatment plan
+2. **Medical Report Image Upload** - OCR-powered image analysis for lab reports (JPG/PNG)
+3. **Treatment Timeline Generator** - Week-by-week IVF schedule with protocol support
+4. **Success Rate Calculator** - Personalized estimates by age/diagnosis (SART/HFEA/ICMR data)
+5. **Cost Breakdown** - City-level INR pricing for 11+ Indian cities + international
+6. **Clinic Red Flag Checker** - Detect misleading claims & unrealistic promises
+7. **Injection Training Guide** - Step-by-step subcutaneous/IM injection instructions
+8. **Wellness Guide** - Stage-specific diet/exercise/lifestyle recommendations
+9. **Emotional Support** - Empathy-first responses with crisis helpline resources
+10. **Evidence Search** - Clinical guideline lookup via Vertex AI Search
+11. **Appointment Booking** - Multi-agent coordination with calendar integration
+12. **Nurse Visit Scheduling** - Home visit coordination with email/calendar
+13. **Medication Reminders** - Critical timing alerts (trigger shots)
+14. **Journey Stage Tracking** - Visual progress through IVF cycle phases
+15. **PDF Report Generation** - Downloadable personalized IVF treatment plan with real conversation data
 
 ### 💰 Cost Protection
 - **City-specific pricing** - Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Pune, Kolkata, Ahmedabad, Jaipur, Chandigarh, Kochi
@@ -54,7 +55,8 @@
 - **Medical disclaimer banner** - Industry-standard compliance (soft purple, always visible)
 - **Multi-language support** - Language selector for English/Hindi with instant switching
 - **Voice input** - Speech-to-text for hands-free interaction
-- **PDF download** - One-click personalized IVF plan generation
+- **Image upload** - 📸 Upload medical reports (JPG/PNG) for instant OCR analysis and interpretation
+- **PDF download** - One-click personalized IVF plan generation with actual conversation data
 - **Session persistence** - Conversations survive Cloud Run restarts via Firestore
 
 ---
@@ -410,6 +412,60 @@ flowchart LR
 
 ---
 
+## 📸 Medical Report Image Upload Flow
+
+> **Patient says:** *"I just got my lab results, let me upload the report"*
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#eff6ff',
+    'primaryTextColor': '#1e40af',
+    'primaryBorderColor': '#3b82f6',
+    'lineColor': '#64748b',
+    'secondaryColor': '#f8fafc',
+    'tertiaryColor': '#f1f5f9',
+    'mainBkg': '#ffffff',
+    'nodeBorder': '#3b82f6',
+    'clusterBkg': 'rgba(255, 255, 255, 0.05)',
+    'fontSize': '14px'
+  }
+} }%%
+
+flowchart LR
+    %% Node Definitions
+    Upload["📸 <b>Upload Image</b><br/>Lab Report (JPG/PNG)"]
+    Vision["🔍 <b>Google Vision API</b><br/>OCR Text Extraction"]
+    
+    Parse["🧬 <b>Parse Values</b><br/>AMH, FSH, AFC<br/>Sperm Analysis"]
+    Interpret["💡 <b>Interpret</b><br/>Normal/Low/High<br/>Plain Language"]
+    
+    Response["💬 <b>AI Response</b><br/>Detailed Explanation<br/>+ Next Steps"]
+    LabTool["🔬 <b>Lab Result Tool</b><br/>Deep Analysis"]
+
+    %% Flow Connections
+    Upload --> Vision
+    Vision --> Parse
+    Parse --> Interpret
+    Interpret --> Response
+    Response -.Optional.-> LabTool
+
+    %% Styling
+    style Upload fill:#fdf2f8,stroke:#db2777,color:#831843
+    style Vision fill:#eff6ff,stroke:#3b82f6,color:#1e40af
+    style Parse fill:#f0fdf4,stroke:#16a34a,color:#166534
+    style Interpret fill:#fef9c3,stroke:#eab308,color:#854d0e
+    style Response fill:#f5f3ff,stroke:#7c3aed,color:#5b21b6
+```
+
+**Supported Values:**
+- **Female Fertility:** AMH, FSH, AFC, E2, LH, Progesterone
+- **Male Fertility:** Sperm Count, Motility, Morphology, Volume
+- **Auto-interpretation:** Instant classification (Low/Normal/High) with plain-language explanations
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -422,6 +478,7 @@ flowchart LR
 | **Session Storage** | Firestore (default) / AlloyDB (optional) |
 | **Vector Search** | AlloyDB pgvector + Vertex AI text-embedding-004 |
 | **Evidence Search** | Vertex AI Search (Discovery Engine) |
+| **OCR & Image Analysis** | Google Cloud Vision API |
 | **PDF Generation** | ReportLab 4.0+ |
 | **File Storage** | Google Cloud Storage |
 | **Speech-to-Text** | Google Cloud Speech-to-Text API |
@@ -440,20 +497,21 @@ flowchart LR
 ```
 ivf-care-platform/
 ├── ivf_advisor/                      # Conversational IVF advisor (Cloud Run service 1)
-│   ├── agent.py                      # ADK agent with 17 tools registered
+│   ├── agent.py                      # ADK agent with 18 tools registered
 │   ├── orchestrator.py               # Session management + state machine
-│   ├── ui.py                         # Gradio chat UI (responsive, multi-language)
+│   ├── ui.py                         # Gradio chat UI (responsive, multi-language, image upload)
 │   ├── session.py                    # Session models + Firestore/AlloyDB stores
 │   ├── config.py                     # Environment configuration
 │   ├── patch_gradio.py               # Gradio customizations
 │   ├── Dockerfile                    # Container image for IVF Advisor
 │   ├── cloudbuild.yaml               # Cloud Build config
-│   └── tools/                        # 17 specialized tools
+│   └── tools/                        # 18 specialized tools
 │       ├── cost_breakdown.py         # City-level INR pricing (11+ Indian cities)
 │       ├── email_notifications.py    # Email sending utility
 │       ├── emotional_support.py      # Empathy-first responses + crisis helplines
 │       ├── evidence_search.py        # Vertex AI Search integration
 │       ├── google_calendar.py        # Calendar event creation
+│       ├── image_analyzer.py         # Medical report OCR + interpretation (NEW)
 │       ├── injection_guide.py        # Step-by-step injection instructions
 │       ├── journey_guide.py          # IVF cycle stage guidance
 │       ├── lab_result.py             # AMH/FSH/AFC interpreter

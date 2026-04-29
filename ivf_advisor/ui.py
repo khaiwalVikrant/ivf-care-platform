@@ -485,6 +485,105 @@ footer, .footer { display: none !important; }
 }
 .send-btn button:hover { opacity: 0.88 !important; transform: translateY(-1px) !important; }
 
+/* ── Image upload button ── */
+.image-upload-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: unset !important;
+    flex-shrink: 0 !important;
+}
+.image-upload-btn button {
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #7c3aed !important;
+    font-weight: 600 !important;
+    font-size: 1.3rem !important;
+    border: 1.5px solid #e5e7eb !important;
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.1) !important;
+    transition: all 0.15s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.image-upload-btn button:hover {
+    background: #f5f3ff !important;
+    border-color: #7c3aed !important;
+    transform: translateY(-1px) !important;
+}
+.image-upload-btn img {
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 8px !important;
+}
+
+/* ── Image upload area ── */
+.image-upload-accordion {
+    margin-top: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+}
+.image-upload-accordion summary {
+    background: #f9fafb !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    color: #7c3aed !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+.image-upload-accordion summary:hover {
+    background: #f5f3ff !important;
+}
+.image-upload-accordion[open] summary {
+    border-bottom: 1px solid #e5e7eb !important;
+    border-radius: 10px 10px 0 0 !important;
+}
+.image-upload-area {
+    padding: 12px !important;
+}
+.image-upload-area button {
+    background: #f5f3ff !important;
+    border: 1.5px dashed #7c3aed !important;
+    border-radius: 8px !important;
+    color: #7c3aed !important;
+    font-size: 0.85rem !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s !important;
+}
+.image-upload-area button:hover {
+    background: #ede9fe !important;
+    border-color: #6d28d9 !important;
+}
+.image-upload-hint {
+    font-size: 0.78rem !important;
+    color: #374151 !important;
+    margin-top: 8px !important;
+    padding: 10px 12px !important;
+    background: #f9fafb !important;
+    border-left: 3px solid #7c3aed !important;
+    border-radius: 6px !important;
+    line-height: 1.6 !important;
+}
+.image-upload-hint strong {
+    color: #7c3aed !important;
+    font-weight: 600 !important;
+}
+.image-upload-hint ul {
+    margin: 6px 0 0 0 !important;
+    padding-left: 20px !important;
+}
+.image-upload-hint li {
+    margin: 4px 0 !important;
+}
+
 /* ── Disclaimer banner ── */
 .disclaimer-banner {
     background: #fffbeb;
@@ -1249,10 +1348,11 @@ def chat(
     history: list[dict],
     session_id: str,
     language: str = "English",
+    image_path: str = None,
 ):
-    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, download_btn_update, agent_status, sources_html, journey_bar)."""
-    if not user_message.strip():
-        yield history, session_id, "", gr.update(), gr.update(), gr.update(visible=False), gr.update(), gr.update()
+    """Streaming chat — yields (history, session_id, state_badge, save_btn_update, download_btn_update, agent_status, sources_html, journey_bar, image_clear)."""
+    if not user_message.strip() and not image_path:
+        yield history, session_id, "", gr.update(), gr.update(), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
         return
 
     orch = _get_orchestrator()
@@ -1262,15 +1362,47 @@ def chat(
         session_id = session.session_id
         history = [_msg("assistant", WELCOME_MESSAGE)]
 
-    message_to_send = user_message
+    # Handle image upload - call OCR tool directly
+    if image_path:
+        from ivf_advisor.tools.image_analyzer import analyze_medical_report_image
+        
+        # Analyze the image using OCR
+        ocr_result = analyze_medical_report_image(image_path)
+        
+        if ocr_result.success:
+            # Prepend OCR results to the message
+            image_analysis = (
+                f"📸 **Medical Report Image Analyzed**\n\n"
+                f"**Extracted Text:**\n{ocr_result.extracted_text[:500]}...\n\n"
+                f"{ocr_result.interpretation}\n\n"
+            )
+            
+            if user_message.strip():
+                message_to_send = f"{image_analysis}\nPatient's question: {user_message}"
+            else:
+                message_to_send = f"{image_analysis}\nPlease provide a detailed interpretation of these lab results and explain what they mean for my fertility treatment."
+            
+            display_message = f"📸 Uploaded medical report\n\n{user_message}" if user_message else "📸 Uploaded medical report"
+        else:
+            # OCR failed - still send to agent with error context
+            error_msg = f"⚠️ Could not extract text from image: {ocr_result.error_message}\n\n"
+            if user_message.strip():
+                message_to_send = f"{error_msg}{user_message}"
+            else:
+                message_to_send = f"{error_msg}Please help me understand my lab results."
+            display_message = f"📸 Uploaded medical report (OCR failed)\n\n{user_message}" if user_message else "📸 Uploaded medical report (OCR failed)"
+    else:
+        message_to_send = user_message
+        display_message = user_message
+
     if language == "Hindi":
-        message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{user_message}"
+        message_to_send = f"Please respond in Hindi (Devanagari script).\n\n{message_to_send}"
 
     new_history = list(history) + [
-        _msg("user", user_message),
+        _msg("user", display_message),
         _msg("assistant", "🤔 Thinking..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value="⏳ Processing your request...", visible=True), gr.update(), gr.update(), gr.update(value=None)
 
     response = ""
     last_sources_html = _build_sources_html([])  # default empty
@@ -1295,7 +1427,7 @@ def chat(
                 agent_name, agent_action = tool_labels.get(tool.lower(), ("🔍 AI Agent", f"{tool.title()}..."))
                 status_html = f"**{agent_name}** — {agent_action}"
                 new_history[-1] = _msg("assistant", f"_{agent_name} is working..._")
-                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html
+                yield new_history, session_id, "🟢 Active session", gr.update(), gr.update(), gr.update(value=status_html, visible=True, elem_classes=["agent-status-wrap", "agent-active-pulse"]), last_sources_html, last_journey_html, gr.update(value=None)
             else:
                 response = chunk
                 new_history[-1] = _msg("assistant", response)
@@ -1305,12 +1437,12 @@ def chat(
                 stage = _detect_journey_stage(response)
                 last_journey_html = _build_journey_html(stage)
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
-                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html
+                yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html, gr.update(value=None)
     except Exception as e:
         new_session_obj = orch.create_session()
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
-        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+        yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def save_profile(history: list[dict], session_id: str):
@@ -1327,15 +1459,15 @@ def save_profile(history: list[dict], session_id: str):
             "Your data is stored securely and only used to personalise your experience."
         )),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def download_report(history: list[dict], session_id: str):
-    """Directly generate PDF report without going through the agent."""
+    """Generate PDF report by extracting data from conversation history."""
     import re
     patient_name = "Patient"
-
-    # Only scan USER messages (not assistant) to avoid false matches
+    
+    # Extract patient name from conversation
     for msg in history:
         if msg.get("role") != "user":
             continue
@@ -1343,7 +1475,6 @@ def download_report(history: list[dict], session_id: str):
         if not content:
             continue
 
-        # Match patterns case-insensitively, then title-case the result
         patterns = [
             r"name\s*:\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)+)",
             r"my name is\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)",
@@ -1354,7 +1485,6 @@ def download_report(history: list[dict], session_id: str):
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
                 candidate = match.group(1).strip().title()
-                # Sanity check: max 4 words, no common non-name words, no newlines
                 words = candidate.split()
                 skip_words = {"The", "Your", "This", "That", "Please", "Thank", "Sorry", "Hello", "Hi", "Email", "Mobile"}
                 if 1 <= len(words) <= 4 and words[0] not in skip_words and '\n' not in candidate:
@@ -1363,21 +1493,35 @@ def download_report(history: list[dict], session_id: str):
         if patient_name != "Patient":
             break
 
+    # Extract conversation data for each section
+    profile_data = _extract_profile_data(history)
+    lab_results_data = _extract_lab_results_data(history)
+    timeline_data = _extract_timeline_data(history)
+    costs_data = _extract_costs_data(history)
+    wellness_data = _extract_wellness_data(history)
+    injection_data = _extract_injection_data(history)
+
     new_history = list(history) + [
         _msg("user", "📥 Download My IVF Plan (PDF)"),
         _msg("assistant", f"⏳ Generating your personalized IVF plan PDF for {patient_name}..."),
     ]
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(value="📄 Generating PDF...", visible=True), gr.update(), gr.update(), gr.update(value=None)
 
     try:
         result = generate_report_tool(
             patient_name=patient_name,
-            include_profile=True,
-            include_lab_results=True,
-            include_timeline=True,
-            include_costs=True,
-            include_wellness=True,
-            include_injection_guide=True,
+            include_profile=bool(profile_data),
+            include_lab_results=bool(lab_results_data),
+            include_timeline=bool(timeline_data),
+            include_costs=bool(costs_data),
+            include_wellness=bool(wellness_data),
+            include_injection_guide=bool(injection_data),
+            profile_data=profile_data,
+            lab_results_data=lab_results_data,
+            timeline_data=timeline_data,
+            costs_data=costs_data,
+            wellness_data=wellness_data,
+            injection_data=injection_data,
         )
 
         if result.success and result.report_url:
@@ -1409,7 +1553,7 @@ def download_report(history: list[dict], session_id: str):
         response = f"❌ PDF generation failed: {str(e)}"
 
     new_history[-1] = _msg("assistant", response)
-    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update()
+    yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
 def handle_audio(audio_path: str | None, language: str = "English") -> str:
@@ -1434,8 +1578,193 @@ def set_example(text: str) -> str:
 def _make_quick_handler(prompt: str):
     """Return a streaming handler that fires a quick-action prompt."""
     def _handler(history: list[dict], session_id: str, language: str = "English"):
-        yield from chat(prompt, history, session_id, language)
+        yield from chat(prompt, history, session_id, language, None)
     return _handler
+
+
+def _extract_citations(text: str) -> list[str]:
+    """Extract citation lines from evidence search responses."""
+    citations = []
+    lines = text.split("\n")
+    for line in lines:
+        line = line.strip()
+        # Look for lines that look like citations (numbered, bulleted, or contain URLs/guideline names)
+        if any(kw in line.lower() for kw in ["eshre", "asrm", "nice", "hfea", "icmr", "sart", "pubmed", "doi", "guideline", "journal"]):
+            if len(line) > 10:
+                citations.append(line.lstrip("•-*123456789. "))
+    return citations[:5]  # max 5 citations
+
+
+def _extract_profile_data(history: list[dict]) -> str:
+    """Extract profile information from conversation history."""
+    profile_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "").lower()
+        
+        # Look for age mentions
+        import re
+        age_match = re.search(r'age[:\s]+(\d{2})', content)
+        if age_match and not any("age" in p for p in profile_parts):
+            profile_parts.append(f"Age: {age_match.group(1)}")
+        
+        # Look for diagnosis mentions
+        diagnoses = ["pcos", "endometriosis", "unexplained infertility", "diminished ovarian reserve", 
+                    "male factor", "low amh", "poor responder"]
+        for diag in diagnoses:
+            if diag in content and not any(diag in p.lower() for p in profile_parts):
+                profile_parts.append(f"Diagnosis: {diag.title()}")
+                break
+    
+    return "\n".join(profile_parts) if profile_parts else None
+
+
+def _extract_lab_results_data(history: list[dict]) -> str:
+    """Extract lab results from conversation history."""
+    lab_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for lab value mentions
+        import re
+        
+        # AMH
+        if "amh" in content_lower:
+            amh_match = re.search(r'amh[:\s]+([0-9.]+)\s*(?:ng/ml)?', content_lower)
+            if amh_match:
+                lab_parts.append(f"AMH: {amh_match.group(1)} ng/mL")
+        
+        # FSH
+        if "fsh" in content_lower:
+            fsh_match = re.search(r'fsh[:\s]+([0-9.]+)\s*(?:miu/ml)?', content_lower)
+            if fsh_match:
+                lab_parts.append(f"FSH: {fsh_match.group(1)} mIU/mL")
+        
+        # AFC
+        if "afc" in content_lower or "follicle count" in content_lower:
+            afc_match = re.search(r'afc[:\s]+(\d+)', content_lower)
+            if afc_match:
+                lab_parts.append(f"AFC: {afc_match.group(1)} follicles")
+        
+        # If we found values, also extract the interpretation
+        if lab_parts and len(content) > 100:
+            # Extract a relevant snippet about interpretation
+            lines = content.split('\n')
+            for line in lines:
+                if any(kw in line.lower() for kw in ["reserve", "normal", "range", "indicates", "suggests"]):
+                    lab_parts.append(f"\n{line.strip()}")
+                    break
+            break
+    
+    return "\n".join(lab_parts) if lab_parts else None
+
+
+def _extract_timeline_data(history: list[dict]) -> str:
+    """Extract timeline information from conversation history."""
+    timeline_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for timeline/schedule mentions
+        if any(kw in content_lower for kw in ["timeline", "schedule", "day ", "week ", "baseline", "stimulation", "retrieval", "transfer"]):
+            # Extract lines that look like timeline events
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["day ", "week ", "•", "-", "baseline", "stimulation", "monitoring", "trigger", "retrieval", "transfer"]):
+                    if len(line.strip()) > 10:
+                        timeline_parts.append(line.strip())
+            
+            if timeline_parts:
+                break
+    
+    return "\n".join(timeline_parts[:15]) if timeline_parts else None  # Limit to 15 lines
+
+
+def _extract_costs_data(history: list[dict]) -> str:
+    """Extract cost information from conversation history."""
+    cost_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for cost mentions
+        if any(kw in content_lower for kw in ["cost", "price", "₹", "rupees", "inr", "expense"]):
+            lines = content.split('\n')
+            for line in lines:
+                # Look for lines with currency symbols or cost-related keywords
+                if any(symbol in line for symbol in ["₹", "Rs", "INR"]) or \
+                   any(kw in line.lower() for kw in ["cost:", "price:", "fee:", "total:", "consultation", "medication", "retrieval", "transfer"]):
+                    if len(line.strip()) > 10:
+                        cost_parts.append(line.strip())
+            
+            if cost_parts:
+                break
+    
+    return "\n".join(cost_parts[:20]) if cost_parts else None
+
+
+def _extract_wellness_data(history: list[dict]) -> str:
+    """Extract wellness and lifestyle guidance from conversation history."""
+    wellness_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for wellness mentions
+        if any(kw in content_lower for kw in ["diet", "nutrition", "exercise", "lifestyle", "wellness", "eat", "avoid", "sleep", "stress"]):
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["diet", "eat", "food", "protein", "exercise", "sleep", "avoid", "stress", "•", "-"]):
+                    if len(line.strip()) > 15:
+                        wellness_parts.append(line.strip())
+            
+            if wellness_parts:
+                break
+    
+    return "\n".join(wellness_parts[:20]) if wellness_parts else None
+
+
+def _extract_injection_data(history: list[dict]) -> str:
+    """Extract injection guidance from conversation history."""
+    injection_parts = []
+    
+    for msg in history:
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content", "")
+        content_lower = content.lower()
+        
+        # Look for injection mentions
+        if any(kw in content_lower for kw in ["injection", "inject", "needle", "syringe", "subcutaneous", "gonal", "menopur", "cetrotide"]):
+            lines = content.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ["inject", "needle", "dose", "medication", "gonal", "menopur", "step", "•", "-"]):
+                    if len(line.strip()) > 15:
+                        injection_parts.append(line.strip())
+            
+            if injection_parts:
+                break
+    
+    return "\n".join(injection_parts[:20]) if injection_parts else None
 
 
 def _extract_citations(text: str) -> list[str]:
@@ -1680,6 +2009,28 @@ with gr.Blocks(
                         elem_classes=["send-btn"],
                     )
             
+            # Image upload - collapsible accordion
+            with gr.Accordion("📸 Upload Medical Report Image", open=False, elem_classes=["image-upload-accordion"]):
+                image_input = gr.Image(
+                    type="filepath",
+                    label="",
+                    show_label=False,
+                    sources=["upload", "clipboard"],
+                    interactive=True,
+                    visible=True,
+                    elem_classes=["image-upload-area"],
+                )
+                gr.Markdown(
+                    """
+                    **How to use:**
+                    - Click to upload or drag & drop your lab report (JPG/PNG)
+                    - Supported: AMH, FSH, AFC, Sperm Analysis, Hormone panels
+                    - Use 📋 (copy) button to copy image, 🗑️ (clear) button to remove
+                    - After uploading, click the ➤ send button to analyze
+                    """,
+                    elem_classes=["image-upload-hint"]
+                )
+            
             # Audio recorder - hidden, only for functionality
             audio_input = gr.Audio(
                 sources=["microphone"],
@@ -1764,14 +2115,14 @@ with gr.Blocks(
     # ── Event wiring ──────────────────────────────────────────────────────
     send_btn.click(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input)
 
     msg_input.submit(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input)
 
     # Audio button: show audio recorder when clicked
@@ -1787,8 +2138,8 @@ with gr.Blocks(
         outputs=[msg_input],
     ).then(
         fn=chat,
-        inputs=[msg_input, chatbot, session_id_state, language_selector],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        inputs=[msg_input, chatbot, session_id_state, language_selector, image_input],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     ).then(lambda: "", outputs=msg_input).then(
         fn=lambda: gr.update(visible=False),
         outputs=[audio_input],
@@ -1799,20 +2150,20 @@ with gr.Blocks(
     save_profile_btn.click(
         fn=save_profile,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     )
     
     download_report_btn.click(
         fn=download_report,
         inputs=[chatbot, session_id_state],
-        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+        outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
     )
 
     for _btn, _prompt in _all_quick:
         _btn.click(
             fn=_make_quick_handler(_prompt),
             inputs=[chatbot, session_id_state, language_selector],
-            outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar],
+            outputs=[chatbot, session_id_state, state_display, save_profile_btn, download_report_btn, agent_status, sources_box, journey_bar, image_input],
         )
 
     demo.load(fn=new_session, outputs=[chatbot, session_id_state, state_display])
