@@ -16,22 +16,42 @@
 - **Persistent sessions** - Firestore/AlloyDB-backed session storage survives Cloud Run restarts
 - **Optional profile saving** - Save patient profile (age, diagnosis, history) for personalized guidance
 
-### 🛠️ Specialized Tools (15 Total)
-1. **Lab Result Interpreter** - Plain-language AMH/FSH/AFC analysis
-2. **Medical Report Image Upload** - OCR-powered image analysis for lab reports (JPG/PNG)
-3. **Treatment Timeline Generator** - Week-by-week IVF schedule with protocol support
+### 🛠️ Specialized Tools (29 Total)
+
+**Clinical Guidance Tools:**
+1. **Lab Result Interpreter** - Plain-language AMH/FSH/AFC/sperm analysis interpretation
+2. **Medical Report Image Upload** - OCR-powered image analysis for lab reports (JPG/PNG) using Google Vision API
+3. **Treatment Timeline Generator** - Week-by-week IVF schedule with protocol support (antagonist/long/short)
 4. **Success Rate Calculator** - Personalized estimates by age/diagnosis (SART/HFEA/ICMR data)
 5. **Cost Breakdown** - City-level INR pricing for 11+ Indian cities + international
 6. **Clinic Red Flag Checker** - Detect misleading claims & unrealistic promises
-7. **Injection Training Guide** - Step-by-step subcutaneous/IM injection instructions
-8. **Wellness Guide** - Stage-specific diet/exercise/lifestyle recommendations
+7. **Injection Training Guide** - Step-by-step subcutaneous/IM injection instructions with medication-specific guidance
+8. **Wellness Guide** - Stage-specific diet/exercise/lifestyle recommendations for both partners
 9. **Emotional Support** - Empathy-first responses with crisis helpline resources
-10. **Evidence Search** - Clinical guideline lookup via Vertex AI Search
-11. **Appointment Booking** - Multi-agent coordination with calendar integration
-12. **Nurse Visit Scheduling** - Home visit coordination with email/calendar
-13. **Medication Reminders** - Critical timing alerts (trigger shots)
-14. **Journey Stage Tracking** - Visual progress through IVF cycle phases
-15. **PDF Report Generation** - Downloadable personalized IVF treatment plan with real conversation data
+10. **Evidence Search** - Clinical guideline lookup via Vertex AI Search (ESHRE/ASRM/NICE/ICMR)
+11. **Journey Stage Tracking** - Visual progress through IVF cycle phases
+12. **PDF Report Generation** - Downloadable personalized IVF treatment plan with real conversation data
+
+**Task Management & Coordination Tools:**
+13. **Create Task** - Track to-do items and follow-up actions
+14. **Schedule Reminder** - Set medication/injection/appointment reminders with criticality levels
+15. **Book Appointment** - Schedule consultations, ultrasounds, retrievals, transfers
+16. **Book Nurse Visit** - Home visit coordination for injections
+17. **Get Cost Summary** - Retrieve cost breakdown for a patient's IVF cycle
+18. **Track Expense** - Log IVF-related expenses (consultations, medications, procedures)
+19. **Submit Workflow** - Multi-agent coordination for complex multi-step requests
+20. **Get Schedule** - View all upcoming tasks, reminders, and appointments
+21. **Get Workflow Status** - Check status of submitted workflows
+22. **Semantic Search** - Natural language search across notes and test results
+
+**Communication & Calendar Tools:**
+23. **Add to Calendar** - Create Google Calendar events with .ics attachments
+24. **Book Nurse Visit with Calendar** - Combined nurse booking + calendar integration
+25. **Book Appointment with Calendar** - Combined appointment booking + calendar integration
+26. **Send Appointment Confirmation** - Email confirmations to patient and doctor
+27. **Send Nurse Visit Notification** - Email notifications to patient and nurse
+28. **Send Reminder Notification** - Email reminders with .ics calendar attachments
+29. **Scope Guard** - Query validation to ensure questions are within IVF/fertility domain
 
 ### 💰 Cost Protection
 - **City-specific pricing** - Mumbai, Delhi, Bangalore, Chennai, Hyderabad, Pune, Kolkata, Ahmedabad, Jaipur, Chandigarh, Kochi
@@ -497,7 +517,7 @@ flowchart LR
 ```
 ivf-care-platform/
 ├── ivf_advisor/                      # Conversational IVF advisor (Cloud Run service 1)
-│   ├── agent.py                      # ADK agent with 18 tools registered
+│   ├── agent.py                      # ADK agent with 29 tools registered
 │   ├── orchestrator.py               # Session management + state machine
 │   ├── ui.py                         # Gradio chat UI (responsive, multi-language, image upload)
 │   ├── session.py                    # Session models + Firestore/AlloyDB stores
@@ -505,7 +525,7 @@ ivf-care-platform/
 │   ├── patch_gradio.py               # Gradio customizations
 │   ├── Dockerfile                    # Container image for IVF Advisor
 │   ├── cloudbuild.yaml               # Cloud Build config
-│   └── tools/                        # 18 specialized tools
+│   └── tools/                        # 29 specialized tools (clinical + coordination + communication)
 │       ├── cost_breakdown.py         # City-level INR pricing (11+ Indian cities)
 │       ├── email_notifications.py    # Email sending utility
 │       ├── emotional_support.py      # Empathy-first responses + crisis helplines
@@ -549,7 +569,7 @@ ivf-care-platform/
 │       └── mcp_adapter.py            # Model Context Protocol adapter
 │
 ├── tests/                            # Test suite
-│   ├── unit/                         # 86+ unit tests
+│   ├── unit/                         # 15 unit tests
 │   │   ├── test_appointment_agent.py
 │   │   ├── test_calendar_agent.py
 │   │   ├── test_cost_guard_agent.py
