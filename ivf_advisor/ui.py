@@ -11,7 +11,7 @@ import gradio as gr  # type: ignore
 
 from ivf_advisor.models import ConversationState
 from ivf_advisor.agent import create_agent
-from ivf_advisor.orchestrator import ConversationOrchestrator
+from ivf_advisor.orchestrator import ConversationOrchestrator, _persist_patient_profile
 from ivf_advisor.tools.speech_to_text import transcribe_audio
 from ivf_advisor.tools.report_generator import generate_report_tool
 
@@ -1450,18 +1450,55 @@ def chat(
 
 def save_profile(history: list[dict], session_id: str):
     """Acknowledge profile save with a friendly message."""
-    new_history = list(history) + [
-        _msg("user", "💾 Remember me for future visits"),
-        _msg("assistant", (
-            "✅ **I'd love to remember you!**\n\n"
-            "Please share your details and I'll save your profile for future visits:\n\n"
-            "- **Name:** (e.g. Neha Sharma)\n"
-            "- **Mobile:** (e.g. 9716000000)\n"
-            "- **Email:** (e.g. name@email.com)\n\n"
-            "Just reply with your details in any format and I'll save them. "
-            "Your data is stored securely and only used to personalise your experience."
-        )),
-    ]
+    orch = _get_orchestrator()
+    session = orch.get_session(session_id)
+    
+    # Check if user is already registered and opted in
+    if session and session.patient_id and session.profile_opted_in:
+        # User is already registered
+        new_history = list(history) + [
+            _msg("user", "💾 Remember me for future visits"),
+            _msg("assistant", (
+                f"✅ **Your profile is already saved, {session.patient_name or 'there'}!**\n\n"
+                f"- Patient ID: `{session.patient_id}`\n"
+                f"- Cycle ID: `{session.cycle_id or 'No active cycle'}`\n"
+                f"- Email: {session.patient_email or 'Not provided'}\n\n"
+                "I'll remember you on your next visit. Just provide your mobile number "
+                "when you return and I'll load your profile automatically."
+            )),
+        ]
+    elif session and session.patient_id and not session.profile_opted_in:
+        # User is registered but didn't opt in to save profile
+        new_history = list(history) + [
+            _msg("user", "💾 Remember me for future visits"),
+            _msg("assistant", (
+                f"✅ **Profile saving enabled for {session.patient_name or 'you'}!**\n\n"
+                f"- Patient ID: `{session.patient_id}`\n"
+                f"- Cycle ID: `{session.cycle_id or 'No active cycle'}`\n\n"
+                "Your profile is now saved. Next time you visit, just provide your mobile number "
+                "and I'll load your information automatically."
+            )),
+        ]
+        # Enable profile opt-in
+        session.profile_opted_in = True
+        if session.profile:
+            _persist_patient_profile(session.patient_id, session.profile)
+        orch._store.update(session)
+    else:
+        # User hasn't completed onboarding yet
+        new_history = list(history) + [
+            _msg("user", "💾 Remember me for future visits"),
+            _msg("assistant", (
+                "✅ **I'd love to remember you!**\n\n"
+                "Please share your details and I'll save your profile for future visits:\n\n"
+                "- **Name:** (e.g. Neha Sharma)\n"
+                "- **Mobile:** (e.g. 9716000000)\n"
+                "- **Email:** (e.g. name@email.com)\n\n"
+                "Just reply with your details in any format and I'll save them. "
+                "Your data is stored securely and only used to personalise your experience."
+            )),
+        ]
+    
     yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
