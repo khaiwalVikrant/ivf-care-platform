@@ -563,10 +563,25 @@ footer, .footer { display: none !important; }
     border-color: #6d28d9 !important;
 }
 .image-upload-hint {
-    font-size: 0.75rem !important;
-    color: #6b7280 !important;
-    margin-top: 6px !important;
-    font-style: italic !important;
+    font-size: 0.78rem !important;
+    color: #374151 !important;
+    margin-top: 8px !important;
+    padding: 10px 12px !important;
+    background: #f9fafb !important;
+    border-left: 3px solid #7c3aed !important;
+    border-radius: 6px !important;
+    line-height: 1.6 !important;
+}
+.image-upload-hint strong {
+    color: #7c3aed !important;
+    font-weight: 600 !important;
+}
+.image-upload-hint ul {
+    margin: 6px 0 0 0 !important;
+    padding-left: 20px !important;
+}
+.image-upload-hint li {
+    margin: 4px 0 !important;
 }
 
 /* ── Disclaimer banner ── */
@@ -2006,7 +2021,13 @@ with gr.Blocks(
                     elem_classes=["image-upload-area"],
                 )
                 gr.Markdown(
-                    "_Upload a photo of your lab results (AMH, FSH, AFC, sperm analysis) for instant interpretation_",
+                    """
+                    **How to use:**
+                    - Click to upload or drag & drop your lab report (JPG/PNG)
+                    - Supported: AMH, FSH, AFC, Sperm Analysis, Hormone panels
+                    - Use 📋 (copy) button to copy image, 🗑️ (clear) button to remove
+                    - After uploading, click the ➤ send button to analyze
+                    """,
                     elem_classes=["image-upload-hint"]
                 )
             
