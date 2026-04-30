@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import uuid
 
 # Apply gradio patch before importing gradio
 import ivf_advisor.patch_gradio  # noqa: F401
@@ -1651,7 +1652,6 @@ def new_session() -> tuple[list[dict], str, str]:
     
     # AUTO-DEMO MODE: Create demo account automatically for zero-friction hackathon experience
     # This allows judges to scan QR code and start immediately without registration
-    import uuid
     session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
     session.patient_name = "Demo User"
     session.patient_email = "demo@ivfcare.app"
@@ -1680,7 +1680,6 @@ def chat(
     orch = _get_orchestrator()
 
     if not session_id or orch.get_session(session_id) is None:
-        import uuid
         session = orch.create_session()
         # AUTO-DEMO MODE: Set up demo credentials for new sessions
         session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
@@ -1773,7 +1772,6 @@ def chat(
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
                 yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html, gr.update(value=None)
     except Exception as e:
-        import uuid
         new_session_obj = orch.create_session()
         # AUTO-DEMO MODE: Set up demo credentials for error recovery
         new_session_obj.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
