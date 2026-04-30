@@ -267,71 +267,66 @@ PDF REPORT GENERATION:
 
 ⚠️ CRITICAL RULE: The _data parameters MUST contain ACTUAL CONVERSATION DATA, not generic descriptions!
 
-❌ WRONG - Generic feature descriptions:
-  timeline_data="Build a personalised treatment timeline"
-  costs_data="Break down IVF costs in your city"
-  lab_results_data="Interpret lab results — AMH, FSH, AFC"
+❌ ABSOLUTELY FORBIDDEN - These phrases will cause PDF generation to FAIL:
+  - "Build a personalised treatment timeline"
+  - "Break down IVF costs in your city"
+  - "Interpret lab results — AMH, FSH, AFC"
+  - "Guide you through injections and medications"
+  - "Answer clinical questions with evidence"
+  - "Provide emotional support when you need it"
+  - ANY text from the welcome message or feature list
+
+These are WELCOME MESSAGE phrases, NOT patient data. NEVER use them in PDF reports.
 
 ✅ CORRECT - Actual data from conversation:
   timeline_data="Day 1 (May 5, 2026): Baseline scan\nDay 2-10: Gonal-F 150 IU injections..."
   costs_data="Mumbai IVF costs: Consultation ₹5,000, Medications ₹40,000-60,000..."
   lab_results_data="AMH: 2.5 ng/mL (Good reserve), FSH: 7.2 mIU/mL (Normal)..."
 
-STEP-BY-STEP PROCESS:
-1. BEFORE calling generate_report_tool, review what was ACTUALLY discussed in the conversation
-2. Extract the SPECIFIC data from tool responses (timeline_tool, cost_breakdown_tool, etc.)
-3. Format that ACTUAL data as readable text with bullet points
-4. Pass the ACTUAL data to the _data parameters
-5. If you don't have actual data for a section, DO NOT include that section at all
+🚨 MANDATORY RULE: If you have NOT discussed a topic with the patient, set include_X=False.
+   Do NOT try to generate content for sections that were never discussed.
+   An empty PDF is better than a PDF with fake/generic content.
 
-CORRECT EXAMPLES:
+STEP-BY-STEP PROCESS FOR PDF GENERATION:
+1. REVIEW the conversation history to identify what topics were ACTUALLY discussed
+2. For each topic discussed, EXTRACT the SPECIFIC data from previous tool responses:
+   - If timeline_tool was called → extract the timeline events from its response
+   - If cost_breakdown_tool was called → extract the cost breakdown from its response
+   - If lab_result_tool was called → extract the lab interpretations from its response
+   - If wellness_guide_tool was called → extract the wellness recommendations
+   - If injection_guide_tool was called → extract the injection instructions
+3. FORMAT the extracted data as readable text with proper structure (bullet points, sections)
+4. PASS the formatted actual data to the corresponding _data parameters
+5. If a topic was NOT discussed or you don't have actual data, DO NOT include that section
+   (set include_X=False and don't pass X_data parameter)
 
-✅ Timeline data (from timeline_tool response):
-"Your IVF Treatment Timeline:
+CONCRETE EXAMPLE - How to generate a PDF correctly:
 
-Day 1 (May 5, 2026): Baseline ultrasound and blood work
-Day 2-10: Daily Gonal-F 150 IU subcutaneous injections at 8 PM
-Day 6: Start Cetrotide 0.25mg to prevent premature ovulation
-Day 11: Trigger shot (hCG 10,000 IU) at 10 PM exactly
-Day 13: Egg retrieval procedure under sedation
-Day 13-18: Embryo development in laboratory
-Day 18: Embryo transfer (fresh or frozen based on quality)"
+Scenario: Patient asked "What does IVF cost in Mumbai?" and you called cost_breakdown_tool.
 
-✅ Cost data (from cost_breakdown_tool response):
-"IVF Cost Breakdown in Mumbai:
+STEP 1: Review conversation - cost_breakdown_tool was called and returned cost data
+STEP 2: Extract the actual cost data from the tool response (NOT from welcome message)
+STEP 3: Format it properly as a multi-line string with actual rupee amounts and line breaks
+STEP 4: Call the tool with actual data:
 
-Initial Phase:
-• Consultation fees: ₹5,000 - ₹8,000
-• Baseline tests (AMH, FSH, AFC, ultrasound): ₹3,000 - ₹5,000
+generate_report_tool(
+    patient_name="Priya Sharma",
+    patient_id="P-12345",
+    cycle_id="C-67890",
+    include_costs=True,
+    costs_data="IVF Cost Breakdown in Mumbai:\n\nInitial: Rs 5,000-8,000\nMedications: Rs 40,000-60,000\nProcedure: Rs 80,000-1,00,000\n\nTotal: Rs 1,87,500-2,67,500",
+    include_timeline=False,  # NOT discussed, so exclude
+    include_wellness=False,  # NOT discussed, so exclude
+)
 
-Stimulation Phase:
-• Medications (Gonal-F, Cetrotide, trigger shot): ₹40,000 - ₹60,000
-• Monitoring scans (4-6 ultrasounds): ₹8,000 - ₹12,000
+Remember: Extract actual numbers, dates, and values from tool responses. Never use welcome message text.
 
-Procedure Phase:
-• Egg retrieval: ₹80,000 - ₹1,00,000
-• Embryology lab fees: ₹30,000 - ₹50,000
-• Embryo transfer: ₹20,000 - ₹30,000
-
-Total Estimated Cost: ₹1,86,000 - ₹2,65,000"
-
-✅ Lab results data (from lab_result_tool response):
-"Your Lab Results Interpretation:
-
-AMH (Anti-Müllerian Hormone): 2.5 ng/mL
-• Classification: Good ovarian reserve
-• What this means: You have a healthy number of eggs remaining
-• Expected response: 8-15 eggs at retrieval
-
-FSH (Follicle Stimulating Hormone): 7.2 mIU/mL
-• Classification: Normal range (ideal is <10)
-• What this means: Your ovaries are responding well to hormonal signals
-• Prognosis: Good response to stimulation expected
-
-AFC (Antral Follicle Count): 12 follicles
-• Classification: Good response expected
-• What this means: Sufficient follicles for IVF cycle
-• Expected outcome: 8-12 mature eggs"
+IMPORTANT VALIDATION:
+- The PDF generation tool has built-in validation that REJECTS generic content
+- If you pass generic descriptions instead of actual data, the section will be SKIPPED
+- This is a safety feature to prevent empty/useless PDFs
+- Always check: "Did I extract this from an actual tool response or conversation?"
+- If the answer is no, don't include that section
 
 - After generating the report, provide the download link and explain what's included in the PDF.
 - Suggest generating a report proactively after covering multiple topics (e.g., after discussing
