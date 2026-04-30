@@ -1648,13 +1648,21 @@ footer, .footer { display: none !important; }
 def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
-    # Session starts in ONBOARDING state, so show onboarding prompt
-    welcome = (
-        "👋 Welcome to IVF Care Platform!\n\n"
-        "To get started, please enter your **mobile number** so I can look up your profile.\n\n"
-        "_(New patient? I'll set up your profile automatically.)_"
-    )
-    return [_msg("assistant", welcome)], session.session_id, "🟣 Setting up your profile"
+    
+    # AUTO-DEMO MODE: Create demo account automatically for zero-friction hackathon experience
+    # This allows judges to scan QR code and start immediately without registration
+    import uuid
+    session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+    session.patient_name = "Demo User"
+    session.patient_email = "demo@ivfcare.app"
+    session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+    session.state = ConversationState.MAIN_LOOP
+    session.profile_opted_in = False  # Demo users don't persist profiles
+    
+    # Persist the updated session
+    orch._store.update(session)
+    
+    return [_msg("assistant", WELCOME_MESSAGE)], session.session_id, "🟢 Active session"
 
 
 def chat(
@@ -1672,7 +1680,16 @@ def chat(
     orch = _get_orchestrator()
 
     if not session_id or orch.get_session(session_id) is None:
+        import uuid
         session = orch.create_session()
+        # AUTO-DEMO MODE: Set up demo credentials for new sessions
+        session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+        session.patient_name = "Demo User"
+        session.patient_email = "demo@ivfcare.app"
+        session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+        session.state = ConversationState.MAIN_LOOP
+        session.profile_opted_in = False
+        orch._store.update(session)
         session_id = session.session_id
         history = [_msg("assistant", WELCOME_MESSAGE)]
 
@@ -1756,7 +1773,16 @@ def chat(
                 state_str = _state_badge(session.state) if session else "🟢 Active session"
                 yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html, gr.update(value=None)
     except Exception as e:
+        import uuid
         new_session_obj = orch.create_session()
+        # AUTO-DEMO MODE: Set up demo credentials for error recovery
+        new_session_obj.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+        new_session_obj.patient_name = "Demo User"
+        new_session_obj.patient_email = "demo@ivfcare.app"
+        new_session_obj.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+        new_session_obj.state = ConversationState.MAIN_LOOP
+        new_session_obj.profile_opted_in = False
+        orch._store.update(new_session_obj)
         session_id = new_session_obj.session_id
         new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
         yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
