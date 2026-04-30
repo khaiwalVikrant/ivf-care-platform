@@ -573,12 +573,17 @@ def generate_report_tool(
                 import logging
                 logging.error("Skipping Injection Guide section - contains generic content instead of actual instructions")
         
-        # SECOND HARD BLOCK: Check if ANY sections passed validation
-        if len(report_data.sections) == 0:
+        # SECOND HARD BLOCK: Check if ANY meaningful sections passed validation
+        # Block if: no sections OR only profile with minimal content
+        meaningful_sections = [s for s in report_data.sections if s.title != "Your Profile Summary"]
+        profile_only = len(report_data.sections) == 1 and len(meaningful_sections) == 0
+        
+        if len(report_data.sections) == 0 or profile_only:
             import logging
             logging.error(
-                "❌ PDF GENERATION BLOCKED: All sections failed validation. "
+                "❌ PDF GENERATION BLOCKED: No meaningful sections passed validation. "
                 "Agent provided generic/welcome message content instead of actual conversation data. "
+                f"Total sections: {len(report_data.sections)}, Meaningful sections: {len(meaningful_sections)}. "
                 f"Attempted sections: profile={include_profile}, lab_results={include_lab_results}, "
                 f"timeline={include_timeline}, costs={include_costs}, wellness={include_wellness}, "
                 f"injection_guide={include_injection_guide}"
