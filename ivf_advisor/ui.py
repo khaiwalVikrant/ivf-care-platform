@@ -1648,7 +1648,13 @@ footer, .footer { display: none !important; }
 def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
-    return [_msg("assistant", WELCOME_MESSAGE)], session.session_id, "🟢 Active session"
+    # Session starts in ONBOARDING state, so show onboarding prompt
+    welcome = (
+        "👋 Welcome to IVF Care Platform!\n\n"
+        "To get started, please enter your **mobile number** so I can look up your profile.\n\n"
+        "_(New patient? I'll set up your profile automatically.)_"
+    )
+    return [_msg("assistant", welcome)], session.session_id, "🟣 Setting up your profile"
 
 
 def chat(
