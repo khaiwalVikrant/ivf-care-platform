@@ -102,7 +102,7 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
     from reportlab.lib.units import inch
     from reportlab.platypus import (
         SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-        PageBreak, Image, KeepTogether, HRFlowable
+        PageBreak, Image, KeepTogether
     )
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY, TA_RIGHT
     
@@ -223,17 +223,15 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
     elements.append(Paragraph("🌸 Your Personalized IVF Plan", title_style))
     elements.append(Spacer(1, 0.05*inch))
     
-    # Decorative line under title
-    elements.append(HRFlowable(
-        width="100%",
-        thickness=2,
-        color=purple_primary,
-        spaceBefore=0,
-        spaceAfter=8,
-        hAlign='CENTER',
-        vAlign='BOTTOM',
-        dash=None
-    ))
+    # Decorative line under title (using table for compatibility)
+    line_table = Table([['']], colWidths=[6.5*inch])
+    line_table.setStyle(TableStyle([
+        ('LINEABOVE', (0, 0), (-1, 0), 2, purple_primary),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(line_table)
+    elements.append(Spacer(1, 0.08*inch))
     
     elements.append(Paragraph(
         f"Prepared for <b>{report_data.patient_name}</b> • {report_data.generated_date}",
@@ -272,7 +270,6 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
                 ('LEFTPADDING', (0, 0), (-1, -1), 15),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 15),
                 ('BOX', (0, 0), (-1, -1), 2, purple_primary),
-                ('ROUNDEDCORNERS', [8, 8, 8, 8]),
             ]))
             elements.append(patient_table)
             elements.append(Spacer(1, 0.3*inch))
@@ -286,16 +283,14 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
         
         elements.append(Paragraph(section_title, heading_style))
         
-        # Decorative line under section heading
-        elements.append(HRFlowable(
-            width="30%",
-            thickness=1.5,
-            color=purple_primary,
-            spaceBefore=2,
-            spaceAfter=10,
-            hAlign='LEFT',
-            vAlign='BOTTOM',
-        ))
+        # Decorative line under section heading (using table for compatibility)
+        section_line = Table([['']], colWidths=[2*inch])
+        section_line.setStyle(TableStyle([
+            ('LINEABOVE', (0, 0), (-1, 0), 1.5, purple_primary),
+            ('TOPPADDING', (0, 0), (-1, -1), 2),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(section_line)
         
         # Split content by paragraphs and format
         paragraphs = section.content.split('\n\n')
@@ -336,16 +331,14 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
     # Disclaimer box with enhanced styling
     elements.append(Spacer(1, 0.35*inch))
     
-    # Decorative line before disclaimer
-    elements.append(HRFlowable(
-        width="100%",
-        thickness=1,
-        color=gray_light,
-        spaceBefore=0,
-        spaceAfter=15,
-        hAlign='CENTER',
-        vAlign='BOTTOM',
-    ))
+    # Decorative line before disclaimer (using table for compatibility)
+    divider_line = Table([['']], colWidths=[6.5*inch])
+    divider_line.setStyle(TableStyle([
+        ('LINEABOVE', (0, 0), (-1, 0), 1, gray_light),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
+    ]))
+    elements.append(divider_line)
     
     disclaimer_text = (
         "<b>⚠️ Medical Disclaimer:</b> This document provides general educational information "
@@ -364,7 +357,6 @@ def generate_pdf_report(report_data: ReportData) -> bytes:
         ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
         ('LEFTPADDING', (0, 0), (-1, -1), 15),
         ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-        ('ROUNDEDCORNERS', [6, 6, 6, 6]),
     ]))
     elements.append(disclaimer_table)
     
