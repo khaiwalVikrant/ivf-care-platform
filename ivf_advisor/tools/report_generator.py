@@ -465,6 +465,39 @@ def generate_report_tool(
         # Use default values if parameters are None or empty
         final_patient_name = patient_name if patient_name and patient_name.strip() else "Patient"
         
+        # HARD BLOCK: Check if ANY actual data was provided
+        # Count how many sections have data that could potentially be valid
+        sections_with_data = 0
+        if include_profile and profile_data and profile_data.strip():
+            sections_with_data += 1
+        if include_lab_results and lab_results_data and lab_results_data.strip():
+            sections_with_data += 1
+        if include_timeline and timeline_data and timeline_data.strip():
+            sections_with_data += 1
+        if include_costs and costs_data and costs_data.strip():
+            sections_with_data += 1
+        if include_wellness and wellness_data and wellness_data.strip():
+            sections_with_data += 1
+        if include_injection_guide and injection_data and injection_data.strip():
+            sections_with_data += 1
+        
+        # If no sections have data, refuse to generate PDF
+        if sections_with_data == 0:
+            import logging
+            logging.error(
+                "❌ PDF GENERATION BLOCKED: No actual data provided for any section. "
+                "Agent attempted to generate PDF without discussing any topics with the patient. "
+                "This would result in an empty PDF."
+            )
+            return ReportOutput(
+                success=False,
+                error_message=(
+                    "Cannot generate PDF: No information has been discussed yet. "
+                    "Please ask about costs, timeline, lab results, wellness, or injection guidance first, "
+                    "then I can create a personalized PDF with that information."
+                )
+            )
+        
         # Build report data
         report_data = ReportData(
             patient_name=final_patient_name,
@@ -539,6 +572,25 @@ def generate_report_tool(
             else:
                 import logging
                 logging.error("Skipping Injection Guide section - contains generic content instead of actual instructions")
+        
+        # SECOND HARD BLOCK: Check if ANY sections passed validation
+        if len(report_data.sections) == 0:
+            import logging
+            logging.error(
+                "❌ PDF GENERATION BLOCKED: All sections failed validation. "
+                "Agent provided generic/welcome message content instead of actual conversation data. "
+                f"Attempted sections: profile={include_profile}, lab_results={include_lab_results}, "
+                f"timeline={include_timeline}, costs={include_costs}, wellness={include_wellness}, "
+                f"injection_guide={include_injection_guide}"
+            )
+            return ReportOutput(
+                success=False,
+                error_message=(
+                    "Cannot generate PDF: The information provided was too generic. "
+                    "I need to discuss specific details with you first (actual costs, dates, lab values, etc.) "
+                    "before I can create a meaningful PDF. What would you like to know about?"
+                )
+            )
         
         # Generate PDF
         pdf_bytes = generate_pdf_report(report_data)
