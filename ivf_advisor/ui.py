@@ -1650,19 +1650,40 @@ def new_session() -> tuple[list[dict], str, str]:
     orch = _get_orchestrator()
     session = orch.create_session()
     
-    # AUTO-DEMO MODE: Create demo account automatically for zero-friction hackathon experience
-    # This allows judges to scan QR code and start immediately without registration
-    session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
-    session.patient_name = "Demo User"
-    session.patient_email = "demo@ivfcare.app"
-    session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
-    session.state = ConversationState.MAIN_LOOP
-    session.profile_opted_in = False  # Demo users don't persist profiles
+    # Check if demo mode is enabled via environment variable
+    demo_mode_enabled = os.getenv("ENABLE_DEMO_MODE", "false").lower() == "true"
     
-    # Persist the updated session
-    orch._store.update(session)
-    
-    return [_msg("assistant", WELCOME_MESSAGE)], session.session_id, "🟢 Active session"
+    if demo_mode_enabled:
+        # AUTO-DEMO MODE: Create demo account automatically for zero-friction hackathon experience
+        # This allows judges to scan QR code and start immediately without registration
+        session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+        session.patient_name = "Demo User"
+        session.patient_email = "demo@ivfcare.app"
+        session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+        session.state = ConversationState.MAIN_LOOP
+        session.profile_opted_in = False  # Demo users don't persist profiles
+        
+        # Persist the updated session
+        orch._store.update(session)
+        
+        return [_msg("assistant", WELCOME_MESSAGE)], session.session_id, "🟢 Active session"
+    else:
+        # REAL USER MODE: Start with onboarding to collect mobile number
+        session.state = ConversationState.ONBOARDING
+        session.profile_opted_in = False
+        orch._store.update(session)
+        
+        onboarding_message = (
+            f"{WELCOME_MESSAGE}\n\n"
+            "---\n\n"
+            "**Let's get started!**\n\n"
+            "To personalize your experience and save your information for future visits, "
+            "please provide your mobile number. If you're already registered, I'll load "
+            "your profile automatically.\n\n"
+            "📱 **Mobile number:** (e.g., 9716000000)"
+        )
+        
+        return [_msg("assistant", onboarding_message)], session.session_id, "🟣 Setting up your profile"
 
 
 def chat(
@@ -1681,16 +1702,36 @@ def chat(
 
     if not session_id or orch.get_session(session_id) is None:
         session = orch.create_session()
-        # AUTO-DEMO MODE: Set up demo credentials for new sessions
-        session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
-        session.patient_name = "Demo User"
-        session.patient_email = "demo@ivfcare.app"
-        session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
-        session.state = ConversationState.MAIN_LOOP
-        session.profile_opted_in = False
-        orch._store.update(session)
-        session_id = session.session_id
-        history = [_msg("assistant", WELCOME_MESSAGE)]
+        
+        # Check if demo mode is enabled
+        demo_mode_enabled = os.getenv("ENABLE_DEMO_MODE", "false").lower() == "true"
+        
+        if demo_mode_enabled:
+            # AUTO-DEMO MODE: Set up demo credentials for new sessions
+            session.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+            session.patient_name = "Demo User"
+            session.patient_email = "demo@ivfcare.app"
+            session.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+            session.state = ConversationState.MAIN_LOOP
+            session.profile_opted_in = False
+            orch._store.update(session)
+            session_id = session.session_id
+            history = [_msg("assistant", WELCOME_MESSAGE)]
+        else:
+            # REAL USER MODE: Start with onboarding
+            session.state = ConversationState.ONBOARDING
+            session.profile_opted_in = False
+            orch._store.update(session)
+            session_id = session.session_id
+            onboarding_message = (
+                f"{WELCOME_MESSAGE}\n\n"
+                "---\n\n"
+                "**Let's get started!**\n\n"
+                "To personalize your experience, please provide your mobile number. "
+                "If you're already registered, I'll load your profile automatically.\n\n"
+                "📱 **Mobile number:** (e.g., 9716000000)"
+            )
+            history = [_msg("assistant", onboarding_message)]
 
     # Handle image upload - call OCR tool directly
     if image_path:
@@ -1773,16 +1814,33 @@ def chat(
                 yield new_history, session_id, state_str, gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), last_sources_html, last_journey_html, gr.update(value=None)
     except Exception as e:
         new_session_obj = orch.create_session()
-        # AUTO-DEMO MODE: Set up demo credentials for error recovery
-        new_session_obj.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
-        new_session_obj.patient_name = "Demo User"
-        new_session_obj.patient_email = "demo@ivfcare.app"
-        new_session_obj.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
-        new_session_obj.state = ConversationState.MAIN_LOOP
-        new_session_obj.profile_opted_in = False
-        orch._store.update(new_session_obj)
-        session_id = new_session_obj.session_id
-        new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
+        
+        # Check if demo mode is enabled
+        demo_mode_enabled = os.getenv("ENABLE_DEMO_MODE", "false").lower() == "true"
+        
+        if demo_mode_enabled:
+            # AUTO-DEMO MODE: Set up demo credentials for error recovery
+            new_session_obj.patient_id = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+            new_session_obj.patient_name = "Demo User"
+            new_session_obj.patient_email = "demo@ivfcare.app"
+            new_session_obj.cycle_id = f"C-{uuid.uuid4().hex[:8].upper()}"
+            new_session_obj.state = ConversationState.MAIN_LOOP
+            new_session_obj.profile_opted_in = False
+            orch._store.update(new_session_obj)
+            session_id = new_session_obj.session_id
+            new_history = [_msg("assistant", "Your session expired. Starting a new session.")]
+        else:
+            # REAL USER MODE: Start with onboarding
+            new_session_obj.state = ConversationState.ONBOARDING
+            new_session_obj.profile_opted_in = False
+            orch._store.update(new_session_obj)
+            session_id = new_session_obj.session_id
+            new_history = [_msg("assistant", (
+                "Your session expired. Starting a new session.\n\n"
+                "Please provide your mobile number to continue:\n\n"
+                "📱 **Mobile number:** (e.g., 9716000000)"
+            ))]
+        
         yield new_history, session_id, "🟢 Active session", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(), gr.update(), gr.update(value=None)
 
 
