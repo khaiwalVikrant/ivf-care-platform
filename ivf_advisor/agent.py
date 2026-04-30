@@ -283,9 +283,25 @@ These are WELCOME MESSAGE phrases, NOT patient data. NEVER use them in PDF repor
   costs_data="Mumbai IVF costs: Consultation ₹5,000, Medications ₹40,000-60,000..."
   lab_results_data="AMH: 2.5 ng/mL (Good reserve), FSH: 7.2 mIU/mL (Normal)..."
 
-🚨 MANDATORY RULE: If you have NOT discussed a topic with the patient, set include_X=False.
+🚨 MANDATORY RULES:
+1. If you have NOT discussed a topic with the patient, set include_X=False.
    Do NOT try to generate content for sections that were never discussed.
    An empty PDF is better than a PDF with fake/generic content.
+
+2. BEFORE generating a PDF, CHECK if you have ANY actual data to include:
+   - If the patient ONLY introduced themselves or shared emotions (e.g., "My IVF failed"),
+     DO NOT generate a PDF yet.
+   - Instead, respond: "I'd be happy to create a personalized PDF for you! First, let me
+     gather some information. What would you like to include? For example:
+     - Cost breakdown for your city
+     - Treatment timeline
+     - Lab results interpretation
+     - Wellness recommendations
+     - Injection guidance"
+   
+3. ONLY generate a PDF if you have called at least ONE specialist tool (timeline_tool,
+   cost_breakdown_tool, lab_result_tool, wellness_guide_tool, injection_guide_tool)
+   and have actual data to include.
 
 STEP-BY-STEP PROCESS FOR PDF GENERATION:
 1. REVIEW the conversation history to identify what topics were ACTUALLY discussed
